@@ -1,6 +1,6 @@
 /*
  * This file is auto-generated.  DO NOT MODIFY.
- * Original file: /Users/seandonohoe/Documents/LEDSignalDetection/libraries/opencv/src/org/opencv/engine3/OpenCVEngineInterface.aidl
+ * Original file: /Users/seandonohoe/Documents/LEDApplication/libraries/opencv/src/org/opencv/engine3/OpenCVEngineInterface.aidl
  */
 package org.opencv.engine3;
 /**

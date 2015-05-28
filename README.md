@@ -1,6 +1,11 @@
 # Mobile LED Message Detection
 
-**Clarifying Questions**
+###Useful Links
+	- configuring opencv in android studio: http://blog.hig.no/gtl/2014/08/28/opencv-and-android-studio/
+
+	- communication standard: http://en.wikipedia.org/wiki/Asynchronous_serial_communication
+
+##Clarifying Questions
 	
 	1. 
 		Q.) How are the LEDs read -- is the application expected to read binary messages conveyed through flashing lights, 

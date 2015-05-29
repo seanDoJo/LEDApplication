@@ -43,3 +43,9 @@
 
 ###Timing Information
 ![Timing Diagram](timingDOne.png)
+
+###Finite State Machine Diagrams
+App Level FSM
+![App Level FSM](appLevelFSM.png)
+Bit Level FSM
+![Bit Level FSM](bitLevelFSM.png)

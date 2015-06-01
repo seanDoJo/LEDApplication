@@ -1,17 +1,23 @@
 package com.cisco.prototype.ledsignaldetection;
 
 import android.support.v7.app.ActionBarActivity;
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 
-public class HomeActivity extends ActionBarActivity {
+public class HomeActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+    }
+
+    public void switchScanContext(View view){
+        System.out.println("button pressed\n");
     }
 
     /*@Override
@@ -21,7 +27,7 @@ public class HomeActivity extends ActionBarActivity {
         return true;
     }*/
 
-    @Override
+    /*@Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -34,5 +40,5 @@ public class HomeActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
+    }*/
 }

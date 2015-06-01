@@ -11,19 +11,20 @@
         android:layout_height="wrap_content"
         android:text="Diagnose System"
         android:id="@+id/diagnose"
-        android:textColor="#ff3950ff"
+        android:textColor="#CC0000"
         android:textStyle="bold"
-        android:typeface="sans"
+        android:typeface="serif"
         android:background="@drawable/buttom_home"
         android:padding="10dp"
-        android:layout_marginTop="250dp"
+        android:layout_marginTop="300dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:minWidth="300dp"
         android:minHeight="30dp"
         android:enabled="true"
         android:onClick="switchScanContext"
-        android:clickable="true" />
+        android:clickable="true"
+        android:textSize="30dp" />
 
     <ImageView
         android:layout_width="wrap_content"

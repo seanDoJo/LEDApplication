@@ -1,5 +1,6 @@
 package com.cisco.prototype.ledsignaldetection;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.app.Activity;
 import android.os.Bundle;
@@ -18,6 +19,8 @@ public class HomeActivity extends Activity {
 
     public void switchScanContext(View view){
         System.out.println("button pressed\n");
+        Intent  nextIntent = new Intent(this, CameraActivity.class);
+        startActivity(nextIntent);
     }
 
     /*@Override

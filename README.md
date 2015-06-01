@@ -47,10 +47,10 @@
 		A.) This is TBD, but initial idea is something along the lines: what device it is (name / type / status – i.e. if something is abnormal – 
 		what it is, can be derived from syslog or other sources of device state information – depends on how much 
 
-###Timing Information
+###Timing Visualization
 ![Timing Diagram](timingDOne.png)
 
-###Finite State Machine Diagrams
+###State Diagrams
 App Level FSM
 ![App Level FSM](appLevelFSM.png)
 Bit Level FSM

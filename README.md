@@ -4,6 +4,12 @@
 	- configuring opencv in android studio: http://blog.hig.no/gtl/2014/08/28/opencv-and-android-studio/
 
 	- communication standard: http://en.wikipedia.org/wiki/Asynchronous_serial_communication
+	
+	- coercing android to set the camera fps: http://answers.opencv.org/question/21613/how-can-i-change-fps-of-javacamera-on-android/
+
+	- managing screen orientations: http://stackoverflow.com/questions/1512045/how-to-disable-orientation-change-in-android
+
+	- integration of native code using jni: http://code.tutsplus.com/tutorials/advanced-android-getting-started-with-the-ndk--mobile-2152
 
 ##Clarifying Questions
 	
@@ -49,3 +55,11 @@ App Level FSM
 ![App Level FSM](appLevelFSM.png)
 Bit Level FSM
 ![Bit Level FSM](bitLevelFSM.png)
+
+##Preliminary Limitations
+
+	1.	Cannot push camera FPS beyond 30, and difficult to hold FPS at anything above 25
+
+	2.	Best FPS quality results from grayscale and 480p resolution, thus color coding information works against speed of data transfer
+
+	3.	Will most likely need to code processing functionality in native language to eliminate overhead

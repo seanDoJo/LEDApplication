@@ -22,7 +22,7 @@ import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 
 public class CameraActivity extends Activity implements CvCameraViewListener2 {
 
-    private CameraBridgeViewBase mOpenCvCameraView;
+    private CustomView mOpenCvCameraView;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -45,7 +45,7 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_camera);
-        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.java_camera_view);
+        mOpenCvCameraView = (CustomView) findViewById(R.id.java_camera_view);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
     }
@@ -94,12 +94,13 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
     }
 
     public void onCameraViewStarted(int width, int height) {
+        mOpenCvCameraView.setFps();
     }
 
     public void onCameraViewStopped() {
     }
 
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
-        return inputFrame.rgba();
+        return inputFrame.gray();
     }
 }

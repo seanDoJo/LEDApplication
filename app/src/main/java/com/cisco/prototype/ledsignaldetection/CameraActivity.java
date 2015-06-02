@@ -19,11 +19,15 @@ import org.opencv.core.Mat;
 
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
+import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class CameraActivity extends Activity implements CvCameraViewListener2 {
@@ -33,6 +37,7 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
     Mat mHSV;
     Mat mThresh;
     Mat mResult;
+    //Mat mColorFrame;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -107,6 +112,7 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
         mOpenCvCameraView.setFps();
         mResult = new Mat();
         mCurrentFrame = new Mat();
+        //mColorFrame = new Mat();
     }
 
     public void onCameraViewStopped() {
@@ -116,14 +122,20 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
         if(mCurrentFrame != null){
             mCurrentFrame.release();
         }
+       /* if(mColorFrame != null){
+            mColorFrame.release();
+        }*/
     }
 
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
         if(mResult != null){
             mResult.release();
         }
-
+        /*if(mColorFrame != null){
+            mColorFrame.release();
+        }*/
         mCurrentFrame = inputFrame.gray();
+
 
         /*
         mCurrentFrame = inputFrame.rgba();
@@ -141,16 +153,27 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
 
         Imgproc.threshold(mCurrentFrame, mResult, 190, 255, Imgproc.THRESH_TOZERO);
 
-        Moments oMoments = Imgproc.moments(mResult);
+        /*mColorFrame = inputFrame.rgba();
+        Imgproc.cvtColor(mColorFrame, mCurrentFrame, Imgproc.COLOR_RGBA2GRAY);
+        Imgproc.threshold(mCurrentFrame, mResult, 190, 255, Imgproc.THRESH_TOZERO);
+        List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+        Imgproc.findContours(mResult, contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE, new Point(0, 0));
+        List<Moments> myMoments = new ArrayList<Moments>();
+        for(int i = 0; i < contours.size(); i++) {
+            myMoments.add(Imgproc.moments(contours.get(i)));
+        }
+        for(int i = 0; i < contours.size(); i++) {
+            Moments oMoments = myMoments.get(i);
+            double dM01 = oMoments.get_m01();
+            double dM10 = oMoments.get_m10();
+            double dArea = oMoments.get_m00();
 
-        double dM01 = oMoments.get_m01();
-        double dM10 = oMoments.get_m10();
-        double dArea = oMoments.get_m00();
+            int posX = (int) (dM10 / dArea);
+            int posY = (int) (dM01 / dArea);
 
-        int posX = (int)(dM10 / dArea);
-        int posY = (int)(dM01 / dArea);
-
-        if(posX > 0 && posY > 0)Core.rectangle(mResult, new Point(posX - 50, posY - 50), new Point(posX + 50, posY + 50), new Scalar(255, 255, 255));
+            if (posX > 0 && posY > 0)
+                Core.circle(mColorFrame, new Point(posX, posY), 10, new Scalar(255, 255, 255));
+        }*/
 
         mCurrentFrame.release();
 

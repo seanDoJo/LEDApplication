@@ -26,8 +26,10 @@ public class CustomView extends JavaCameraView {
         disconnectCamera();
         mMaxHeight = 240;
         mMaxWidth = 320;
-        /*mMaxHeight = 1080;
-        mMaxWidth = 1920;*/
+        //mMaxHeight = 1080;
+        //mMaxWidth = 1920;
+        //mMaxHeight = 480;
+        //mMaxWidth = 640;
         connectCamera(getWidth(), getHeight());
     }
 }

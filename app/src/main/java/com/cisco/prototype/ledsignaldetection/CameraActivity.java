@@ -19,9 +19,11 @@ import org.opencv.core.Mat;
 
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
+import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.imgproc.Moments;
 
 
 public class CameraActivity extends Activity implements CvCameraViewListener2 {
@@ -120,6 +122,10 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
         if(mResult != null){
             mResult.release();
         }
+
+        mCurrentFrame = inputFrame.gray();
+
+        /*
         mCurrentFrame = inputFrame.rgba();
         mThresh = new Mat();
         mHSV = new Mat();
@@ -128,10 +134,24 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
         Imgproc.cvtColor(mHSV,mHSV,Imgproc.COLOR_BGR2HSV);
         Core.inRange(mHSV, new Scalar(0, 0, 50), new Scalar(15, 255, 255), mThresh);
         Imgproc.cvtColor(mThresh, mThresh, Imgproc.COLOR_GRAY2RGBA);
-        Core.bitwise_and(mCurrentFrame, mThresh, mResult);
-
+        //Core.bitwise_and(mCurrentFrame, mThresh, mResult);
         mThresh.release();
         mHSV.release();
+        */
+
+        Imgproc.threshold(mCurrentFrame, mResult, 190, 255, Imgproc.THRESH_TOZERO);
+
+        Moments oMoments = Imgproc.moments(mResult);
+
+        double dM01 = oMoments.get_m01();
+        double dM10 = oMoments.get_m10();
+        double dArea = oMoments.get_m00();
+
+        int posX = (int)(dM10 / dArea);
+        int posY = (int)(dM01 / dArea);
+
+        if(posX > 0 && posY > 0)Core.rectangle(mResult, new Point(posX - 50, posY - 50), new Point(posX + 50, posY + 50), new Scalar(255, 255, 255));
+
         mCurrentFrame.release();
 
         return mResult;

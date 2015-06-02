@@ -2,11 +2,7 @@ package com.cisco.prototype.ledsignaldetection;
 
 import android.content.Context;
 import android.hardware.Camera;
-import android.support.v7.app.ActionBarActivity;
-import android.os.Bundle;
 import android.util.AttributeSet;
-import android.view.Menu;
-import android.view.MenuItem;
 
 import org.opencv.android.JavaCameraView;
 
@@ -21,8 +17,8 @@ public class CustomView extends JavaCameraView {
     public void setFps() {
         Camera.Parameters params = mCamera.getParameters();
         ArrayList<int[]> camParams = (ArrayList<int[]>)mCamera.getParameters().getSupportedPreviewFpsRange();
-        int maxFps = 35000;
-        //int maxFps = camParams.get(camParams.size() - 1)[1];
+        //int maxFps = 35000;
+        int maxFps = camParams.get(camParams.size() - 1)[1];
         /*int minFps = 0;
         for(int i = 0; i < camParams.size(); i++) {
             int[] element = camParams.get(i);

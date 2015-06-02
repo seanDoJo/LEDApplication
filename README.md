@@ -10,6 +10,8 @@
 	- managing screen orientations: http://stackoverflow.com/questions/1512045/how-to-disable-orientation-change-in-android
 
 	- integration of native code using jni: http://code.tutsplus.com/tutorials/advanced-android-getting-started-with-the-ndk--mobile-2152
+	
+	- thresholding in opencv: http://docs.opencv.org/2.4.2/doc/tutorials/imgproc/threshold/threshold.html
 
 ##Clarifying Questions
 	

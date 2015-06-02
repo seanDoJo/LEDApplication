@@ -13,16 +13,24 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 
 
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
 
 
 public class CameraActivity extends Activity implements CvCameraViewListener2 {
 
     private CustomView mOpenCvCameraView;
+    Mat mCurrentFrame;
+    Mat mHSV;
+    Mat mThresh;
+    Mat mResult;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -95,12 +103,37 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
 
     public void onCameraViewStarted(int width, int height) {
         mOpenCvCameraView.setFps();
+        mResult = new Mat();
+        mCurrentFrame = new Mat();
     }
 
     public void onCameraViewStopped() {
+        if(mResult != null){
+            mResult.release();
+        }
+        if(mCurrentFrame != null){
+            mCurrentFrame.release();
+        }
     }
 
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
-        return inputFrame.gray();
+        if(mResult != null){
+            mResult.release();
+        }
+        mCurrentFrame = inputFrame.rgba();
+        mThresh = new Mat();
+        mHSV = new Mat();
+
+        Imgproc.cvtColor(mCurrentFrame, mHSV, Imgproc.COLOR_RGBA2BGR);
+        Imgproc.cvtColor(mHSV,mHSV,Imgproc.COLOR_BGR2HSV);
+        Core.inRange(mHSV, new Scalar(0, 0, 50), new Scalar(15, 255, 255), mThresh);
+        Imgproc.cvtColor(mThresh, mThresh, Imgproc.COLOR_GRAY2RGBA);
+        Core.bitwise_and(mCurrentFrame, mThresh, mResult);
+
+        mThresh.release();
+        mHSV.release();
+        mCurrentFrame.release();
+
+        return mResult;
     }
 }

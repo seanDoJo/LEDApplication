@@ -43,6 +43,12 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
     Mat mColorFrame;
     /****** debugging *******/
 
+    int prevX = 0;
+    int prevY = 0;
+    boolean ledOn = false;
+    int blinkNum = 0;
+    int passedFrames = 0;
+
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -137,6 +143,7 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
 
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
         if(mResult != null) mResult.release();
+        boolean led = false;
 
 
         if(mColorFrame != null) mColorFrame.release();
@@ -145,29 +152,43 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
         /*mColorFrame = inputFrame.rgba();
         Imgproc.cvtColor(mColorFrame, mCurrentFrame, Imgproc.COLOR_RGBA2GRAY);*/
 
-        Imgproc.threshold(mCurrentFrame, mResult, 120, 255, Imgproc.THRESH_TOZERO);
+        Imgproc.threshold(mCurrentFrame, mResult, 205, 255, Imgproc.THRESH_BINARY);
         //205
+        Mat imgCopy = mResult.clone();
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
         List<Moments> myMoments = new ArrayList<Moments>();
-        Imgproc.findContours(mResult, contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE, new Point(0, 0));
+        Imgproc.findContours(imgCopy, contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE, new Point(0, 0));
+        imgCopy.release();
         for(int i = 0; i < contours.size(); i++){
             myMoments.add(Imgproc.moments(contours.get(i)));
         }
         for(int i = 0; i < contours.size(); i++) {
             Moments oMoments = myMoments.get(i);
+            //Moments oMoments = Imgproc.moments(mResult);
             double dArea = oMoments.get_m00();
-            if(dArea >= 25 && dArea <= 300){
+            if(dArea >= 28 && dArea <= 1256){
                 double dM01 = oMoments.get_m01();
                 double dM10 = oMoments.get_m10();
                 int posX = (int)(dM10/dArea);
                 int posY = (int)(dM01/dArea);
 
-                int rad = (int)Math.sqrt(dArea/3.14);
-
-                Core.circle(mResult, new Point(posX, posY), rad, new Scalar(255, 255, 255));
+                if((posX <= 168 && posX >= 152) && (posY <= 128 && posY >= 112) && !ledOn) {
+                    ledOn = true;
+                    blinkNum++;
+                    led = true;
+                    break;
+                }
+                else if((posX <= 168 && posX >= 152) && (posY <= 128 && posY >= 112) && ledOn) {
+                    led = true;
+                    break;
+                }
             }
         }
-
+        if(!led){
+            ledOn = false;
+        }
+        Core.putText(mResult, "Blink: " + Integer.toString(blinkNum),new Point(100, 100), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
+        Core.circle(mResult, new Point(160, 120), 16, new Scalar(255, 255, 255));
         mCurrentFrame.release();
 
         return mResult;

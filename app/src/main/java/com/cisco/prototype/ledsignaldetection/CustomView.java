@@ -15,21 +15,16 @@ public class CustomView extends JavaCameraView {
         super(context, attrs);
     }
     public void setFps() {
-        Camera.Parameters params = mCamera.getParameters();
-        ArrayList<int[]> camParams = (ArrayList<int[]>)mCamera.getParameters().getSupportedPreviewFpsRange();
-        int maxFps = camParams.get(camParams.size() - 1)[1];
-        params.setPreviewFpsRange(maxFps, maxFps);
-        mCamera.setParameters(params);
+        disconnectCamera();
         setResolution();
+        connectCamera(getWidth(), getHeight());
     }
     public void setResolution() {
-        disconnectCamera();
         mMaxHeight = 240;
         mMaxWidth = 320;
         //mMaxHeight = 1080;
         //mMaxWidth = 1920;
         //mMaxHeight = 480;
         //mMaxWidth = 640;
-        connectCamera(getWidth(), getHeight());
     }
 }

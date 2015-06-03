@@ -1,5 +1,6 @@
 package org.opencv.android;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
@@ -63,6 +64,10 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
     }
 
     protected boolean initializeCamera(int width, int height) {
+        /*App-specific code*/
+        mMaxHeight = 240;
+        mMaxWidth = 320;
+
         Log.d(TAG, "Initialize java camera");
         boolean result = true;
         synchronized (this) {
@@ -195,6 +200,16 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
 
                     /* Finally we are ready to start the preview */
                     Log.d(TAG, "startPreview");
+
+                    /* App-specific Code to control framerate*/
+                    ArrayList<int[]> camParams = (ArrayList<int[]>)mCamera.getParameters().getSupportedPreviewFpsRange();
+                    int maxFps = camParams.get(camParams.size() - 1)[1];
+                    params.setPreviewFpsRange(maxFps, maxFps);
+                    //if(params.isAutoExposureLockSupported())params.setAutoExposureLock(true);
+                    //if(params.isAutoWhiteBalanceLockSupported())params.setAutoWhiteBalanceLock(true);
+                    Log.d(TAG, "max framerate is " + Integer.toString(maxFps/1000));
+                    mCamera.setParameters(params);
+
                     mCamera.startPreview();
                 }
                 else

@@ -33,11 +33,15 @@ import java.util.List;
 public class CameraActivity extends Activity implements CvCameraViewListener2 {
 
     private CustomView mOpenCvCameraView;
+
+
     Mat mCurrentFrame;
     Mat mHSV;
     Mat mThresh;
     Mat mResult;
-    //Mat mColorFrame;
+    /****** debugging *******/
+    Mat mColorFrame;
+    /****** debugging *******/
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -109,10 +113,12 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
     }
 
     public void onCameraViewStarted(int width, int height) {
-        mOpenCvCameraView.setFps();
+        //mOpenCvCameraView.setFps();
         mResult = new Mat();
         mCurrentFrame = new Mat();
-        //mColorFrame = new Mat();
+        /****** debugging *******/
+        mColorFrame = new Mat();
+        /****** debugging *******/
     }
 
     public void onCameraViewStopped() {
@@ -122,58 +128,45 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
         if(mCurrentFrame != null){
             mCurrentFrame.release();
         }
-       /* if(mColorFrame != null){
+        /****** debugging *******/
+        if(mColorFrame != null){
             mColorFrame.release();
-        }*/
+        }
+        /****** debugging *******/
     }
 
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
-        if(mResult != null){
-            mResult.release();
-        }
-        /*if(mColorFrame != null){
-            mColorFrame.release();
-        }*/
+        if(mResult != null) mResult.release();
+
+
+        if(mColorFrame != null) mColorFrame.release();
         mCurrentFrame = inputFrame.gray();
 
-
-        /*
-        mCurrentFrame = inputFrame.rgba();
-        mThresh = new Mat();
-        mHSV = new Mat();
-
-        Imgproc.cvtColor(mCurrentFrame, mHSV, Imgproc.COLOR_RGBA2BGR);
-        Imgproc.cvtColor(mHSV,mHSV,Imgproc.COLOR_BGR2HSV);
-        Core.inRange(mHSV, new Scalar(0, 0, 50), new Scalar(15, 255, 255), mThresh);
-        Imgproc.cvtColor(mThresh, mThresh, Imgproc.COLOR_GRAY2RGBA);
-        //Core.bitwise_and(mCurrentFrame, mThresh, mResult);
-        mThresh.release();
-        mHSV.release();
-        */
-
-        Imgproc.threshold(mCurrentFrame, mResult, 190, 255, Imgproc.THRESH_TOZERO);
-
         /*mColorFrame = inputFrame.rgba();
-        Imgproc.cvtColor(mColorFrame, mCurrentFrame, Imgproc.COLOR_RGBA2GRAY);
-        Imgproc.threshold(mCurrentFrame, mResult, 190, 255, Imgproc.THRESH_TOZERO);
+        Imgproc.cvtColor(mColorFrame, mCurrentFrame, Imgproc.COLOR_RGBA2GRAY);*/
+
+        Imgproc.threshold(mCurrentFrame, mResult, 120, 255, Imgproc.THRESH_TOZERO);
+        //205
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-        Imgproc.findContours(mResult, contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE, new Point(0, 0));
         List<Moments> myMoments = new ArrayList<Moments>();
-        for(int i = 0; i < contours.size(); i++) {
+        Imgproc.findContours(mResult, contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE, new Point(0, 0));
+        for(int i = 0; i < contours.size(); i++){
             myMoments.add(Imgproc.moments(contours.get(i)));
         }
         for(int i = 0; i < contours.size(); i++) {
             Moments oMoments = myMoments.get(i);
-            double dM01 = oMoments.get_m01();
-            double dM10 = oMoments.get_m10();
             double dArea = oMoments.get_m00();
+            if(dArea >= 25 && dArea <= 300){
+                double dM01 = oMoments.get_m01();
+                double dM10 = oMoments.get_m10();
+                int posX = (int)(dM10/dArea);
+                int posY = (int)(dM01/dArea);
 
-            int posX = (int) (dM10 / dArea);
-            int posY = (int) (dM01 / dArea);
+                int rad = (int)Math.sqrt(dArea/3.14);
 
-            if (posX > 0 && posY > 0)
-                Core.circle(mColorFrame, new Point(posX, posY), 10, new Scalar(255, 255, 255));
-        }*/
+                Core.circle(mResult, new Point(posX, posY), rad, new Scalar(255, 255, 255));
+            }
+        }
 
         mCurrentFrame.release();
 

@@ -65,10 +65,10 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
 
     protected boolean initializeCamera(int width, int height) {
         /*App-specific code*/
-        //mMaxHeight = 240;
-        //mMaxWidth = 320;
-        mMaxHeight = 480;
-        mMaxWidth = 640;
+        mMaxHeight = 240;
+        mMaxWidth = 320;
+        //mMaxHeight = 480;
+        //mMaxWidth = 640;
 
         Log.d(TAG, "Initialize java camera");
         boolean result = true;

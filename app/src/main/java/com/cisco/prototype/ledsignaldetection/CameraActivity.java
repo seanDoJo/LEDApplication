@@ -33,21 +33,27 @@ import java.util.List;
 public class CameraActivity extends Activity implements CvCameraViewListener2 {
 
     private CustomView mOpenCvCameraView;
+    int state_start = 0;
+    int state_receive_data = 1;
+    int state_end = 2;
+    int state_inter = 3;
 
+    double tstamp = System.currentTimeMillis();
 
     Mat mCurrentFrame;
     Mat mHSV;
     Mat mThresh;
     Mat mResult;
     /****** debugging *******/
-    Mat mColorFrame;
+    Mat mDisplayFrame;
     /****** debugging *******/
 
-    int prevX = 0;
-    int prevY = 0;
-    boolean ledOn = false;
+    boolean ledFound = false;
     int blinkNum = 0;
-    int passedFrames = 0;
+    int state = state_start;
+    int received_packet = 0;
+    char received_char = 0;
+    String received_string = "";
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -123,7 +129,7 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
         mResult = new Mat();
         mCurrentFrame = new Mat();
         /****** debugging *******/
-        mColorFrame = new Mat();
+        mDisplayFrame = new Mat();
         /****** debugging *******/
     }
 
@@ -135,8 +141,8 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
             mCurrentFrame.release();
         }
         /****** debugging *******/
-        if(mColorFrame != null){
-            mColorFrame.release();
+        if(mDisplayFrame != null){
+            mDisplayFrame.release();
         }
         /****** debugging *******/
     }
@@ -144,15 +150,18 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
         if(mResult != null) mResult.release();
         boolean led = false;
+        double currtime = System.currentTimeMillis();
+        double tdiff = currtime - tstamp;
 
 
-        if(mColorFrame != null) mColorFrame.release();
+        if(mDisplayFrame != null) mDisplayFrame.release();
         mCurrentFrame = inputFrame.gray();
+        mDisplayFrame = mCurrentFrame.clone();
 
         /*mColorFrame = inputFrame.rgba();
         Imgproc.cvtColor(mColorFrame, mCurrentFrame, Imgproc.COLOR_RGBA2GRAY);*/
 
-        Imgproc.threshold(mCurrentFrame, mResult, 205, 255, Imgproc.THRESH_BINARY);
+        Imgproc.threshold(mCurrentFrame, mResult, 175, 255, Imgproc.THRESH_BINARY);
         //205
         Mat imgCopy = mResult.clone();
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
@@ -164,33 +173,83 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
         }
         for(int i = 0; i < contours.size(); i++) {
             Moments oMoments = myMoments.get(i);
-            //Moments oMoments = Imgproc.moments(mResult);
             double dArea = oMoments.get_m00();
-            if(dArea >= 28 && dArea <= 1256){
+            if(dArea >= 80 && dArea <= 768){
                 double dM01 = oMoments.get_m01();
                 double dM10 = oMoments.get_m10();
                 int posX = (int)(dM10/dArea);
                 int posY = (int)(dM01/dArea);
+                Core.circle(mDisplayFrame, new Point(posX, posY), 5, new Scalar(255, 255, 255));
 
-                if((posX <= 168 && posX >= 152) && (posY <= 128 && posY >= 112) && !ledOn) {
-                    ledOn = true;
+                if((posX <= 168 && posX >= 152) && (posY <= 128 && posY >= 112) && !ledFound && state == state_start){
+                    ledFound = true;
+                    led = true;
+                }
+                else if ((posX <= 168 && posX >= 152) && (posY <= 128 && posY >= 112) && state == state_inter && tdiff >= 500){
+                    state = state_receive_data;
                     blinkNum++;
+                    received_packet = received_packet | 256;
+                    received_packet = received_packet >> 1;
+                    received_string += Integer.toString(1);
+                    if(blinkNum == 8){
+                        state = state_end;
+                    }
+                    tstamp = currtime;
+                }
+                else if((posX <= 168 && posX >= 152) && (posY <= 128 && posY >= 112) && state == state_receive_data) { //240p config
+                //if((posX <= 336 && posX >= 304) && (posY <= 256 && posY >= 224) && !ledOn) { //480p config
+                    if(tdiff >= 500){
+                        blinkNum++;
+                        received_packet = received_packet | 256;
+                        received_packet = received_packet >> 1;
+                        received_string += Integer.toString(1);
+                        if(blinkNum == 8){
+                            state = state_end;
+                        }
+                        tstamp = currtime;
+                    }
+                    Core.putText(mDisplayFrame, "Receiving... " + received_string, new Point(100, 100), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
                     led = true;
                     break;
                 }
-                else if((posX <= 168 && posX >= 152) && (posY <= 128 && posY >= 112) && ledOn) {
+                else if((posX <= 168 && posX >= 152) && (posY <= 128 && posY >= 112) && state == state_start) {
                     led = true;
                     break;
                 }
             }
         }
-        if(!led){
-            ledOn = false;
+        if(!led && ledFound){
+            if(state == state_start){
+                state = state_inter;
+                tstamp = currtime;
+            }
+            else if (state == state_inter && tdiff >= 500){
+                state = state_receive_data;
+                tstamp = currtime;
+            }
+            else if(state == state_receive_data){
+                Core.putText(mDisplayFrame, "Receiving... " + Integer.toString(blinkNum), new Point(100, 100), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
+                if(tdiff >= 500){
+                    blinkNum++;
+                    received_packet = received_packet & 255;
+                    received_packet = received_packet >> 1;
+                    received_string += Integer.toString(0);
+                    if(blinkNum == 8){
+                        state = state_end;
+                    }
+                    tstamp = currtime;
+                    Core.putText(mDisplayFrame, "Receiving... " + received_string, new Point(100, 100), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
+                }
+            }
+            else if (state == state_end){
+                received_char = (char) received_packet;
+                Core.putText(mDisplayFrame, String.valueOf(received_char) + " a " + received_string, new Point(100, 100), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
+            }
         }
-        Core.putText(mResult, "Blink: " + Integer.toString(blinkNum),new Point(100, 100), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
-        Core.circle(mResult, new Point(160, 120), 16, new Scalar(255, 255, 255));
+        Core.circle(mDisplayFrame, new Point(160, 120), 16, new Scalar(255, 255, 255)); //240p config
+        //Core.circle(mResult, new Point(320, 240), 16, new Scalar(255, 255, 255)); //480p config
         mCurrentFrame.release();
 
-        return mResult;
+        return mDisplayFrame;
     }
 }

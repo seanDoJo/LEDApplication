@@ -148,32 +148,33 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
     }
 
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
-        if(mResult != null) mResult.release();
         boolean led = false;
         double currtime = System.currentTimeMillis();
         double tdiff = currtime - tstamp;
 
-
+        /* create a copy of the input frame to which we can draw circles */
         if(mDisplayFrame != null) mDisplayFrame.release();
         mCurrentFrame = inputFrame.gray();
         mDisplayFrame = mCurrentFrame.clone();
 
-        /*mColorFrame = inputFrame.rgba();
-        Imgproc.cvtColor(mColorFrame, mCurrentFrame, Imgproc.COLOR_RGBA2GRAY);*/
-
+        /* apply a threshold to filter out erroneous values */
         Imgproc.threshold(mCurrentFrame, mResult, 175, 255, Imgproc.THRESH_BINARY);
-        //205
-        Mat imgCopy = mResult.clone();
+
+        /* find contours of filtered image */
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
         List<Moments> myMoments = new ArrayList<Moments>();
-        Imgproc.findContours(imgCopy, contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE, new Point(0, 0));
-        imgCopy.release();
+        Imgproc.findContours(mResult, contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE, new Point(0, 0));
+        mResult.release();
+
+        /* collect the moments of each contour */
         for(int i = 0; i < contours.size(); i++){
             myMoments.add(Imgproc.moments(contours.get(i)));
         }
         for(int i = 0; i < contours.size(); i++) {
             Moments oMoments = myMoments.get(i);
             double dArea = oMoments.get_m00();
+
+            /* Only act on the moment if it falls within our circle, and is the correct size */
             if(dArea >= 80 && dArea <= 768){
                 double dM01 = oMoments.get_m01();
                 double dM10 = oMoments.get_m10();
@@ -185,24 +186,33 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
                     ledFound = true;
                     led = true;
                 }
-                else if ((posX <= 168 && posX >= 152) && (posY <= 128 && posY >= 112) && state == state_inter && tdiff >= 500){
+                else if((posX <= 168 && posX >= 152) && (posY <= 128 && posY >= 112) && state == state_inter && tdiff >= 240 ){
                     state = state_receive_data;
-                    blinkNum++;
-                    received_packet = received_packet | 256;
-                    received_packet = received_packet >> 1;
-                    received_string += Integer.toString(1);
-                    if(blinkNum == 8){
-                        state = state_end;
-                    }
+                    led = true;
                     tstamp = currtime;
+                    break;
+                }
+                else if((posX <= 168 && posX >= 152) && (posY <= 128 && posY >= 112) && state == state_inter && tdiff < 240 ){
+                    state = state_start;
+                    led = true;
+                    break;
                 }
                 else if((posX <= 168 && posX >= 152) && (posY <= 128 && posY >= 112) && state == state_receive_data) { //240p config
-                //if((posX <= 336 && posX >= 304) && (posY <= 256 && posY >= 224) && !ledOn) { //480p config
-                    if(tdiff >= 500){
+                    if(tdiff > 350){
                         blinkNum++;
                         received_packet = received_packet | 256;
                         received_packet = received_packet >> 1;
                         received_string += Integer.toString(1);
+                        if(blinkNum == 8){
+                            state = state_end;
+                        }
+                        tstamp = currtime;
+                    }
+                    else if(tdiff > 160){
+                        blinkNum++;
+                        received_packet = received_packet & 255;
+                        received_packet = received_packet >> 1;
+                        received_string += Integer.toString(0);
                         if(blinkNum == 8){
                             state = state_end;
                         }
@@ -223,31 +233,15 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
                 state = state_inter;
                 tstamp = currtime;
             }
-            else if (state == state_inter && tdiff >= 500){
-                state = state_receive_data;
-                tstamp = currtime;
-            }
             else if(state == state_receive_data){
-                Core.putText(mDisplayFrame, "Receiving... " + Integer.toString(blinkNum), new Point(100, 100), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
-                if(tdiff >= 500){
-                    blinkNum++;
-                    received_packet = received_packet & 255;
-                    received_packet = received_packet >> 1;
-                    received_string += Integer.toString(0);
-                    if(blinkNum == 8){
-                        state = state_end;
-                    }
-                    tstamp = currtime;
-                    Core.putText(mDisplayFrame, "Receiving... " + received_string, new Point(100, 100), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
-                }
+                Core.putText(mDisplayFrame, "Receiving... " + received_string, new Point(100, 100), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
             }
             else if (state == state_end){
                 received_char = (char) received_packet;
-                Core.putText(mDisplayFrame, String.valueOf(received_char) + " a " + received_string, new Point(100, 100), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
+                Core.putText(mDisplayFrame, String.valueOf(received_char) + ": " + received_string, new Point(100, 100), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
             }
         }
         Core.circle(mDisplayFrame, new Point(160, 120), 16, new Scalar(255, 255, 255)); //240p config
-        //Core.circle(mResult, new Point(320, 240), 16, new Scalar(255, 255, 255)); //480p config
         mCurrentFrame.release();
 
         return mDisplayFrame;

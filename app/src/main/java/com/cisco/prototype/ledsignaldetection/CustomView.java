@@ -2,6 +2,7 @@ package com.cisco.prototype.ledsignaldetection;
 
 import android.content.Context;
 import android.hardware.Camera;
+import android.os.SystemClock;
 import android.util.AttributeSet;
 
 import org.opencv.android.JavaCameraView;
@@ -14,17 +15,14 @@ public class CustomView extends JavaCameraView {
     public CustomView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
-    public void setFps() {
-        disconnectCamera();
-        setResolution();
-        connectCamera(getWidth(), getHeight());
-    }
-    public void setResolution() {
-        mMaxHeight = 240;
-        mMaxWidth = 320;
-        //mMaxHeight = 1080;
-        //mMaxWidth = 1920;
-        //mMaxHeight = 480;
-        //mMaxWidth = 640;
+    public boolean lockFps() {
+        if (mStartCaptureTime > 0 && SystemClock.elapsedRealtime() - mStartCaptureTime > 2000) {
+            Camera.Parameters params = mCamera.getParameters();
+            params.setAutoWhiteBalanceLock(true);
+            params.setAutoExposureLock(true);
+            mCamera.setParameters(params);
+            return true;
+        }
+        return false;
     }
 }

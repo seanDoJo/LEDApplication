@@ -9,6 +9,7 @@ import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.os.Build;
+import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.ViewGroup.LayoutParams;
@@ -41,6 +42,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
     protected Camera mCamera;
     protected JavaCameraFrame[] mCameraFrame;
     private SurfaceTexture mSurfaceTexture;
+    protected long mStartCaptureTime = 0;
 
     public static class JavaCameraSizeAccessor implements ListItemAccessor {
 
@@ -208,7 +210,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                     int maxFps = camParams.get(camParams.size() - 1)[1];
                     params.setPreviewFpsRange(maxFps, maxFps);
                     //if(params.isAutoExposureLockSupported())params.setAutoExposureLock(true);
-                    //if(params.isAutoWhiteBalanceLockSupported())params.setAutoWhiteBalanceLock(true);
+                    if(params.isAutoWhiteBalanceLockSupported())params.setAutoWhiteBalanceLock(true);
                     //Log.d(TAG, "max framerate is " + Integer.toString(maxFps/1000));
                     mCamera.setParameters(params);
 

@@ -70,8 +70,8 @@ Bit Level FSM
 	3.	Will most likely need to code processing functionality in native language to eliminate overhead
 
 ###Stats
-	1.	Start bit: 330ms
-	2.	"1" 245
-	3.	"0" 100
+	1.	Start bit: 310ms
+	2.	"1" 205
+	3.	"0" 85
 	4.	Stop bit: 400ms
-	5.	LED on for 100ms
+	5.	LED on for 84ms

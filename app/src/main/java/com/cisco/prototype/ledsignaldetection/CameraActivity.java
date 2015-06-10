@@ -207,7 +207,7 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
                     }
 
                     else if (state == state_receive_data && !ledOn){
-                        if(tdiff > 205){
+                        if(tdiff > 210){
                             blinkNum++;
                             received_packet = (received_packet | 256) >> 1;
                             //received_string += "1";

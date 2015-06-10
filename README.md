@@ -68,3 +68,10 @@ Bit Level FSM
 	2.	Best FPS quality results from grayscale and 480p resolution, thus color coding information works against speed of data transfer
 
 	3.	Will most likely need to code processing functionality in native language to eliminate overhead
+
+###Stats
+	1.	Start bit: 330ms
+	2.	"1" 245
+	3.	"0" 100
+	4.	Stop bit: 400ms
+	5.	LED on for 100ms

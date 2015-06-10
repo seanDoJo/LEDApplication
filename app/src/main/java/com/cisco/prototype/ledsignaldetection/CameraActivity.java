@@ -196,25 +196,25 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
                         state_string = "start state";
                     }
 
-                    else if(state == state_inter && tdiff >= 100){
+                    else if(state == state_inter && tdiff >= 310 && tdiff < 500){
                         state = state_receive_data;
                         state_string = "receive state";
                         tstamp = currtime;
                     }
 
-                    else if (state == state_inter && tdiff < 390){
+                    else if (state == state_inter && (tdiff < 310 || tdiff > 500)){
                         state = state_start;
                     }
 
                     else if (state == state_receive_data && !ledOn){
-                        if(tdiff > 245){
+                        if(tdiff > 205){
                             blinkNum++;
                             received_packet = (received_packet | 256) >> 1;
                             //received_string += "1";
                             tstamp = currtime;
                         }
 
-                        else if (tdiff >= 100){
+                        else if (tdiff >= 85){
                             blinkNum++;
                             received_packet = (received_packet & 255) >> 1;
                             //received_string += "0";

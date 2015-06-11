@@ -164,7 +164,7 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
         mDisplayFrame = mCurrentFrame.clone();
 
         /* apply a threshold to filter out erroneous values */
-        Imgproc.threshold(mCurrentFrame, mResult, 195 , 255, Imgproc.THRESH_BINARY);
+        Imgproc.threshold(mCurrentFrame, mResult, 200 , 255, Imgproc.THRESH_BINARY);
 
         /* find contours of filtered image */
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
@@ -190,24 +190,24 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
                 int posY = (int)(dM01/dArea);
 
                 if((posX <= 168 && posX >= 152) && (posY <= 128 && posY >= 112)){
-                    Core.circle(mDisplayFrame, new Point(posX, posY), 8, new Scalar(255, 255, 255));
+                    //Core.circle(mDisplayFrame, new Point(posX, posY), 8, new Scalar(255, 255, 255));
                     if(state == state_start){
                         if(!ledFound) ledFound = true;
                         state_string = "start state";
                     }
 
-                    else if(state == state_inter && tdiff >= 310 && tdiff < 500){
+                    else if (state == state_inter && (tdiff < 195 || tdiff > 500)){
+                        state = state_start;
+                    }
+
+                    else if(state == state_inter){
                         state = state_receive_data;
                         state_string = "receive state";
                         tstamp = currtime;
                     }
 
-                    else if (state == state_inter && (tdiff < 310 || tdiff > 500)){
-                        state = state_start;
-                    }
-
                     else if (state == state_receive_data && !ledOn){
-                        if(tdiff > 210){
+                        if(tdiff > 220){
                             blinkNum++;
                             received_packet = (received_packet | 256) >> 1;
                             //received_string += "1";
@@ -230,7 +230,7 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
                             received_string += ((char) received_packet);
                             state_string = "end state";
                         }
-                        if(tdiff > 400){
+                        if(tdiff >= 80){
                             state = state_start;
                             state_string = "start state";
                         }

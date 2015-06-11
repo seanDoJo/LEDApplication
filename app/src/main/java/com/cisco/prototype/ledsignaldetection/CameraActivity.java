@@ -54,7 +54,8 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
     int blinkNum = 0;
     int state = state_start;
     int received_packet = 0;
-    char received_char = 0;
+    double highArea, lowArea;
+    int lastX, lastY;
     String received_string = "";
     String state_string = "";
 
@@ -164,7 +165,7 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
         mDisplayFrame = mCurrentFrame.clone();
 
         /* apply a threshold to filter out erroneous values */
-        Imgproc.threshold(mCurrentFrame, mResult, 200 , 255, Imgproc.THRESH_BINARY);
+        Imgproc.threshold(mCurrentFrame, mResult, 195 , 255, Imgproc.THRESH_BINARY);
 
         /* find contours of filtered image */
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
@@ -188,15 +189,25 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
                 double dM10 = oMoments.get_m10();
                 int posX = (int)(dM10/dArea);
                 int posY = (int)(dM01/dArea);
+                if(!ledFound){
+                    ledFound = true;
+                    highArea = dArea + 75;
+                    lowArea = dArea - 25;
+                    lastX = posX;
+                    lastY = posY;
+                }
 
-                if((posX <= 168 && posX >= 152) && (posY <= 128 && posY >= 112)){
+                //else if((posX <= 168 && posX >= 152) && (posY <= 128 && posY >= 112) && ledFound){
+                else if((dArea <= highArea && dArea >= lowArea) && (posX <= lastX + 30 && posX >= lastX - 30) && (posY <= lastY + 30 && posY >= lastY - 30) && ledFound){
                     //Core.circle(mDisplayFrame, new Point(posX, posY), 8, new Scalar(255, 255, 255));
+                    lastX = posX;
+                    lastY = posY;
                     if(state == state_start){
-                        if(!ledFound) ledFound = true;
+                        //if(!ledFound) ledFound = true;
                         state_string = "start state";
                     }
 
-                    else if (state == state_inter && (tdiff < 195 || tdiff > 500)){
+                    else if (state == state_inter && (tdiff < 270 || tdiff > 500)){
                         state = state_start;
                     }
 
@@ -207,19 +218,19 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
                     }
 
                     else if (state == state_receive_data && !ledOn){
-                        if(tdiff > 220){
+                        if(tdiff > 205){
                             blinkNum++;
                             received_packet = (received_packet | 256) >> 1;
                             //received_string += "1";
                             tstamp = currtime;
                         }
-
                         else if (tdiff >= 85){
                             blinkNum++;
                             received_packet = (received_packet & 255) >> 1;
                             //received_string += "0";
                             tstamp = currtime;
                         }
+
 
                         if(blinkNum == 8) state = state_end;
                     }
@@ -230,7 +241,7 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
                             received_string += ((char) received_packet);
                             state_string = "end state";
                         }
-                        if(tdiff >= 80){
+                        if(tdiff >= 100){
                             state = state_start;
                             state_string = "start state";
                         }
@@ -248,10 +259,16 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
             }
             ledOn = false;
         }
-        Core.circle(mDisplayFrame, new Point(160, 120), 16, new Scalar(255, 255, 255)); //240p config
+        //Core.circle(mDisplayFrame, new Point(160, 120), 16, new Scalar(255, 255, 255)); //240p config
         Core.putText(mDisplayFrame, "State: " + state_string, new Point(100, 50), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
         Core.putText(mDisplayFrame,"Received: " + received_string, new Point(100, 100), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
         mCurrentFrame.release();
+
+        if(tdiff > 500){
+            ledFound = false;
+            state = state_start;
+            blinkNum = 0;
+        }
 
         return mDisplayFrame; // return mDisplayFrame
     }

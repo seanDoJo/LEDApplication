@@ -58,6 +58,8 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
     int lastX, lastY;
     String received_string = "";
     String state_string = "";
+    double bpsCounter = 0;
+    double bpsCounterBegin = 0;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -157,29 +159,37 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
         boolean led = false;
         double currtime = System.currentTimeMillis();
         double tdiff = currtime - tstamp;
+        if(tdiff >= 500 && (state == state_receive_data || state == state_inter)){
+            blinkNum = 0;
+            ledFound = false;
+            state = state_start;
+            ledOn = false;
+            received_string = "";
+        }
 
         /* create a copy of the input frame to which we can draw circles */
         if(mDisplayFrame != null) mDisplayFrame.release();
-        //if(mResult != null) mResult.release(); // delete
+        //if(mResult != null)mResult.release();
         mCurrentFrame = inputFrame.gray();
         mDisplayFrame = mCurrentFrame.clone();
 
         /* apply a threshold to filter out erroneous values */
-        Imgproc.threshold(mCurrentFrame, mResult, 195 , 255, Imgproc.THRESH_BINARY);
+        Imgproc.threshold(mCurrentFrame, mResult, 195, 255, Imgproc.THRESH_BINARY);
 
         /* find contours of filtered image */
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
         List<Moments> myMoments = new ArrayList<Moments>();
-        //Mat copy = mResult.clone(); // delete
+        //Mat copy = mResult.clone();
         Imgproc.findContours(mResult, contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE, new Point(0, 0));
-        //copy.release(); // delete
-        mResult.release(); //uncomment
+        //copy.release();
+        mResult.release();
 
         /* collect the moments of each contour */
-        for(int i = 0; i < contours.size(); i++){
+        int size = contours.size();
+        for(int i = 0; i < size; i++){
             myMoments.add(Imgproc.moments(contours.get(i)));
         }
-        for(int i = 0; i < contours.size(); i++) {
+        for(int i = 0; i < size; i++) {
             Moments oMoments = myMoments.get(i);
             double dArea = oMoments.get_m00();
 
@@ -191,40 +201,37 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
                 int posY = (int)(dM01/dArea);
                 if(!ledFound){
                     ledFound = true;
-                    highArea = dArea + 75;
+                    highArea = dArea + 25;
                     lowArea = dArea - 25;
                     lastX = posX;
                     lastY = posY;
+                    tstamp = currtime;
+                    break;
                 }
 
                 //else if((posX <= 168 && posX >= 152) && (posY <= 128 && posY >= 112) && ledFound){
                 else if((dArea <= highArea && dArea >= lowArea) && (posX <= lastX + 30 && posX >= lastX - 30) && (posY <= lastY + 30 && posY >= lastY - 30) && ledFound){
-                    //Core.circle(mDisplayFrame, new Point(posX, posY), 8, new Scalar(255, 255, 255));
+                    //Core.circle(mDisplayFrame, new Point(posX, posY), 9, new Scalar(255, 255, 255));
+                    //state_string = Integer.toString(state);
                     lastX = posX;
                     lastY = posY;
-                    if(state == state_start){
-                        //if(!ledFound) ledFound = true;
-                        state_string = "start state";
-                    }
 
-                    else if (state == state_inter && (tdiff < 270 || tdiff > 500)){
+                    if (state == state_inter && (tdiff >= 250 || tdiff <= 150)) {
                         state = state_start;
                     }
-
-                    else if(state == state_inter){
+                    else if(state == state_inter && tdiff > 180 && !ledOn){
                         state = state_receive_data;
-                        state_string = "receive state";
                         tstamp = currtime;
                     }
 
                     else if (state == state_receive_data && !ledOn){
-                        if(tdiff > 205){
+                        if(tdiff >= 175){
                             blinkNum++;
                             received_packet = (received_packet | 256) >> 1;
                             //received_string += "1";
                             tstamp = currtime;
                         }
-                        else if (tdiff >= 85){
+                        else if (tdiff >= 75){
                             blinkNum++;
                             received_packet = (received_packet & 255) >> 1;
                             //received_string += "0";
@@ -239,11 +246,8 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
                         if(blinkNum == 8){
                             blinkNum = 0;
                             received_string += ((char) received_packet);
-                            state_string = "end state";
-                        }
-                        if(tdiff >= 100){
+                            //bpsCounter = 8 / ((currtime - bpsCounterBegin)/1000);
                             state = state_start;
-                            state_string = "start state";
                         }
                     }
                     ledOn = true;
@@ -252,23 +256,20 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
                 }
             }
         }
-        if(!led && ledFound){
+        if(!led && ledFound && ledOn){
             if(state == state_start){
                 state = state_inter;
                 tstamp = currtime;
+                //bpsCounterBegin = currtime;
             }
             ledOn = false;
         }
         //Core.circle(mDisplayFrame, new Point(160, 120), 16, new Scalar(255, 255, 255)); //240p config
-        Core.putText(mDisplayFrame, "State: " + state_string, new Point(100, 50), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
+        //state_string = ledFound ? "identified" : "searching...";
+        //Core.putText(mDisplayFrame, state_string, new Point(50, 50), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
+        //Core.putText(mDisplayFrame, "bps: " + Double.toString(bpsCounter), new Point(50, 75), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
         Core.putText(mDisplayFrame,"Received: " + received_string, new Point(100, 100), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
         mCurrentFrame.release();
-
-        if(tdiff > 500){
-            ledFound = false;
-            state = state_start;
-            blinkNum = 0;
-        }
 
         return mDisplayFrame; // return mDisplayFrame
     }

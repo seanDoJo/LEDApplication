@@ -216,22 +216,22 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
                     lastX = posX;
                     lastY = posY;
 
-                    if (state == state_inter && (tdiff >= 250 || tdiff <= 150)) {
+                    if (state == state_inter && (tdiff >= 250 || tdiff <= 190)) {
                         state = state_start;
                     }
-                    else if(state == state_inter && tdiff > 180 && !ledOn){
+                    else if(state == state_inter && !ledOn){
                         state = state_receive_data;
                         tstamp = currtime;
                     }
 
                     else if (state == state_receive_data && !ledOn){
-                        if(tdiff >= 175){
+                        if(tdiff >= 185){
                             blinkNum++;
                             received_packet = (received_packet | 256) >> 1;
                             //received_string += "1";
                             tstamp = currtime;
                         }
-                        else if (tdiff >= 75){
+                        else {
                             blinkNum++;
                             received_packet = (received_packet & 255) >> 1;
                             //received_string += "0";

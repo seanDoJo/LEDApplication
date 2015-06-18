@@ -1,3 +1,4 @@
+import com.android.build.gradle.tasks.NdkCompile
 apply plugin: 'com.android.application'
 
 android {
@@ -10,12 +11,29 @@ android {
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
+        ndk{
+            moduleName "facerec"
+        }
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+
+    sourceSets.main {
+        jniLibs.srcDir 'src/main/libs' //set .so files directory to libs
+        jni.srcDirs = [] //disable automatic ndk-build call
+    }
+
+    // call regular ndk-build(.cmd) script from app directory
+    task ndkBuild(type: Exec) {
+        commandLine '/Users/seandonohoe/Library/Android/sdk/extras/android-ndk-r10e/ndk-build', '-C', file('src/main').absolutePath
+    }
+
+    tasks.withType(JavaCompile) {
+        compileTask -> compileTask.dependsOn ndkBuild
     }
 }
 

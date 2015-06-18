@@ -209,9 +209,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                     ArrayList<int[]> camParams = (ArrayList<int[]>)mCamera.getParameters().getSupportedPreviewFpsRange();
                     int maxFps = camParams.get(camParams.size() - 1)[1];
                     params.setPreviewFpsRange(maxFps, maxFps);
-                    //if(params.isAutoExposureLockSupported())params.setAutoExposureLock(true);
                     if(params.isAutoWhiteBalanceLockSupported())params.setAutoWhiteBalanceLock(true);
-                    //Log.d(TAG, "max framerate is " + Integer.toString(maxFps/1000));
                     mCamera.setParameters(params);
 
                     mCamera.startPreview();

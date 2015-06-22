@@ -18,6 +18,7 @@ import android.widget.ImageView;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase.*;
+import org.opencv.android.JavaCameraView2;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
@@ -40,7 +41,7 @@ import java.util.Vector;
 public class RecognizeActivity extends Activity implements CvCameraViewListener2 {
 
     private ImageView imageView;
-    private CustomView mOpenCvCameraView;
+    private JavaCameraView2 mOpenCvCameraView;
     private boolean resSet = false;
     private Mat latestMat;
     private AssetManager assetManager;
@@ -78,27 +79,30 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
         assetManager = getAssets();
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        mOpenCvCameraView = (CustomView) findViewById(R.id.java_camera_view);
+        mOpenCvCameraView = (JavaCameraView2) findViewById(R.id.java_camera_view);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
-        if(!touched) {
-            touched = true;
-            //if (mOpenCvCameraView != null) mOpenCvCameraView.disableView();
-            int[] label = new int[1];
-            double[] confidence = new double[1];
-            Mat outputM = new Mat(100, 100, latestMat.type());
-            Imgproc.resize(latestMat, outputM, outputM.size(), 0, 0, Imgproc.INTER_AREA);
-            Imgproc.cvtColor(outputM, outputM, Imgproc.COLOR_RGB2GRAY);
-            mRecognizer.predict(outputM, label, confidence);
-            System.out.println("Label: " + Integer.toString(label[0]) + " Confidence: " + Double.toString(confidence[0]));
-            double currtime = System.currentTimeMillis();
-            double tdiff;
-            while((tdiff = System.currentTimeMillis() - currtime) < 2000){}
-            //if (mOpenCvCameraView != null)mOpenCvCameraView.enableView();
+        if(latestMat.size().area() > 0) {
+            if (!touched) {
+                touched = true;
+                //if (mOpenCvCameraView != null) mOpenCvCameraView.disableView();
+                int[] label = new int[1];
+                double[] confidence = new double[1];
+                Mat outputM = new Mat(100, 100, latestMat.type());
+                Imgproc.resize(latestMat, outputM, outputM.size(), 0, 0, Imgproc.INTER_AREA);
+                Imgproc.cvtColor(outputM, outputM, Imgproc.COLOR_RGB2GRAY);
+                mRecognizer.predict(outputM, label, confidence);
+                System.out.println("Label: " + Integer.toString(label[0]) + " Confidence: " + Double.toString(confidence[0]));
+                double currtime = System.currentTimeMillis();
+                double tdiff;
+                while ((tdiff = System.currentTimeMillis() - currtime) < 2000) {
+                }
+                //if (mOpenCvCameraView != null)mOpenCvCameraView.enableView();
+            }
         }
         return true;
     }
@@ -117,13 +121,20 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
         super.onResume();
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY);
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
-        read_csv();
-        if(images.size() < 1){
-            System.exit(1);
+        mRecognizer = new EigenFaceRecognizer(80, 4500.0);
+        File file = new File("/storage/emulated/0/Documents/state_save.xml");
+        if(file.exists()){
+            mRecognizer.load("/storage/emulated/0/Documents/state_save.xml");
         }
-        Mat myLabels = Converters.vector_int_to_Mat(labels);
-        mRecognizer = new EigenFaceRecognizer(80);
-        mRecognizer.train(images,myLabels);
+        else {
+            read_csv();
+            if(images.size() < 1){
+                System.exit(1);
+            }
+            Mat myLabels = Converters.vector_int_to_Mat(labels);
+            mRecognizer.train(images, myLabels);
+            mRecognizer.save("/storage/emulated/0/Documents/state_save.xml");
+        }
     }
 
     public void onDestroy() {
@@ -166,7 +177,9 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
                     Bitmap myBitmap32 = image.copy(Bitmap.Config.ARGB_8888, true);
                     Mat ImageMat = new Mat (myBitmap32.getHeight(), myBitmap32.getWidth(), CvType.CV_8U, new Scalar(4));
                     Utils.bitmapToMat(myBitmap32, ImageMat);
-                    Imgproc.cvtColor(ImageMat,ImageMat,Imgproc.COLOR_RGB2GRAY);
+                    Mat outputM = new Mat(100, 100, ImageMat.type());
+                    Imgproc.resize(ImageMat, outputM, outputM.size(), 0, 0, Imgproc.INTER_AREA);
+                    Imgproc.cvtColor(outputM,outputM,Imgproc.COLOR_RGB2GRAY);
                     if(image != null)
                     {
                         image.recycle();
@@ -178,7 +191,7 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
                         myBitmap32 = null;
                     }
 
-                    images.add(ImageMat);
+                    images.add(outputM);
                     labels.add(label);
                 }
             }

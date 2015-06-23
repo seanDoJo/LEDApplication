@@ -159,7 +159,7 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
         boolean led = false;
         double currtime = System.currentTimeMillis();
         double tdiff = currtime - tstamp;
-        if(tdiff >= 500 && (state == state_receive_data || state == state_inter)){
+        if(tdiff >= 800 && (state == state_receive_data || state == state_inter)){
             blinkNum = 0;
             ledFound = false;
             state = state_start;
@@ -216,7 +216,7 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
                     lastX = posX;
                     lastY = posY;
 
-                    if (state == state_inter && (tdiff >= 250 || tdiff <= 190)) {
+                    if (state == state_inter && (tdiff >= 250 || tdiff <= 175)) {
                         state = state_start;
                     }
                     else if(state == state_inter && !ledOn){
@@ -225,28 +225,28 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
                     }
 
                     else if (state == state_receive_data && !ledOn){
-                        if(tdiff >= 185){
+                        if(tdiff >= 170){
                             blinkNum++;
-                            received_packet = (received_packet | 256) >> 1;
+                            received_packet = (received_packet | 4096) >> 1;
                             //received_string += "1";
                             tstamp = currtime;
                         }
                         else {
                             blinkNum++;
-                            received_packet = (received_packet & 255) >> 1;
+                            received_packet = (received_packet & 4095) >> 1;
                             //received_string += "0";
                             tstamp = currtime;
                         }
 
 
-                        if(blinkNum == 8) state = state_end;
+                        if(blinkNum == 12) state = state_end;
                     }
 
                     else if (state == state_end){
-                        if(blinkNum == 8){
+                        if(blinkNum == 12){
                             blinkNum = 0;
-                            received_string += ((char) received_packet);
-                            //bpsCounter = 8 / ((currtime - bpsCounterBegin)/1000);
+                            received_string += (checkParity(received_packet));
+                            //bpsCounter = 12 / ((currtime - bpsCounterBegin)/1000);
                             state = state_start;
                         }
                     }
@@ -272,5 +272,74 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
         mCurrentFrame.release();
 
         return mDisplayFrame; // return mDisplayFrame
+    }
+
+    char checkParity(int data){
+        int c1, c2, c3, c4, d1, d2, d3, d4, d5, d6, d7, d8, C1, C2, C4, C8;
+        int check = 0;
+        int myChar = 0;
+        c1 = data & 1;
+        c2 = (data & 2) >> 1;
+        c3 = (data & 8) >> 3;
+        c4 = (data & 128) >> 7;
+
+        d1 = (data & 4) >> 2;
+        d2 = (data & 16) >> 4;
+        d3 = (data & 32) >> 5;
+        d4 = (data & 64) >> 6;
+        d5 = (data & 256) >> 8;
+        d6 = (data & 512) >> 9;
+        d7 = (data & 1024) >> 10;
+        d8 = (data & 2048) >> 11;
+
+        C1 = ((c1 ^ d1 ^ d2 ^ d4 ^ d5 ^ d7)&1);
+        C2 = ((c2 ^ d1 ^ d3 ^ d4 ^ d6 ^ d7)&1);
+        C4 = ((c3 ^ d2 ^ d3 ^ d4 ^ d8)&1);
+        C8 = ((c4 ^ d5 ^ d6 ^ d7 ^ d8)&1);
+
+        check = (C8 << 3) + (C4 << 2) + (C2 << 1) + C1;
+
+        //System.out.println(check);
+
+        switch(check){
+            case 3:
+                d1 = d1 ^ 1;
+                break;
+            case 5:
+                d2 = d2 ^ 1;
+                break;
+            case 6:
+                d3 = d3 ^ 1;
+                break;
+            case 7:
+                d4 = d4 ^ 1;
+                break;
+            case 9:
+                d5 = d5 ^ 1;
+                break;
+            case 10:
+                d6 = d6 ^ 1;
+                break;
+            case 11:
+                d7 = d7 ^ 1;
+                break;
+            case 12:
+                d8 = d8 ^ 1;
+                break;
+            default:
+                break;
+        }
+
+        myChar = (myChar | d8) << 1;
+        myChar = (myChar | d7) << 1;
+        myChar = (myChar | d6) << 1;
+        myChar = (myChar | d5) << 1;
+        myChar = (myChar | d4) << 1;
+        myChar = (myChar | d3) << 1;
+        myChar = (myChar | d2) << 1;
+        myChar = (myChar | d1);
+
+        return ((char) myChar);
+
     }
 }

@@ -122,9 +122,10 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY);
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
         mRecognizer = new EigenFaceRecognizer(80, 4500.0);
-        File file = new File("/storage/emulated/0/Documents/state_save.xml");
+        File myDir = getFilesDir();
+        File file = new File(myDir, "state_save.xml");
         if(file.exists()){
-            mRecognizer.load("/storage/emulated/0/Documents/state_save.xml");
+            mRecognizer.load(file.getAbsolutePath());
         }
         else {
             read_csv();
@@ -133,7 +134,7 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
             }
             Mat myLabels = Converters.vector_int_to_Mat(labels);
             mRecognizer.train(images, myLabels);
-            mRecognizer.save("/storage/emulated/0/Documents/state_save.xml");
+            mRecognizer.save(file.getAbsolutePath());
         }
     }
 

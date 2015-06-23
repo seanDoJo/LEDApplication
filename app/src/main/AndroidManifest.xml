@@ -24,7 +24,9 @@
     -->
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <android:uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
         android:allowBackup="true"
@@ -52,10 +54,18 @@
         </activity>
         <activity
             android:name=".RecognizeActivity"
+            android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_recognize"
             android:screenOrientation="landscape"
-            android:configChanges="orientation|screenSize"
-            android:theme="@android:style/Theme.NoTitleBar">
+            android:theme="@android:style/Theme.NoTitleBar" >
+        </activity>
+        <activity
+            android:name=".classify"
+            android:label="@string/title_activity_classify" >
+        </activity>
+        <activity
+            android:name=".Classify"
+            android:label="@string/title_activity_classify" >
         </activity>
     </application>
 

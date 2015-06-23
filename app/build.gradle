@@ -11,9 +11,9 @@ android {
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
-        ndk{
+        /*ndk{
             moduleName "facerec"
-        }
+        }*/
     }
     buildTypes {
         release {
@@ -28,13 +28,13 @@ android {
     }
 
     // call regular ndk-build(.cmd) script from app directory
-    task ndkBuild(type: Exec) {
-        commandLine '/Users/seandonohoe/Library/Android/sdk/extras/android-ndk-r10e/ndk-build', '-C', file('src/main').absolutePath
+    /*task ndkBuild(type: Exec) {
+        //commandLine '/Users/seandonohoe/Library/Android/sdk/extras/android-ndk-r10e/ndk-build', '-C', file('src/main').absolutePath
     }
 
     tasks.withType(JavaCompile) {
         compileTask -> compileTask.dependsOn ndkBuild
-    }
+    }*/
 }
 
 dependencies {

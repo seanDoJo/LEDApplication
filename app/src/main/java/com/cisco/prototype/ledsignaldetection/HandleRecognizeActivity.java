@@ -9,12 +9,21 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.contrib.FaceRecognizer;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
 import org.opencv.utils.Converters;
 
 import java.io.BufferedReader;
@@ -26,6 +35,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 
@@ -33,10 +43,35 @@ public class HandleRecognizeActivity extends Activity {
     private HashMap<Integer, String> lookupMap;
     private Mat latestMat;
     private String culprit;
+    private ArrayList<String> values = new ArrayList<String>();
+    private ArrayList<Integer> corr = new ArrayList<Integer>();
+    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+        @Override
+        public void onManagerConnected(int status) {
+            switch (status) {
+                default:
+                {
+                    super.onManagerConnected(status);
+                } break;
+            }
+        }
+    };
+    private AdapterView.OnItemClickListener mMessageClickedHandler = new AdapterView.OnItemClickListener() {
+        public void onItemClick(AdapterView parent, View v, int position, long id) {
+            updateMachine(corr.get(position));
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_handle_recognize);
+    }
+
+    public void onResume(){
+        super.onResume();
+        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY);
+        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
 
         setupMap();
         setupMat();
@@ -46,7 +81,20 @@ public class HandleRecognizeActivity extends Activity {
 
         culprit = lookupMap.get(mylabel);
 
-        setContentView(R.layout.activity_handle_recognize);
+        if(mylabel < 0){
+            for (Map.Entry<Integer, String> entry : lookupMap.entrySet()) {
+                corr.add(entry.getKey());
+                values.add(entry.getValue());
+            }
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_checked, values);
+            ListView listView = (ListView) findViewById(R.id.listView);
+            listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+            listView.setAdapter(adapter);
+            listView.setOnItemClickListener(mMessageClickedHandler);
+        }
+
+        TextView main = (TextView)findViewById(R.id.textView);
+        main.setText(culprit);
     }
 
     private void setupMap(){
@@ -100,14 +148,18 @@ public class HandleRecognizeActivity extends Activity {
         ImageMat.release();
     }
 
-    public void updateMachine(int label, Mat image){
-        FaceRecognizer mRecognizer = new EigenFaceRecognizer(80, 4500.0);
+    private void updateMachine(int label){
+        FaceRecognizer mRecognizer = new LbphRecognizer(1, 8, 8, 8, 75.0);
         File myDir = getFilesDir();
         File file = new File(myDir, "machine_state.xml");
         mRecognizer.load(file.getAbsolutePath());
 
+        Mat outputM = new Mat(100, 100, latestMat.type());
+        Imgproc.resize(latestMat, outputM, outputM.size(), 0, 0, Imgproc.INTER_AREA);
+        Imgproc.cvtColor(outputM, outputM, Imgproc.COLOR_RGB2GRAY);
+
         List<Mat> newImage = new ArrayList<Mat>();
-        newImage.add(image);
+        newImage.add(outputM);
         List<Integer> newLabel = new Vector<Integer>();
         newLabel.add(label);
 

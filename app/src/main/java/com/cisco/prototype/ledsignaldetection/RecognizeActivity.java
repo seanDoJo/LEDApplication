@@ -48,10 +48,11 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
     private ImageView imageView;
     private JavaCameraView2 mOpenCvCameraView;
     private boolean resSet = false;
-    private Mat latestMat;
+    private Mat latestMat, saveMat;
     private AssetManager assetManager;
     private FaceRecognizer mRecognizer;
     private boolean touched = false;
+    private boolean ready = false;
     List<Mat> images = new ArrayList<Mat>();
     List<Integer> labels = new Vector<Integer>();
     static {
@@ -91,43 +92,44 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
-        if(latestMat.size().area() > 0) {
-            if (!touched) {
-                touched = true;
-                //if (mOpenCvCameraView != null) mOpenCvCameraView.disableView();
-                int[] label = new int[1];
-                double[] confidence = new double[1];
-                Mat outputM = new Mat(100, 100, latestMat.type());
-                Imgproc.resize(latestMat, outputM, outputM.size(), 0, 0, Imgproc.INTER_AREA);
-                Imgproc.cvtColor(outputM, outputM, Imgproc.COLOR_RGB2GRAY);
-                mRecognizer.predict(outputM, label, confidence);
-                if(label[0] > -1){
-                    transition(outputM, label[0]);
+        if(latestMat != null) {
+            if (latestMat.size().area() > 0) {
+                if (!touched) {
+                    touched = true;
+                    //if (mOpenCvCameraView != null) mOpenCvCameraView.disableView();
+                    int[] label = new int[1];
+                    double[] confidence = new double[1];
+                    saveMat = latestMat.clone();
+                    Mat outputM = new Mat(100, 100, latestMat.type());
+                    Imgproc.resize(latestMat, outputM, outputM.size(), 0, 0, Imgproc.INTER_AREA);
+                    Imgproc.cvtColor(outputM, outputM, Imgproc.COLOR_RGB2GRAY);
+                    mRecognizer.predict(outputM, label, confidence);
+                    transition(label[0]);
+                    System.out.println("Label: " + Integer.toString(label[0]) + " Confidence: " + Double.toString(confidence[0]));
+                    double currtime = System.currentTimeMillis();
+                    double tdiff;
+                    while ((tdiff = System.currentTimeMillis() - currtime) < 2000) {
+                    }
+                    //if (mOpenCvCameraView != null)mOpenCvCameraView.enableView();
                 }
-                System.out.println("Label: " + Integer.toString(label[0]) + " Confidence: " + Double.toString(confidence[0]));
-                double currtime = System.currentTimeMillis();
-                double tdiff;
-                while ((tdiff = System.currentTimeMillis() - currtime) < 2000) {
-                }
-                //if (mOpenCvCameraView != null)mOpenCvCameraView.enableView();
             }
         }
         return true;
     }
 
-    public void transition(Mat mMat, int label){
+    public void transition(int label){
         FileOutputStream out = null;
         File myDir = getFilesDir();
         File file = new File(myDir, "latest_capture.png");
-        Bitmap toMap = Bitmap.createBitmap(mMat.width(), mMat.height(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(mMat,toMap);
+        Bitmap toMap = Bitmap.createBitmap(saveMat.width(), saveMat.height(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(saveMat,toMap);
         try {
             out = new FileOutputStream(file.getAbsolutePath());
             toMap.compress(Bitmap.CompressFormat.PNG, 100, out);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Intent nextIntent = new Intent(this, CameraActivity.class);
+        Intent nextIntent = new Intent(this, HandleRecognizeActivity.class);
         nextIntent.putExtra(EXTRA_MESSAGE, label);
         startActivity(nextIntent);
     }
@@ -146,7 +148,7 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
         super.onResume();
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY);
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
-        mRecognizer = new EigenFaceRecognizer(80, 4500.0);
+        mRecognizer = new LbphRecognizer(1, 8, 8, 8, 75.0);
         File myDir = getFilesDir();
         File file = new File(myDir, "machine_state.xml");
         if(file.exists()){
@@ -159,7 +161,7 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
             }
             Mat myLabels = Converters.vector_int_to_Mat(labels);
             mRecognizer.train(images, myLabels);
-            mRecognizer.save(file.getAbsolutePath());*/
+            mRecognizer.save("/storage/emulated/0/Documents/machine_state.xml");*/
 
             install_machine_config();
             mRecognizer.load(file.getAbsolutePath());
@@ -191,6 +193,7 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
         String line =  "";
         File myDir = getFilesDir();
         File file = new File(myDir, "machine_state.xml");
+        File mfile = new File(myDir, "lookup.csv");
         try {
             ims = assetManager.open("state_save.xml");
             reader = new BufferedReader(new InputStreamReader(ims));
@@ -206,6 +209,23 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
                 if (writer != null) writer.close();
             }catch(IOException e){}
         }
+        //if(!mfile.exists()) {
+            try {
+                mfile.createNewFile();
+                writer = new BufferedWriter(new FileWriter(mfile));
+
+                writer.append("Sean Donohoe;0");
+                writer.newLine();
+
+                writer.append("Jessica Landreth;1");
+
+            } catch (IOException e) {
+            } finally {
+                try {
+                    if(writer != null) writer.close();
+                } catch (IOException e){}
+            }
+        //}
     }
 
     private void read_csv(){

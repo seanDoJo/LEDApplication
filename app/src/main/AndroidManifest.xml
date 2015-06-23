@@ -67,6 +67,10 @@
             android:name=".Classify"
             android:label="@string/title_activity_classify" >
         </activity>
+        <activity
+            android:name=".HandleRecognizeActivity"
+            android:label="@string/title_activity_handle_recognize" >
+        </activity>
     </application>
 
 </manifest>

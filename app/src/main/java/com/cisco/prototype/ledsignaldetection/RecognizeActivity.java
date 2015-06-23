@@ -29,7 +29,10 @@ import org.opencv.imgproc.*;
 import org.opencv.utils.Converters;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -39,6 +42,8 @@ import java.util.Vector;
 
 
 public class RecognizeActivity extends Activity implements CvCameraViewListener2 {
+
+    public final static String EXTRA_MESSAGE = "com.cisco.prototype.ledsignaldetection.MESSAGE";
 
     private ImageView imageView;
     private JavaCameraView2 mOpenCvCameraView;
@@ -96,6 +101,9 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
                 Imgproc.resize(latestMat, outputM, outputM.size(), 0, 0, Imgproc.INTER_AREA);
                 Imgproc.cvtColor(outputM, outputM, Imgproc.COLOR_RGB2GRAY);
                 mRecognizer.predict(outputM, label, confidence);
+                if(label[0] > -1){
+                    transition(outputM, label[0]);
+                }
                 System.out.println("Label: " + Integer.toString(label[0]) + " Confidence: " + Double.toString(confidence[0]));
                 double currtime = System.currentTimeMillis();
                 double tdiff;
@@ -105,6 +113,23 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
             }
         }
         return true;
+    }
+
+    public void transition(Mat mMat, int label){
+        FileOutputStream out = null;
+        File myDir = getFilesDir();
+        File file = new File(myDir, "latest_capture.png");
+        Bitmap toMap = Bitmap.createBitmap(mMat.width(), mMat.height(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(mMat,toMap);
+        try {
+            out = new FileOutputStream(file.getAbsolutePath());
+            toMap.compress(Bitmap.CompressFormat.PNG, 100, out);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Intent nextIntent = new Intent(this, CameraActivity.class);
+        nextIntent.putExtra(EXTRA_MESSAGE, label);
+        startActivity(nextIntent);
     }
 
     @Override
@@ -123,18 +148,21 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
         mRecognizer = new EigenFaceRecognizer(80, 4500.0);
         File myDir = getFilesDir();
-        File file = new File(myDir, "state_save.xml");
+        File file = new File(myDir, "machine_state.xml");
         if(file.exists()){
             mRecognizer.load(file.getAbsolutePath());
         }
         else {
-            read_csv();
+            /*read_csv();
             if(images.size() < 1){
                 System.exit(1);
             }
             Mat myLabels = Converters.vector_int_to_Mat(labels);
             mRecognizer.train(images, myLabels);
-            mRecognizer.save(file.getAbsolutePath());
+            mRecognizer.save(file.getAbsolutePath());*/
+
+            install_machine_config();
+            mRecognizer.load(file.getAbsolutePath());
         }
     }
 
@@ -154,6 +182,30 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
         latestMat = inputFrame.rgba().clone();
         touched = false;
         return latestMat;
+    }
+
+    private void install_machine_config(){
+        InputStream ims = null;
+        BufferedReader reader = null;
+        BufferedWriter writer = null;
+        String line =  "";
+        File myDir = getFilesDir();
+        File file = new File(myDir, "machine_state.xml");
+        try {
+            ims = assetManager.open("state_save.xml");
+            reader = new BufferedReader(new InputStreamReader(ims));
+            if(!file.exists())file.createNewFile();
+            writer = new BufferedWriter(new FileWriter(file));
+            while ((line = reader.readLine()) != null) {
+                writer.append(line);
+                writer.newLine();
+            }
+        } catch (IOException e){} finally {
+            try {
+                if (reader != null) reader.close();
+                if (writer != null) writer.close();
+            }catch(IOException e){}
+        }
     }
 
     private void read_csv(){

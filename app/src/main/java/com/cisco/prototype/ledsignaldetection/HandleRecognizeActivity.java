@@ -12,6 +12,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -27,11 +29,14 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.utils.Converters;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +50,7 @@ public class HandleRecognizeActivity extends Activity {
     private String culprit;
     private ArrayList<String> values = new ArrayList<String>();
     private ArrayList<Integer> corr = new ArrayList<Integer>();
+    private int latestLabel = 0;
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -58,6 +64,8 @@ public class HandleRecognizeActivity extends Activity {
     };
     private AdapterView.OnItemClickListener mMessageClickedHandler = new AdapterView.OnItemClickListener() {
         public void onItemClick(AdapterView parent, View v, int position, long id) {
+            Button button = (Button)findViewById(R.id.addnew);
+            button.setEnabled(false);
             updateMachine(corr.get(position));
         }
     };
@@ -91,6 +99,11 @@ public class HandleRecognizeActivity extends Activity {
             listView.setAdapter(adapter);
             listView.setOnItemClickListener(mMessageClickedHandler);
             culprit = "Couldn't find a match!\nPlease train me, or retake the picture";
+            EditText newArea = (EditText)findViewById(R.id.newItem);
+            newArea.setVisibility(View.VISIBLE);
+            Button button = (Button)findViewById(R.id.addnew);
+            button.setVisibility(View.VISIBLE);
+            button.setEnabled(true);
         }
         else{
             culprit = lookupMap.get(mylabel);
@@ -110,10 +123,12 @@ public class HandleRecognizeActivity extends Activity {
         try {
             reader = new BufferedReader(new FileReader(file));
             while ((line = reader.readLine()) != null) {
-
-                String[] stringParts = line.split(";");
-                Integer label = Integer.parseInt(stringParts[1]);
-                lookupMap.put(label, stringParts[0]);
+                if(line.trim().length() > 1) {
+                    String[] stringParts = line.split(";");
+                    Integer label = Integer.parseInt(stringParts[1]);
+                    if (label > latestLabel) latestLabel = label;
+                    lookupMap.put(label, stringParts[0]);
+                }
 
             }
         } catch (IOException e){} finally {
@@ -169,5 +184,28 @@ public class HandleRecognizeActivity extends Activity {
         mRecognizer.save(file.getAbsolutePath());
         finish();
         return;
+    }
+
+    private void addToMachine(String newObj){
+        File myDir = getFilesDir();
+        File file = new File(myDir, "lookup.csv");
+        PrintWriter writer = null;
+
+        latestLabel += 1;
+        try {
+            writer =  new PrintWriter(new BufferedWriter(new FileWriter(file.getAbsolutePath(), true)));
+            writer.println("\n");
+            writer.println(newObj.trim() + ";" + Integer.toString(latestLabel));
+        }catch(IOException e){} finally {
+            if(writer != null)writer.close();
+        }
+        updateMachine(latestLabel);
+    }
+
+    public void buttonPress(View view){
+        EditText newArea = (EditText)findViewById(R.id.newItem);
+        String newObj = newArea.getText().toString().trim();
+        if(newObj != "") addToMachine(newObj);
+        else newArea.setText("");
     }
 }

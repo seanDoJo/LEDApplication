@@ -213,7 +213,7 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
                 if (writer != null) writer.close();
             }catch(IOException e){}
         }
-        //if(!mfile.exists()) {
+        if(!mfile.exists()) {
             try {
                 mfile.createNewFile();
                 writer = new BufferedWriter(new FileWriter(mfile));
@@ -229,7 +229,7 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
                     if(writer != null) writer.close();
                 } catch (IOException e){}
             }
-        //}
+        }
     }
 
     private void read_csv(){

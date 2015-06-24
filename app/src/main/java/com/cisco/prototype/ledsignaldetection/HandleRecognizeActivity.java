@@ -79,7 +79,6 @@ public class HandleRecognizeActivity extends Activity {
         Intent intent = getIntent();
         int mylabel = intent.getIntExtra(RecognizeActivity.EXTRA_MESSAGE, -1);
 
-        culprit = lookupMap.get(mylabel);
 
         if(mylabel < 0){
             for (Map.Entry<Integer, String> entry : lookupMap.entrySet()) {
@@ -91,6 +90,10 @@ public class HandleRecognizeActivity extends Activity {
             listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
             listView.setAdapter(adapter);
             listView.setOnItemClickListener(mMessageClickedHandler);
+            culprit = "Couldn't find a match!\nPlease train me, or retake the picture";
+        }
+        else{
+            culprit = lookupMap.get(mylabel);
         }
 
         TextView main = (TextView)findViewById(R.id.textView);
@@ -118,8 +121,6 @@ public class HandleRecognizeActivity extends Activity {
                 if(reader != null) reader.close();
             } catch (IOException e){}
         }
-
-        lookupMap.put(-1, "Couldn't find a match!\nPlease train me, or retake the picture");
 
     }
 
@@ -166,5 +167,7 @@ public class HandleRecognizeActivity extends Activity {
         Mat myLabels = Converters.vector_int_to_Mat(newLabel);
         mRecognizer.update(newImage, myLabels);
         mRecognizer.save(file.getAbsolutePath());
+        finish();
+        return;
     }
 }

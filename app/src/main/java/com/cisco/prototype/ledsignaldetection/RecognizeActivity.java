@@ -146,6 +146,10 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
     public void onResume()
     {
         super.onResume();
+        if(touched){
+            finish();
+            return;
+        }
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY);
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
         mRecognizer = new LbphRecognizer(1, 8, 8, 8, 75.0);

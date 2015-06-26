@@ -228,7 +228,7 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
         Mat myLabels = Converters.vector_int_to_Mat(newLabel);
         mRecognizer.update(trainingSet, myLabels);
         mRecognizer.save(file.getAbsolutePath());
-        mRecognizer.save("/storage/emulated/0/Documents/machine_state.xml");
+        //mRecognizer.save("/storage/emulated/0/Documents/machine_state.xml");
         for(Mat pic : trainingSet){
             pic.release();
         }

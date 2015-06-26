@@ -155,21 +155,24 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
         mRecognizer = new LbphRecognizer(1, 8, 8, 8, 75.0);
         File myDir = getFilesDir();
         File file = new File(myDir, "machine_state.xml");
+
         if(file.exists()){
             mRecognizer.load(file.getAbsolutePath());
         }
         else {
-            /*read_csv();
-            if(images.size() < 1){
-                System.exit(1);
-            }
-            Mat myLabels = Converters.vector_int_to_Mat(labels);
-            mRecognizer.train(images, myLabels);
-            mRecognizer.save("/storage/emulated/0/Documents/machine_state.xml");*/
-
             install_machine_config();
             mRecognizer.load(file.getAbsolutePath());
         }
+    }
+
+    public void trainFirstTime(){
+        read_csv();
+        if(images.size() < 1){
+            System.exit(1);
+        }
+        Mat myLabels = Converters.vector_int_to_Mat(labels);
+        mRecognizer.train(images, myLabels);
+        mRecognizer.save("/storage/emulated/0/Documents/machine_state.xml");
     }
 
     public void onDestroy() {

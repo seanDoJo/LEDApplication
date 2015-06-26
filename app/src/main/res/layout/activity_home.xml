@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     tools:context=".HomeActivity"
     android:id="@+id/frameLay"
-    android:background="#ff60b7ff">
+    android:background="@drawable/gradient_box">
 
     <Button
         android:layout_width="wrap_content"

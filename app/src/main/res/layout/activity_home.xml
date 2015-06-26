@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     tools:context=".HomeActivity"
     android:id="@+id/frameLay"
-    android:background="#ff60b7ff">
+    android:background="@drawable/home_bg">
 
     <Button
         android:layout_width="wrap_content"
@@ -14,7 +14,7 @@
         android:textColor="#CC0000"
         android:textStyle="bold"
         android:typeface="serif"
-        android:background="@drawable/buttom_home"
+        android:background="@drawable/button_home"
         android:padding="10dp"
         android:layout_marginTop="300dp"
         android:layout_alignParentTop="true"
@@ -33,7 +33,7 @@
         android:textColor="#CC0000"
         android:textStyle="bold"
         android:typeface="serif"
-        android:background="@drawable/buttom_home"
+        android:background="@drawable/button_home"
         android:padding="10dp"
         android:minWidth="300dp"
         android:minHeight="30dp"

@@ -48,13 +48,16 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
     private ImageView imageView;
     private JavaCameraView2 mOpenCvCameraView;
     private boolean resSet = false;
-    private Mat latestMat, saveMat;
+    private Mat latestMat = null, saveMat = null, displayMat = null;
     private AssetManager assetManager;
     private FaceRecognizer mRecognizer;
     private boolean touched = false;
     private boolean ready = false;
     List<Mat> images = new ArrayList<Mat>();
     List<Integer> labels = new Vector<Integer>();
+    int train;
+    ArrayList<Mat> trainingSet;
+    double startTime;
     static {
         if (!OpenCVLoader.initDebug()) {
             System.exit(2);
@@ -84,6 +87,12 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY);
         assetManager = getAssets();
 
+        Intent intent = getIntent();
+        train = intent.getIntExtra(HomeActivity.EXTRA_MESSAGE, 0);
+        if(train > 0){
+            trainingSet = new ArrayList<Mat>();
+        }
+
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mOpenCvCameraView = (JavaCameraView2) findViewById(R.id.java_camera_view);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
@@ -92,7 +101,7 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
-        if(latestMat != null) {
+        if(latestMat != null && train == 0) {
             if (latestMat.size().area() > 0) {
                 if (!touched) {
                     touched = true;
@@ -152,7 +161,7 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
         }
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY);
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
-        mRecognizer = new LbphRecognizer(1, 8, 8, 8, 75.0);
+        mRecognizer = new LbphRecognizer(1, 8, 8, 8, 50.0);
         File myDir = getFilesDir();
         File file = new File(myDir, "machine_state.xml");
 
@@ -160,6 +169,7 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
             mRecognizer.load(file.getAbsolutePath());
         }
         else {
+            //trainFirstTime();
             install_machine_config();
             mRecognizer.load(file.getAbsolutePath());
         }
@@ -182,15 +192,48 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
     }
 
     public void onCameraViewStarted(int width, int height) {
+        startTime = System.currentTimeMillis();
     }
     public void onCameraViewStopped() {
 
     }
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
         if(latestMat != null) latestMat.release();
+        if(displayMat != null) displayMat.release();
         latestMat = inputFrame.rgba().clone();
+        displayMat = latestMat.clone();
+        if(train > 0 && (System.currentTimeMillis() - startTime) < 10000){
+            Mat outputM = new Mat(100, 100, latestMat.type());
+            Imgproc.resize(latestMat, outputM, outputM.size(), 0, 0, Imgproc.INTER_AREA);
+            Imgproc.cvtColor(outputM, outputM, Imgproc.COLOR_RGB2GRAY);
+            trainingSet.add(outputM);
+            Core.putText(displayMat, "SCANNING...", new Point(10, 10), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(250, 0, 0), 1);
+        }
+        else if(train > 0){
+            Core.putText(displayMat, "DONE!", new Point(10, 10), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(250, 0, 0), 1);
+            retrainMachine();
+        }
         touched = false;
-        return latestMat;
+        return displayMat;
+    }
+
+    private void retrainMachine(){
+        File myDir = getFilesDir();
+        File file = new File(myDir, "machine_state.xml");
+        List<Integer> newLabel = new Vector<Integer>();
+        for(int i = 0; i < trainingSet.size(); i++){
+            newLabel.add(3);
+        }
+
+        Mat myLabels = Converters.vector_int_to_Mat(newLabel);
+        mRecognizer.update(trainingSet, myLabels);
+        mRecognizer.save(file.getAbsolutePath());
+        mRecognizer.save("/storage/emulated/0/Documents/machine_state.xml");
+        for(Mat pic : trainingSet){
+            pic.release();
+        }
+        finish();
+        return;
     }
 
     private void install_machine_config(){
@@ -221,10 +264,13 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
                 mfile.createNewFile();
                 writer = new BufferedWriter(new FileWriter(mfile));
 
-                writer.append("Sean Donohoe;0");
+                writer.append("Catalyst 2960;0");
                 writer.newLine();
 
-                writer.append("Jessica Landreth;1");
+                writer.append("Catalyst 3750;1");
+                writer.newLine();
+
+                writer.append("Cisco Aironet 2700;2");
 
             } catch (IOException e) {
             } finally {

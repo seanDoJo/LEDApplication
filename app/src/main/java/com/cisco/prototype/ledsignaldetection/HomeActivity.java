@@ -12,7 +12,7 @@ import android.widget.Button;
 
 
 public class HomeActivity extends Activity {
-
+    public final static String EXTRA_MESSAGE = "com.cisco.prototype.ledsignaldetection.MESSAGE";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,6 +27,13 @@ public class HomeActivity extends Activity {
 
     public void switchRecognize(View view){
         Intent nextIntent = new Intent(this, RecognizeActivity.class);
+        nextIntent.putExtra(EXTRA_MESSAGE, 0);
         startActivity(nextIntent)
 ;    }
+
+    public void switchTrain(View view){
+        Intent nextIntent = new Intent(this, RecognizeActivity.class);
+        nextIntent.putExtra(EXTRA_MESSAGE, 1);
+        startActivity(nextIntent);
+    }
 }

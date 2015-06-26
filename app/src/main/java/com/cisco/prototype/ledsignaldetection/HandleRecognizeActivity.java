@@ -64,8 +64,13 @@ public class HandleRecognizeActivity extends Activity {
     };
     private AdapterView.OnItemClickListener mMessageClickedHandler = new AdapterView.OnItemClickListener() {
         public void onItemClick(AdapterView parent, View v, int position, long id) {
+            EditText newArea = (EditText)findViewById(R.id.newItem);
+            newArea.setVisibility(View.INVISIBLE);
             Button button = (Button)findViewById(R.id.addnew);
+            button.setVisibility(View.INVISIBLE);
             button.setEnabled(false);
+            TextView main = (TextView)findViewById(R.id.textView);
+            main.setText("Updating...");
             updateMachine(corr.get(position));
         }
     };
@@ -165,7 +170,7 @@ public class HandleRecognizeActivity extends Activity {
     }
 
     private void updateMachine(int label){
-        FaceRecognizer mRecognizer = new LbphRecognizer(1, 8, 8, 8, 75.0);
+        FaceRecognizer mRecognizer = new LbphRecognizer(1, 8, 8, 8, 50.0);
         File myDir = getFilesDir();
         File file = new File(myDir, "machine_state.xml");
         mRecognizer.load(file.getAbsolutePath());
@@ -182,6 +187,7 @@ public class HandleRecognizeActivity extends Activity {
         Mat myLabels = Converters.vector_int_to_Mat(newLabel);
         mRecognizer.update(newImage, myLabels);
         mRecognizer.save(file.getAbsolutePath());
+        //mRecognizer.save("/storage/emulated/0/Documents/machine_state.xml");
         finish();
         return;
     }

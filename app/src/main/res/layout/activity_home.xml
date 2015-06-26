@@ -40,8 +40,27 @@
         android:onClick="switchRecognize"
         android:clickable="true"
         android:textSize="25dp"
-        android:layout_marginTop="84dp"
         android:layout_below="@+id/training"
+        android:layout_alignLeft="@+id/training"
+        android:layout_alignStart="@+id/training" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Train System"
+        android:id="@+id/train"
+        android:textColor="#ffaa052a"
+        android:textStyle="bold"
+        android:typeface="sans"
+        android:background="@drawable/button_home"
+        android:padding="10dp"
+        android:minWidth="300dp"
+        android:minHeight="80dp"
+        android:enabled="true"
+        android:onClick="switchTrain"
+        android:clickable="true"
+        android:textSize="25dp"
+        android:layout_below="@+id/recognize"
         android:layout_centerHorizontal="true" />
 
     <ImageView

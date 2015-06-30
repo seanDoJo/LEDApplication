@@ -216,7 +216,7 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
                     lastX = posX;
                     lastY = posY;
 
-                    if (state == state_inter && (tdiff >= 250 || tdiff <= 175)) {
+                    if (state == state_inter && (tdiff >= 250 || tdiff <= 150)) {
                         state = state_start;
                     }
                     else if(state == state_inter && !ledOn){
@@ -246,7 +246,7 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
                         if(blinkNum == 12){
                             blinkNum = 0;
                             received_string += (checkParity(received_packet));
-                            //bpsCounter = 12 / ((currtime - bpsCounterBegin)/1000);
+                            bpsCounter = 12 / ((currtime - bpsCounterBegin)/1000);
                             state = state_start;
                         }
                     }
@@ -260,14 +260,14 @@ public class CameraActivity extends Activity implements CvCameraViewListener2 {
             if(state == state_start){
                 state = state_inter;
                 tstamp = currtime;
-                //bpsCounterBegin = currtime;
+                bpsCounterBegin = currtime;
             }
             ledOn = false;
         }
         //Core.circle(mDisplayFrame, new Point(160, 120), 16, new Scalar(255, 255, 255)); //240p config
         //state_string = ledFound ? "identified" : "searching...";
         //Core.putText(mDisplayFrame, state_string, new Point(50, 50), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
-        //Core.putText(mDisplayFrame, "bps: " + Double.toString(bpsCounter), new Point(50, 75), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
+        Core.putText(mDisplayFrame, "bps: " + Double.toString(bpsCounter), new Point(50, 75), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
         Core.putText(mDisplayFrame,"Received: " + received_string, new Point(100, 100), Core.FONT_HERSHEY_PLAIN, 0.5, new Scalar(255, 255, 255), 1);
         mCurrentFrame.release();
 

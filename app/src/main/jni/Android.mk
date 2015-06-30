@@ -5,7 +5,7 @@ include $(CLEAR_VARS)
 #OPENCV_CAMERA_MODULES:=off
 #OPENCV_INSTALL_MODULES:=off
 #OPENCV_LIB_TYPE:=SHARED
-include /Users/seandonohoe/Documents/OpenCV-android-sdk-old/sdk/native/jni/OpenCV.mk
+include /Users/seandonohoe/Documents/libraries/OpenCV-android-sdk-old/sdk/native/jni/OpenCV.mk
 
 LOCAL_SRC_FILES  := facerec.cpp
 LOCAL_C_INCLUDES += $(LOCAL_PATH)

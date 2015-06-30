@@ -170,7 +170,7 @@ public class HandleRecognizeActivity extends Activity {
     }
 
     private void updateMachine(int label){
-        FaceRecognizer mRecognizer = new LbphRecognizer(1, 8, 8, 8, 50.0);
+        FaceRecognizer mRecognizer = new LbphRecognizer(3, 8, 8, 8, 62.0);
         File myDir = getFilesDir();
         File file = new File(myDir, "machine_state.xml");
         mRecognizer.load(file.getAbsolutePath());

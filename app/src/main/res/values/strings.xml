@@ -8,4 +8,5 @@
     <string name="title_activity_recognize">RecognizeActivity</string>
     <string name="title_activity_classify">classify</string>
     <string name="title_activity_handle_recognize">HandleRecognizeActivity</string>
+    <string name="title_activity_bluetooth">BluetoothActivity</string>
 </resources>

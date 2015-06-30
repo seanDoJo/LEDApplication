@@ -161,7 +161,7 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
         }
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY);
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
-        mRecognizer = new LbphRecognizer(1, 8, 8, 8, 50.0);
+        mRecognizer = new LbphRecognizer(3, 8, 8, 8, 60.0);
         File myDir = getFilesDir();
         File file = new File(myDir, "machine_state.xml");
 
@@ -202,7 +202,7 @@ public class RecognizeActivity extends Activity implements CvCameraViewListener2
         if(displayMat != null) displayMat.release();
         latestMat = inputFrame.rgba().clone();
         displayMat = latestMat.clone();
-        if(train > 0 && (System.currentTimeMillis() - startTime) < 10000){
+        if(train > 0 && (System.currentTimeMillis() - startTime) < 15000){
             Mat outputM = new Mat(100, 100, latestMat.type());
             Imgproc.resize(latestMat, outputM, outputM.size(), 0, 0, Imgproc.INTER_AREA);
             Imgproc.cvtColor(outputM, outputM, Imgproc.COLOR_RGB2GRAY);

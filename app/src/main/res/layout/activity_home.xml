@@ -57,7 +57,7 @@
         android:minWidth="300dp"
         android:minHeight="80dp"
         android:enabled="true"
-        android:onClick="switchTrain"
+        android:onClick="switchConnect"
         android:clickable="true"
         android:textSize="25dp"
         android:layout_below="@+id/recognize"

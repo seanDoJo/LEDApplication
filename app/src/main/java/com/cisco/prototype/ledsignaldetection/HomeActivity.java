@@ -36,4 +36,9 @@ public class HomeActivity extends Activity {
         nextIntent.putExtra(EXTRA_MESSAGE, 1);
         startActivity(nextIntent);
     }
+
+    public void switchConnect(View view){
+        Intent nextIntent = new Intent(this, BluetoothActivity.class);
+        startActivity(nextIntent);
+    }
 }

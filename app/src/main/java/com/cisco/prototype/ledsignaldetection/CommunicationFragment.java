@@ -21,7 +21,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 public class CommunicationFragment extends Fragment {
-    private onSendListener mListener;
+    private BluetoothInterface mListener;
+    //TODO reference onCommunicationFragment()
 
     public CommunicationFragment(){
         // This just needs to be here
@@ -52,11 +53,12 @@ public class CommunicationFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
+        mListener = null;
     }
 
-    public interface onSendListener{
+    /*public interface onSendListener{
         public void onSendListener(String message);
-    }
+    }*/
 
     public void addMessage(String message) {
         TextView text = (TextView) getView().findViewById(R.id.text_view);

@@ -12,20 +12,17 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-
-import com.cisco.prototype.ledsignaldetection.dummy.DummyContent;
-
 import java.util.ArrayList;
 
-public class SelectionFragment extends Fragment {
+public class SelectionFragment extends Fragment  {
 
-    private OnFragmentInteractionListener mListener;
+    private BluetoothInterface mListener;
     private AbsListView mListView;
     private ArrayAdapter mAdapter;
     private ArrayList<String> myArray;
     private AdapterView.OnItemClickListener mMessageHandler = new AdapterView.OnItemClickListener(){
         public void onItemClick(AdapterView parent, View v, int position, long id){
-            mListener.onFragmentMessage(position);
+            mListener.onSelectionFragment(position);
         }
     };
     public SelectionFragment() {
@@ -39,8 +36,7 @@ public class SelectionFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_item, container, false);
 
@@ -55,7 +51,7 @@ public class SelectionFragment extends Fragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try{
-            mListener = (OnFragmentInteractionListener)activity;
+            mListener = (BluetoothInterface)activity;
         } catch(ClassCastException e){}
     }
 
@@ -63,9 +59,6 @@ public class SelectionFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
-    }
-    public interface OnFragmentInteractionListener {
-        public void onFragmentMessage(int index);
     }
 
     public void addDevice(String device){

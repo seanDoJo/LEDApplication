@@ -1,0 +1,32 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.cisco.prototype.ledsignaldetection.AliveFragment"
+    android:background="@drawable/gradient_box">
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="OK"
+        android:id="@+id/ok"
+        android:textColor="#ffaa052a"
+        android:textStyle="bold"
+        android:typeface="sans"
+        android:background="@drawable/button_home"
+        android:padding="10dp"
+        android:minWidth="300dp"
+        android:minHeight="80dp"
+        android:enabled="true"
+        android:onClick="switchImage"
+        android:clickable="true"
+        android:textSize="25dp"
+        android:layout_gravity="center_horizontal|bottom"/>
+
+    <TextView android:layout_width="match_parent" android:layout_height="80dp"
+        android:id="@+id/alive_text"
+        android:textSize="24dp"
+        android:textColor="#ff7d1819"
+        android:layout_gravity="center"
+        android:typeface="sans"
+        android:background="#fffbffff" />
+</FrameLayout>

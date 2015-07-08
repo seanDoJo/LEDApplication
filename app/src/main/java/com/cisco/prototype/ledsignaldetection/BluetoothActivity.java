@@ -1,6 +1,7 @@
 package com.cisco.prototype.ledsignaldetection;
 
 import android.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -38,6 +39,8 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     private AliveFragment aFrag;
     private PasswordFragment pFrag;
     private ImageFragment iFrag;
+    private SoftwareFragment soFrag;
+    private boolean letsGoSoftware;
     final int[] pingval = new int[1];
     CountDownLatch latch;
     CountDownLatch tready;
@@ -252,7 +255,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         btmFrag = new BTMenuFragment();
         FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
         tran.replace(R.id.fragment_container, btmFrag);
-        tran.addToBackStack(null);
+        tran.addToBackStack("menu");
         tran.commit();
         connection.pau();
         fragIndex = 0;
@@ -294,14 +297,36 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         connection.res();
     }
 
+    public void switchSoftware(View view){
+        if(letsGoSoftware) {
+            soFrag = new SoftwareFragment();
+            FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
+            tran.replace(R.id.fragment_container, soFrag);
+            tran.addToBackStack(null);
+            tran.commit();
+            connection.pau();
+            fragIndex = 4;
+            connection.res();
+        } else{
+            FragmentManager frag = getSupportFragmentManager();
+            frag.popBackStack();
+        }
+    }
+
     public void onAliveFragment(){
         connection.ping();
         try {
             latch.await();
         }catch(InterruptedException e){}
         int alive = pingval[0];
-        if(alive > 0)aFrag.setMessage("It's alive");
-        else aFrag.setMessage("It's dead");
+        aFrag.enButton();
+        if(alive > 0){
+            aFrag.setMessage("It's alive");
+            letsGoSoftware = true;
+        } else {
+            aFrag.setMessage("It's dead");
+            letsGoSoftware = false;
+        }
         Log.i("LedApp", "end of onalive response");
         connection.res();
     }

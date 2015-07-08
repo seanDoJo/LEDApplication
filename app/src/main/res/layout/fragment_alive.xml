@@ -17,7 +17,7 @@
         android:minWidth="300dp"
         android:minHeight="80dp"
         android:enabled="true"
-        android:onClick="switchImage"
+        android:onClick="switchSoftware"
         android:clickable="true"
         android:textSize="25dp"
         android:layout_gravity="center_horizontal|bottom"/>

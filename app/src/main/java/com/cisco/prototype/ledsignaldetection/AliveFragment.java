@@ -18,7 +18,6 @@ import org.w3c.dom.Text;
 
 public class AliveFragment extends Fragment {
     private BluetoothInterface mListener;
-    private View view;
     private TextView textView;
     private Button button;
     //TODO reference onAliveFragment()

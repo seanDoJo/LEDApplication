@@ -16,7 +16,13 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.ScrollView;
+import android.widget.Scroller;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +46,9 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     private PasswordFragment pFrag;
     private ImageFragment iFrag;
     private SoftwareFragment soFrag;
+    private int citer = 0;
     private boolean letsGoSoftware;
+    private int passResult = 0;
     final int[] pingval = new int[1];
     CountDownLatch latch;
     CountDownLatch tready;
@@ -70,13 +78,24 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             if(m.what == 30){
                 byte[] data = (byte[])m.obj;
                 String result = new String(data);
-                cFrag.addMessage(result);
+                if(!result.contains("@")){
+                    cFrag.addMessage(result);
+                    ScrollView sView = (ScrollView)findViewById(R.id.scrollView);
+                    sView.fullScroll(View.FOCUS_DOWN);
+                }
             }
             else if(m.what == 11111111){
                 Toast.makeText(getApplicationContext(), "Couldn't connect to device!", Toast.LENGTH_LONG).show();
                 connection.close();
                 finish();
                 return;
+            }
+            else if(m.what == 3){
+                byte[] data = (byte[]) m.obj;
+                String result = new String(data);
+                passResult = pFrag.read(result);
+                if(passResult > 0) citer++;
+                passHit();
             }
         }
     };
@@ -151,8 +170,12 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
 
         public void write(String content){
             try {
-                byte[] bytes = content.getBytes();
-                mmOutStream.write(bytes);
+                char ret = (char)13;
+                if(content.trim().length() > 0) {
+                    byte[] bytes = content.getBytes();
+                    mmOutStream.write(bytes);
+                }
+                mmOutStream.write((byte)ret);
             }catch(IOException e){
                 e.printStackTrace();
             }
@@ -180,8 +203,8 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             double difference;
             try {
                 int bytes = 0;
-                mmOutStream.write(("hello!").getBytes());
-                while (System.currentTimeMillis() - start < 1000){
+                mmOutStream.write(("").getBytes());
+                while (System.currentTimeMillis() - start < 2000){
                     if(mmInStream.available() > 0){
                         bytes = mmInStream.read(buffer);
                         if(bytes > 0)break;
@@ -191,7 +214,14 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 if(bytes > 0){
                     byte[] received = new byte[bytes];
                     for(int i = 0; i < bytes; i++)received[i] = buffer[i];
-                    Log.i("LedApp", new String(received));
+                    String mystr = new String(received);
+                    while(mmInStream.available() > 0){
+                        bytes = mmInStream.read(buffer);
+                        received = new byte[bytes];
+                        for(int i = 0; i < bytes; i++)received[i] = buffer[i];
+                        mystr += new String(received);
+                    }
+                    Log.i("LedApp", mystr);
                     pingval[0] = 1;
                 }
                 else pingval[0] = 0;
@@ -263,8 +293,21 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
 
     }
 
+    public void switchCommunication(View view){
+        //connection.pau();
+        cFrag = new CommunicationFragment();
+        FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
+        tran.replace(R.id.fragment_container, cFrag);
+        tran.addToBackStack(null);
+        tran.commit();
+        //connection.pau();
+        fragIndex = 30;
+        for(int i = 0; i< 5; i++) connection.write("");
+        //connection.res();
+    }
+
     public void switchAlive(View view){
-        connection.pau();
+        //connection.pau();
         aFrag = new AliveFragment();
         FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
         tran.replace(R.id.fragment_container, aFrag);
@@ -287,14 +330,15 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     }
 
     public void switchPassword(View view){
+        citer = 0;
         pFrag = new PasswordFragment();
         FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
         tran.replace(R.id.fragment_container, pFrag);
         tran.addToBackStack(null);
         tran.commit();
-        connection.pau();
+        //connection.pau();
         fragIndex = 3;
-        connection.res();
+        //connection.res();
     }
 
     public void switchSoftware(View view){
@@ -331,8 +375,9 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         connection.res();
     }
 
-    public void onCommunicationFragment(){
-        //Do something
+    public void onCommunicationFragment(View view){
+        EditText editText = (EditText)findViewById(R.id.edit_message);
+        connection.write(editText.getText().toString());
     }
 
     public void onImageFragment(){
@@ -340,11 +385,40 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     }
 
     public void onPasswordFragment(){
-        //Do something
+        boolean result = pFrag.setMessage("Disconnect power cable from switch. Hold down Mode button and reconnect " +
+                "power. Release Mode button when SYST LED blinks amber then turns solid green." +
+                "Boot will then take place. I'll let you know when I've started the password " +
+                "recovery script.");
     }
-    public void onReplaceFragment(DialogFragment dialog){
-        //go back to main activity (Home)
+
+    private void passHit(){
+        String command = null;
+        switch(passResult){
+            case 2: command = "n";
+                    break;
+            case 3: command = "en";
+                    break;
+            case 5: command = "";
+                    break;
+            case 6: command = "";
+                    break;
+            case 7: command = "conf t";
+                    break;
+
+            case 1: if(citer == 1) command = "flash_init";
+                    else if(citer == 2) command = "load_helper";
+                    else if(citer == 3) command = "rename flash:config.text flash:config.old";
+                    else if(citer == 4) command = "boot";
+                    break;
+            case 4: if(citer == 7) command = "rename flash:config.old flash:config.text";
+                    else if(citer == 9) command  = "copy flash:config.text system:running-config";
+                    break;
+            default: break;
+
+        }
+        if(command != null)connection.write(command);
     }
+
     public void disconnect(){
         if(connection != null){
             connection.close();

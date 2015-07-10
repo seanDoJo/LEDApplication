@@ -378,6 +378,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     public void onCommunicationFragment(View view){
         EditText editText = (EditText)findViewById(R.id.edit_message);
         connection.write(editText.getText().toString());
+        cFrag.collapse();
     }
 
     public void onImageFragment(){

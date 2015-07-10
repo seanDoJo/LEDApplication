@@ -64,4 +64,11 @@ public class CommunicationFragment extends Fragment {
         text.append(message);
     }
 
+    public void collapse(){
+        EditText editText = (EditText)getView().findViewById(R.id.edit_message);
+        editText.setText("");
+        InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        mgr.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+    }
+
 }

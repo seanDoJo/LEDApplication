@@ -87,6 +87,9 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             else if(m.what == 11111111){
                 Toast.makeText(getApplicationContext(), "Couldn't connect to device!", Toast.LENGTH_LONG).show();
                 connection.close();
+            }
+            else if(m.what == 22222222){
+                Toast.makeText(getApplicationContext(), "Disconnected from device", Toast.LENGTH_LONG).show();
                 finish();
                 return;
             }
@@ -185,6 +188,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         public void close(){
             paused = true;
             running = false;
+            connectionHandler.obtainMessage(22222222, 1, -1, 1).sendToTarget();
         }
 
         public void pau() {
@@ -267,6 +271,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     public void onDestroy(){
         super.onDestroy();
         //we need this otherwise poo flinging will ensue
+        connection.close();
         unregisterReceiver(btReceiver);
     }
 

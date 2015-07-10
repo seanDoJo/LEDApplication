@@ -22,7 +22,6 @@ import java.util.ArrayList;
 
 public class CommunicationFragment extends Fragment {
     private BluetoothInterface mListener;
-    //TODO reference onCommunicationFragment()
 
     public CommunicationFragment(){
         // This just needs to be here

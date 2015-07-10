@@ -7,17 +7,10 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
 
-import java.util.ArrayList;
+public class SoftwareFragment extends Fragment {
 
-public class BTMenuFragment extends Fragment {
-    private BluetoothInterface mListener;
-
-    public BTMenuFragment() {
+    public SoftwareFragment() {
         // Required empty public constructor
     }
 
@@ -28,27 +21,18 @@ public class BTMenuFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_btmenu, container, false);
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_software, container, false);
     }
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        /*try{
-            mListener = (BluetoothInterface)activity;
-        } catch (ClassCastException e){}*/
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        //mListener = null;
-    }
-
-    @Override
-    public void onDestroy(){
-        super.onDestroy();
-        //mListener.disconnect();
     }
 
 }

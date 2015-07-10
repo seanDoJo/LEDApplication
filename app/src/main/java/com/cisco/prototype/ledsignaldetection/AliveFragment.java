@@ -18,10 +18,8 @@ import org.w3c.dom.Text;
 
 public class AliveFragment extends Fragment {
     private BluetoothInterface mListener;
-    private View view;
     private TextView textView;
-    public Button button;
-    //TODO reference onAliveFragment()
+    private Button button;
 
     public AliveFragment() {
         // Required empty public constructor
@@ -62,5 +60,7 @@ public class AliveFragment extends Fragment {
     public void setMessage(String message) {
         textView.setText(message);
     }
+
+    public void enButton(){ button.setEnabled(true); }
 
 }

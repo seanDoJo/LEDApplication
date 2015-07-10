@@ -20,7 +20,6 @@ public class AliveFragment extends Fragment {
     private BluetoothInterface mListener;
     private TextView textView;
     private Button button;
-    //TODO reference onAliveFragment()
 
     public AliveFragment() {
         // Required empty public constructor

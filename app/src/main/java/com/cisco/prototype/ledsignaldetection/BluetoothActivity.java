@@ -1,6 +1,7 @@
 package com.cisco.prototype.ledsignaldetection;
 
 import android.app.DialogFragment;
+import android.inputmethodservice.KeyboardView;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
@@ -15,6 +16,7 @@ import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ScrollView;
@@ -171,8 +173,10 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             return;
         }
 
-        public void write(String content){
+        public void write(String contentl){
+            String content = contentl;
             try {
+                if(content.contains("!^"))content = getSpecial(content.substring(2, content.length()));
                 char ret = (char)13;
                 if(content.trim().length() > 0) {
                     byte[] bytes = content.getBytes();
@@ -183,6 +187,13 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 e.printStackTrace();
             }
 
+        }
+
+        private String getSpecial(String special){
+            String returned = "";
+            if(special.toLowerCase().equals("esc")) returned += (char)27;
+            else if(special.toLowerCase().equals("tab")) returned += (char)9;
+            return returned;
         }
 
         public void close(){

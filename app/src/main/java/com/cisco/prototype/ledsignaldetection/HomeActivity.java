@@ -26,7 +26,7 @@ public class HomeActivity extends Activity {
     }
 
     public void switchRecognize(View view){
-        Intent nextIntent = new Intent(this, RecognizeActivity.class);
+        Intent nextIntent = new Intent(this, LedFilterActivity.class);
         nextIntent.putExtra(EXTRA_MESSAGE, 0);
         startActivity(nextIntent)
 ;    }

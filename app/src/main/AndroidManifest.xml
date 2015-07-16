@@ -75,7 +75,10 @@
         </activity>
         <activity
             android:name=".LedFilterActivity"
-            android:label="@string/title_activity_led_filter" >
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_led_filter"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.NoTitleBar">
         </activity>
     </application>
 

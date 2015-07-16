@@ -17,12 +17,17 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 
 public class LedFilterActivity extends Activity implements CameraBridgeViewBase.CvCameraViewListener2 {
     private JavaCameraView2 mOpenCvCameraView;
     private Mat hsv;
+    private Mat sElem;
+    private Mat latestMat = null;
+    private boolean touched, processed;
+    private double tTime;
 
     static {
         if (!OpenCVLoader.initDebug()) {
@@ -47,6 +52,10 @@ public class LedFilterActivity extends Activity implements CameraBridgeViewBase.
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
+        if(!touched) {
+            touched = true;
+            tTime = System.currentTimeMillis();
+        }
         return true;
     }
 
@@ -66,6 +75,7 @@ public class LedFilterActivity extends Activity implements CameraBridgeViewBase.
         super.onDestroy();
         if (mOpenCvCameraView != null) mOpenCvCameraView.disableView();
         if(hsv != null)hsv.release();
+        if(sElem != null)sElem.release();
     }
 
     @Override
@@ -80,6 +90,9 @@ public class LedFilterActivity extends Activity implements CameraBridgeViewBase.
     public void onResume(){
         super.onResume();
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
+        if(sElem == null)sElem = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, new Size(3, 3));
+        touched = false;
+        processed = false;
     }
 
     @Override
@@ -94,17 +107,43 @@ public class LedFilterActivity extends Activity implements CameraBridgeViewBase.
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        if(hsv != null)hsv.release();
-        Mat hsv = inputFrame.rgba();
+        if(touched && !processed && System.currentTimeMillis() - tTime > 1500){
+            processed = true;
+            processMat();
+        }
+        else if(processed && System.currentTimeMillis() - tTime > 1500){
+            processed = false;
+            touched = false;
+        }
+        else if(!processed){
+            if(latestMat != null) latestMat.release();
+            latestMat = inputFrame.rgba();
+        }
+
+        return latestMat;
+    }
+
+    private void processMat(){
+        Mat hsv = latestMat.clone();
+        Mat copy = hsv.clone();
 
         Imgproc.cvtColor(hsv, hsv, Imgproc.COLOR_RGBA2RGB);
         Imgproc.cvtColor(hsv, hsv, Imgproc.COLOR_RGB2HSV);
 
-        Core.inRange(hsv, new Scalar(100,150,60), new Scalar(179,255,255), hsv);
+        Core.inRange(hsv, new Scalar(0, 120, 50), new Scalar(120, 255, 255), hsv);
+        Imgproc.cvtColor(hsv, hsv, Imgproc.COLOR_GRAY2RGBA);
+        Core.bitwise_and(hsv, copy, hsv);
 
-        Imgproc.cvtColor(hsv, hsv, Imgproc.COLOR_HSV2RGB);
-        Imgproc.cvtColor(hsv, hsv, Imgproc.COLOR_RGB2RGBA);
+        Imgproc.erode(hsv, hsv, sElem);
+        Imgproc.dilate(hsv, hsv, sElem);
 
-        return hsv;
+        Imgproc.dilate(hsv, hsv, sElem);
+        Imgproc.erode(hsv, hsv, sElem);
+
+        copy.release();
+        latestMat.release();
+        latestMat = hsv.clone();
+        hsv.release();
+        tTime = System.currentTimeMillis();
     }
 }

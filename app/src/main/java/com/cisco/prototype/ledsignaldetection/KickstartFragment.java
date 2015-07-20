@@ -4,41 +4,30 @@ import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.TextView;
 
-import com.cisco.prototype.ledsignaldetection.R;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 
-import org.w3c.dom.Text;
-
-public class AliveFragment extends Fragment {
+public class KickstartFragment extends Fragment {
     private BluetoothInterface mListener;
-    private TextView textView;
-    private Button button;
 
-    public AliveFragment() {
+    public KickstartFragment() {
         // Required empty public constructor
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mListener.onKickstartFragment();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_alive, container, false);
-        button = (Button) view.findViewById(R.id.ok);
-        button.setEnabled(false);
-        textView = (TextView) view.findViewById(R.id.alive_text);
-        mListener.onAliveFragment();
-
-        return view;
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_kickstart, container, false);
     }
 
     @Override
@@ -55,11 +44,5 @@ public class AliveFragment extends Fragment {
         super.onDetach();
         mListener = null;
     }
-
-    public void setMessage(String message) {
-        textView.setText(message);
-    }
-
-    public void enButton(){ button.setEnabled(true); }
 
 }

@@ -3,7 +3,7 @@
     android:layout_height="match_parent"
     tools:context="com.cisco.prototype.ledsignaldetection.ImageFragment">
 
-    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:text="At this point, an image upgrade would be performed." />
+    <ListView android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:id="@+id/image_list" />
 
 </FrameLayout>

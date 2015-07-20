@@ -29,6 +29,7 @@ import org.w3c.dom.Text;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -48,12 +49,18 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     private PasswordFragment pFrag;
     private ImageFragment iFrag;
     private SoftwareFragment soFrag;
+    private KickstartFragment kFrag;
+    private SystemBootFragment syFrag;
     private int citer = 0;
     private boolean letsGoSoftware;
     private int passResult = 0;
     final int[] pingval = new int[1];
     CountDownLatch latch;
     CountDownLatch tready;
+    private int mode;
+    private String[] files;
+    private ArrayList<imagePair> imageList;
+    private ArrayList<String> kickstartImageList;
     //Where the asynchronous bluetooth actions are received
     private final BroadcastReceiver btReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
@@ -78,6 +85,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     Handler connectionHandler = new Handler(){
         public void handleMessage(Message m){
             if(m.what == 30){
+                //Communication
                 byte[] data = (byte[])m.obj;
                 String result = new String(data);
                 if(!result.contains("@")){
@@ -87,20 +95,40 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 }
             }
             else if(m.what == 11111111){
+                //couldn't connect
                 Toast.makeText(getApplicationContext(), "Couldn't connect to device!", Toast.LENGTH_LONG).show();
                 connection.close();
             }
             else if(m.what == 22222222){
+                //disconnect
                 Toast.makeText(getApplicationContext(), "Disconnected from device", Toast.LENGTH_LONG).show();
                 finish();
                 return;
             }
+            else if(m.what == 2){
+                //Image
+                byte[] data = (byte[]) m.obj;
+                String result = new String(data);
+                iFrag.log += result;
+            }
             else if(m.what == 3){
+                //Password
                 byte[] data = (byte[]) m.obj;
                 String result = new String(data);
                 passResult = pFrag.read(result);
                 if(passResult > 0) citer++;
                 passHit();
+            }
+            else if(m.what == 4){
+                //Software
+                byte[] data = (byte[]) m.obj;
+                String result = new String(data);
+                soFrag.add(result);
+            }
+            else if(m.what == 5){
+                //Kickstart
+                byte[] data = (byte[]) m.obj;
+                String result = new String(data);
             }
         }
     };
@@ -367,6 +395,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             connection.pau();
             fragIndex = 4;
             connection.res();
+            soFrag.startSoft();
         } else{
             FragmentManager frag = getSupportFragmentManager();
             frag.popBackStack();
@@ -397,8 +426,39 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         cFrag.collapse();
     }
 
-    public void onImageFragment(){
-        //Do something
+    public void onImageFragment(boolean kick){
+        String identifier = "kickstart";
+        kickstartImageList = new ArrayList<String>();
+
+        //check for concurrent images
+        iFrag.log = "";
+        connection.write("dir");
+        while(!iFrag.log.contains(">")){}
+        files = iFrag.log.split("\n");
+        for(int i = 0; i < files.length; i++){
+            if (files[i].contains(identifier)){
+                kickstartImageList.add(files[i]);
+            }
+        }
+        for(int i = 0; i < kickstartImageList.size(); i++){
+            String[]subStrings = kickstartImageList.get(i).split("-kickstart");
+            for(int k = 0; k < files.length; k++){
+                if(files[k].contains(subStrings[0]) && files[k].contains(subStrings[1])){
+                    imageList.add(new imagePair(kickstartImageList.get(i), files[k]));
+                }
+            }
+        }
+        iFrag.populate(kickstartImageList, kick);
+    }
+
+    public void onSelectImageKick(int position){
+        // try to boot kickstart
+        connection.write("boot " + imageList.get(position).kickstartImage);
+
+    }
+
+    public void onSelectImageSys(int position){
+
     }
 
     public void onPasswordFragment(){
@@ -406,6 +466,43 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 "power. Release Mode button when SYST LED blinks amber then turns solid green." +
                 "Boot will then take place. I'll let you know when I've started the password " +
                 "recovery script.");
+    }
+
+    public void onSoftwareFragment(){
+        connection.write("");
+    }
+
+    public void softwareMode(int mode){
+        if(mode == 1){
+            //loader
+            kFrag = new KickstartFragment();
+            FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
+            tran.replace(R.id.fragment_container, kFrag);
+            tran.addToBackStack(null);
+            tran.commit();
+            connection.pau();
+            fragIndex = 5;
+            connection.res();
+        } else if(mode == 2){
+            //(boot)#
+            syFrag = new SystemBootFragment();
+            FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
+            tran.replace(R.id.fragment_container, syFrag);
+            tran.addToBackStack(null);
+            tran.commit();
+            connection.pau();
+            fragIndex = 6;
+            connection.res();
+        } else if(mode == 3){
+            //<switch name>#
+        }
+    }
+
+    public void onKickstartFragment(){
+        // check for config issues
+
+        // if config is ok, then look for image concurrency-- swap to image fragment.
+        onImageFragment(true);
     }
 
     private void passHit(){

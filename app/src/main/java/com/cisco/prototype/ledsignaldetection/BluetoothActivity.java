@@ -140,6 +140,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         private OutputStream mmOutStream;
         private boolean running = true;
         private boolean paused = false;
+        private boolean inHelp = false;
         public BTConnection(BluetoothDevice newDevice, CountDownLatch synchron){
             this.synchron = synchron;
             BluetoothSocket tmp = null;
@@ -210,7 +211,21 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     byte[] bytes = content.getBytes();
                     mmOutStream.write(bytes);
                 }
-                if(!content.substring(content.length()-1, content.length()).contains("?"))mmOutStream.write((byte)ret);
+                if(!content.contains("?") && !inHelp){
+                    mmOutStream.write((byte)ret);
+                }
+                else if(!inHelp && content.contains("?")){
+                    inHelp = true;
+                }
+                else if(inHelp && content.toLowerCase().equals("q")){
+                    inHelp = false;
+                }
+                else if(inHelp && content.equals("")){
+                    mmOutStream.write((byte)ret);
+                }
+                else{
+                    inHelp = false;
+                }
             }catch(IOException e){
                 e.printStackTrace();
             }

@@ -156,6 +156,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         }
         public void run(){
             byte[] buffer = new byte[1024];
+            byte[] readB;
             int bytes;
             try{
                 sock.connect();
@@ -174,8 +175,11 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     try {
                         if (mmInStream != null && mmInStream.available() > 0) {
                             bytes = mmInStream.read(buffer);
-                            connectionHandler.obtainMessage(fragIndex, bytes, -1, buffer).sendToTarget();
-                            buffer = new byte[buffer.length];
+                            readB = new byte[bytes];
+                            //Log.e("LEDapp", new String(readB));
+                            for(int i = 0; i < bytes; i++)readB[i] = buffer[i];
+                            connectionHandler.obtainMessage(fragIndex, bytes, -1, readB).sendToTarget();
+                            for(int i = 0; i < 1024; i++)buffer[i] = 0;
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -254,40 +258,27 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         }
 
         public void ping() {
-            byte[] ret = {13};
+            paused = true;
             byte[] buffer = new byte[1024];
-            this.write(new String(ret));
             double start = System.currentTimeMillis();
-            double difference;
             try {
                 int bytes = 0;
-                mmOutStream.write(("").getBytes());
-                while (System.currentTimeMillis() - start < 2000){
+                for(int i = 0; i<3; i++){
+                    this.write("");
+                }
+                while (System.currentTimeMillis() - start < 3000){
                     if(mmInStream.available() > 0){
                         bytes = mmInStream.read(buffer);
                         if(bytes > 0)break;
                     }
                 }
-                Log.i("LedApp","past the loop");
-                if(bytes > 0){
-                    byte[] received = new byte[bytes];
-                    for(int i = 0; i < bytes; i++)received[i] = buffer[i];
-                    String mystr = new String(received);
-                    while(mmInStream.available() > 0){
-                        bytes = mmInStream.read(buffer);
-                        received = new byte[bytes];
-                        for(int i = 0; i < bytes; i++)received[i] = buffer[i];
-                        mystr += new String(received);
-                    }
-                    Log.i("LedApp", mystr);
-                    pingval[0] = 1;
-                }
-                else pingval[0] = 0;
+                pingval[0] = bytes > 0 ? 1 : 0;
             }catch(Exception e){
                 Log.e("LedApp", "error in ping!");
                 e.printStackTrace();
             }
             synchron.countDown();
+            paused = false;
         }
 
     }
@@ -410,7 +401,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             connection.pau();
             fragIndex = 4;
             connection.res();
-            soFrag.startSoft();
+            //soFrag.startSoft();
         } else{
             FragmentManager frag = getSupportFragmentManager();
             frag.popBackStack();

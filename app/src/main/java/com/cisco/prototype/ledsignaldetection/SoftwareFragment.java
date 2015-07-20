@@ -43,12 +43,14 @@ public class SoftwareFragment extends Fragment {
         super.onAttach(activity);
         try{
             mListener = (BluetoothInterface)activity;
+            mListener.onSoftwareFragment();
         } catch(ClassCastException e){}
     }
 
     public void add(String data) {
         log += data;
-        if (log.contains("loader>")){
+        System.out.println(log);
+        if (log.contains(">")){
             //"loader>" prompt
             log = "";
             mListener.softwareMode(1);
@@ -64,7 +66,7 @@ public class SoftwareFragment extends Fragment {
     }
 
     public void startSoft(){
-        mListener.onSoftwareFragment();
+
     }
 
     public void setText(String string){ textView.setText(string); }

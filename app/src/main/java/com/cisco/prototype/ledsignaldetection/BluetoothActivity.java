@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.Scroller;
 import android.widget.TextView;
@@ -489,7 +490,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     }
 
     public void onPasswordFragment(String message){
-        boolean result = pFrag.setMessage(message);
+        pFrag.updateProgress();
     }
 
     public void passwordStart(View view){
@@ -499,7 +500,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         TextView secretV = (TextView)findViewById(R.id.secretpwh);
         TextView enableV = (TextView)findViewById(R.id.enablepwh);
         TextView consoleV = (TextView)findViewById(R.id.consolepwh);
-        TextView writeV = (TextView)findViewById(R.id.password_text);
+        LinearLayout writeV = (LinearLayout)findViewById(R.id.password_text);
         Button start = (Button)findViewById(R.id.recoverpw);
         String data = secret.getText().toString() + "," + enable.getText().toString() + "," + console.getText().toString();
 

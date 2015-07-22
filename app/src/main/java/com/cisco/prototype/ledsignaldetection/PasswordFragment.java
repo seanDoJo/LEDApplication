@@ -4,9 +4,11 @@ import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.util.HashMap;
@@ -17,6 +19,7 @@ public class PasswordFragment extends Fragment {
     private Boolean recoveryStarted = false;
     private HashMap<String, String> responses;
     private TextView textView;
+    private ProgressBar pBar;
     private int state = 0;
     private String record = "";
     private String secretPw = "";
@@ -38,11 +41,12 @@ public class PasswordFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_password, container, false);
-        textView = (TextView) view.findViewById(R.id.password_text);
-        setMessage("Disconnect power cable from switch. Hold down Mode button and reconnect " +
+        //textView = (TextView) view.findViewById(R.id.password_text);
+        pBar = (ProgressBar)view.findViewById(R.id.progressBar);
+        /*setMessage("Disconnect power cable from switch. Hold down Mode button and reconnect " +
                 "power. Release Mode button when SYST LED blinks amber then turns solid green." +
                 "Boot will then take place. I'll let you know when I've started the password " +
-                "recovery script.");
+                "recovery script.");*/
         return view;
     }
 
@@ -65,12 +69,26 @@ public class PasswordFragment extends Fragment {
         return true;
     }
 
+    public void updateProgress(){
+        if(pBar.getProgress() >= 98)scrollProgress(100);
+        else scrollProgress(pBar.getProgress() + 7);
+    }
+    private void scrollProgress(int addition){
+        double currTime = 0;
+        int difference = addition - pBar.getProgress();
+        for(int i = 0; i < difference; i++){
+            pBar.setProgress(pBar.getProgress() + 1);
+            currTime = System.currentTimeMillis();
+            while((System.currentTimeMillis() - currTime) < 1000){};
+        }
+    }
+
     public void startRecovery(String data){
         String[] fields = data.split(",");
         secretPw = fields[0].trim();
         enablePw = fields[1].trim();
         consolePw = fields[2].trim();
-        mListener.onPasswordFragment("Starting Recovery -- Waiting For System to Enter Recovery Mode");
+        //mListener.onPasswordFragment("Starting Recovery -- Waiting For System to Enter Recovery Mode");
         recoveryStarted = true;
     }
 
@@ -127,8 +145,13 @@ public class PasswordFragment extends Fragment {
                             state++;
                             record = "";
                         }
-                        else if(record.toLowerCase().contains("connection")){
+                        else if(record.toLowerCase().contains("connection") || record.contains(">")){
                             mListener.writeData("en");
+                            record = "";
+                        }
+                        else if(record.toLowerCase().contains("password")){
+                            //wat
+                            Log.e("LEDApp", "password detected in password recovery");
                         }
                         break;
                     case 5:
@@ -203,6 +226,14 @@ public class PasswordFragment extends Fragment {
                         }
                         break;
                     case 14:
+                        if (record.toLowerCase().contains("#")) {
+                            mListener.onPasswordFragment("delete old config");
+                            mListener.writeData("del flash:config.old");
+                            state++;
+                            record = "";
+                        }
+                        break;
+                    case 15:
                         if (record.toLowerCase().contains("#")) {
                             mListener.onPasswordFragment("Password Recovery Complete!");
                             state++;

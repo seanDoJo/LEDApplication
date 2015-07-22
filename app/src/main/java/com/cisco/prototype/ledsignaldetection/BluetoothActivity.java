@@ -17,7 +17,10 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.SurfaceView;
 import android.view.View;
+import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.Scroller;
@@ -51,6 +54,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     private SoftwareFragment soFrag;
     private KickstartFragment kFrag;
     private SystemBootFragment syFrag;
+    private ImageRestoreFragment imgRestore;
     private int citer = 0;
     private boolean letsGoSoftware;
     private int passResult = 0;
@@ -115,9 +119,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 //Password
                 byte[] data = (byte[]) m.obj;
                 String result = new String(data);
-                passResult = pFrag.read(result);
-                if(passResult > 0) citer++;
-                passHit();
+                if(!result.contains("@"))pFrag.read(result);
             }
             else if(m.what == 4){
                 //Software
@@ -129,6 +131,11 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 //Kickstart
                 byte[] data = (byte[]) m.obj;
                 String result = new String(data);
+            }
+            else if(m.what == 6){ //img recovery
+                byte[] data = (byte[]) m.obj;
+                String result = new String(data);
+                imgRestore.step(result);
             }
         }
     };
@@ -209,26 +216,39 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         public void write(String contentl){
             String content = contentl;
             try {
-                if(content.contains("!^"))content = getSpecial(content.substring(2, content.length()));
                 char ret = (char)13;
-                if(content.trim().length() > 0) {
-                    byte[] bytes = content.getBytes();
-                    mmOutStream.write(bytes);
+                if(content.contains("!!!")){
+                    int i = 0;
+                    while(content.charAt(i) == '!'){ i++; };
+                    String specComm = content.substring(i, content.length());
+                    Log.i("LEDApp", specComm);
+                    if(specComm.contains("esc")){
+                        char stop = (char)0x1A;
+                        mmOutStream.write((byte)stop);
+                        Log.i("LEDApp", "Special esc char sent");
+                    }
+                    else if(specComm.contains("break")){
+                        char breakC = (char)0x03;
+                        mmOutStream.write((byte)breakC);
+                        Log.i("LEDApp", "Special break char sent");
+                    }
                 }
-                if(!content.contains("?") && !inHelp){
-                    mmOutStream.write((byte)ret);
-                }
-                else if(!inHelp && content.contains("?")){
-                    inHelp = true;
-                }
-                else if(inHelp && content.toLowerCase().equals("q")){
-                    inHelp = false;
-                }
-                else if(inHelp && content.equals("")){
-                    mmOutStream.write((byte)ret);
-                }
-                else{
-                    inHelp = false;
+                else {
+                    if (content.trim().length() > 0) {
+                        byte[] bytes = content.getBytes();
+                        mmOutStream.write(bytes);
+                    }
+                    if (!content.contains("?") && !inHelp) {
+                        mmOutStream.write((byte) ret);
+                    } else if (!inHelp && content.contains("?")) {
+                        inHelp = true;
+                    } else if (inHelp && content.toLowerCase().equals("q")) {
+                        inHelp = false;
+                    } else if (inHelp && content.equals("")) {
+                        mmOutStream.write((byte) ret);
+                    } else {
+                        inHelp = false;
+                    }
                 }
             }catch(IOException e){
                 e.printStackTrace();
@@ -289,6 +309,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bluetooth);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         sFrag = new SelectionFragment();
         sFrag.setArguments(getIntent().getExtras());
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, sFrag).commit();
@@ -316,7 +337,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     public void onDestroy(){
         super.onDestroy();
         //we need this otherwise poo flinging will ensue
-        if(connection != null)connection.close();
+        if (connection != null)connection.close();
         unregisterReceiver(btReceiver);
     }
 
@@ -467,11 +488,35 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
 
     }
 
-    public void onPasswordFragment(){
-        boolean result = pFrag.setMessage("Disconnect power cable from switch. Hold down Mode button and reconnect " +
-                "power. Release Mode button when SYST LED blinks amber then turns solid green." +
-                "Boot will then take place. I'll let you know when I've started the password " +
-                "recovery script.");
+    public void onPasswordFragment(String message){
+        boolean result = pFrag.setMessage(message);
+    }
+
+    public void passwordStart(View view){
+        EditText secret = (EditText)findViewById(R.id.secretpw);
+        EditText enable = (EditText)findViewById(R.id.enablepw);
+        EditText console = (EditText)findViewById(R.id.consolepw);
+        TextView secretV = (TextView)findViewById(R.id.secretpwh);
+        TextView enableV = (TextView)findViewById(R.id.enablepwh);
+        TextView consoleV = (TextView)findViewById(R.id.consolepwh);
+        TextView writeV = (TextView)findViewById(R.id.password_text);
+        Button start = (Button)findViewById(R.id.recoverpw);
+        String data = secret.getText().toString() + "," + enable.getText().toString() + "," + console.getText().toString();
+
+        secret.setEnabled(false);
+        secret.setVisibility(SurfaceView.GONE);
+        enable.setEnabled(false);
+        enable.setVisibility(SurfaceView.GONE);
+        console.setEnabled(false);
+        console.setVisibility(SurfaceView.GONE);
+        start.setEnabled(false);
+        start.setVisibility(SurfaceView.GONE);
+        secretV.setVisibility(SurfaceView.GONE);
+        enableV.setVisibility(SurfaceView.GONE);
+        consoleV.setVisibility(SurfaceView.GONE);
+        writeV.setVisibility(SurfaceView.VISIBLE);
+
+        pFrag.startRecovery(data);
     }
 
     public void onSoftwareFragment(){
@@ -511,32 +556,23 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         onImageFragment(true);
     }
 
-    private void passHit(){
-        String command = null;
-        switch(passResult){
-            case 2: command = "n";
-                    break;
-            case 3: command = "en";
-                    break;
-            case 5: command = "";
-                    break;
-            case 6: command = "";
-                    break;
-            case 7: command = "conf t";
-                    break;
+    public void onImgRestoreCollection(View view){
+        String passed = "";
+        passed += ((EditText)findViewById(R.id.ipaddr)).getText();
+        passed += ",";
+        passed += ((EditText)findViewById(R.id.gwaddr)).getText();
+        passed += ",";
+        passed += ((EditText)findViewById(R.id.ftpaddr)).getText();
+        passed += ",";
+        passed += ((EditText)findViewById(R.id.ksimg)).getText();
+        passed += ",";
+        passed += ((EditText) findViewById(R.id.sysimg)).getText();
 
-            case 1: if(citer == 1) command = "flash_init";
-                    else if(citer == 2) command = "load_helper";
-                    else if(citer == 3) command = "rename flash:config.text flash:config.old";
-                    else if(citer == 4) command = "boot";
-                    break;
-            case 4: if(citer == 7) command = "rename flash:config.old flash:config.text";
-                    else if(citer == 9) command  = "copy flash:config.text system:running-config";
-                    break;
-            default: break;
+        imgRestore.collectInfo(passed);
+    }
 
-        }
-        if(command != null)connection.write(command);
+    public void writeData(String data){
+        connection.write(data);
     }
 
     public void disconnect(){

@@ -29,6 +29,7 @@ import java.util.List;
 
 public class LedFilterActivity extends Activity implements CameraBridgeViewBase.CvCameraViewListener2 {
     private JavaCameraView2 mOpenCvCameraView;
+    private ArrayList<String> colors;
     private Mat hsv;
     private Mat sElem;
     private Mat latestMat = null;
@@ -71,6 +72,10 @@ public class LedFilterActivity extends Activity implements CameraBridgeViewBase.
         setContentView(R.layout.activity_led_filter);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        colors = new ArrayList<>();
+        colors.add("Red");
+        colors.add("Green");
+        colors.add("Blue");
         mOpenCvCameraView = (JavaCameraView2) findViewById(R.id.java_camera_view);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
@@ -137,13 +142,13 @@ public class LedFilterActivity extends Activity implements CameraBridgeViewBase.
 
         Imgproc.cvtColor(hsv, hsv, Imgproc.COLOR_RGBA2RGB);
         Imgproc.cvtColor(hsv, hsv, Imgproc.COLOR_RGB2HSV);
-
-        Core.inRange(hsv, new Scalar(0, 120, 50), new Scalar(120, 255, 255), hsv);
+        //120, 255
+        Core.inRange(hsv, new Scalar(0, 120, 180), new Scalar(120, 255, 255), hsv);
         Imgproc.erode(hsv, hsv, sElem);
         Imgproc.dilate(hsv, hsv, sElem);
-
         Imgproc.dilate(hsv, hsv, sElem);
         Imgproc.erode(hsv, hsv, sElem);
+
         Imgproc.cvtColor(hsv, hsv, Imgproc.COLOR_GRAY2RGBA);
         Core.bitwise_and(hsv, copy, hsv);
 
@@ -158,18 +163,21 @@ public class LedFilterActivity extends Activity implements CameraBridgeViewBase.
         }
         for(Moments moment : myMoments){
             double dArea = moment.get_m00();
+            int max = 0;
             if(dArea >= 60 && dArea <= 610) {
                 double dM01 = moment.get_m01();
                 double dM10 = moment.get_m10();
                 int posX = (int) (dM10 / dArea);
                 int posY = (int) (dM01 / dArea);
-                double[] colour = hsv.get(posY, posX);
-                for (int i = 0; i < colour.length; i++) {
-                    System.out.println(Double.toString(colour[i]));
+                double[] colour = latestMat.get(posY, posX);
+                for (int i = 0; i < 3; i++){
+                    System.out.print(Double.toString(colour[i]) + " ");
+                    if(colour[i] > colour[max]) max = i;
                 }
-                System.out.println(dArea);
+                System.out.println("");
+                System.out.println("Color: " + colors.get(max));
                 double radius = Math.sqrt(dArea/3.1415926535);
-                Core.circle(hsv, new Point(posX, posY), (int)radius, new Scalar(255, 255, 255));
+                if(colour[max] >= 110)Core.circle(hsv, new Point(posX, posY), ((int)radius) + 10, new Scalar(255, 255, 255));
             }
         }
 

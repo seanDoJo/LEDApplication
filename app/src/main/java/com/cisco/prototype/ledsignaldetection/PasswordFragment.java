@@ -14,8 +14,14 @@ import java.util.HashMap;
 
 public class PasswordFragment extends Fragment {
     private BluetoothInterface mListener;
+    private Boolean recoveryStarted = false;
     private HashMap<String, String> responses;
     private TextView textView;
+    private int state = 0;
+    private String record = "";
+    private String secretPw = "";
+    private String consolePw = "";
+    private String enablePw = "";
 
     public PasswordFragment() {
         // Required empty public constructor
@@ -33,13 +39,11 @@ public class PasswordFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_password, container, false);
         textView = (TextView) view.findViewById(R.id.password_text);
-        mListener.onPasswordFragment();
-
+        setMessage("Disconnect power cable from switch. Hold down Mode button and reconnect " +
+                "power. Release Mode button when SYST LED blinks amber then turns solid green." +
+                "Boot will then take place. I'll let you know when I've started the password " +
+                "recovery script.");
         return view;
-    }
-
-    public void go(){
-        mListener.onPasswordFragment();
     }
 
     @Override
@@ -56,78 +60,158 @@ public class PasswordFragment extends Fragment {
         mListener = null;
     }
 
-    public interface OnFragmentInteractionListener {
-        public void onFragmentInteraction(Uri uri);
-    }
-
-    /*private void constructHashMap(){
-        //This only applies to the 2955 series...ignore for now
-        //byte[] esc = {0x1b};
-
-        //responses.put("Send break character to prevent autobooting.", new String(esc));
-
-        //initialize flash
-        responses.put("boot\n\nswitch:", "flash_init");
-
-
-        //////// Note...the tutorial said to just automatically enter load_helper and dir flash:
-
-        //load_helper
-        responses.put("Parameter Block Filesystem (pb:) installed, fsid: 4\nswitch:", "load_helper");
-
-        //dir flash:
-        responses.put("load_helper\nswitch:", "dir flash:");
-
-        //rename flash:config.text flash:config.old
-        responses.put("bytes used)\nswitch:", "rename flash:config.text flash:config.old");
-
-        //boot -- may need to be "reset" according to non-Cisco article
-        responses.put("rename flash:config.text flash:config.old\nswitch:", "boot");
-
-        //no to configuration
-        responses.put("Continue with configuration dialog? [yes/no]:", "n");
-
-        //return
-        responses.put("Press RETURN to get started.", "\r");
-
-        //enable -- could be enable
-        responses.put("\n\n\n\nSwitch>", "en");
-
-        //rename flash:config.old flash:config.text
-        responses.put("en\nSwitch#", "rename flash:config.old flash:config.text");
-
-        //confirm rename
-        responses.put("Destination filename [config.text]?", "\r");
-
-        //copy HOW TO DO THIS...
-        responses.put("Destination filename [config.text]?\nSwitch#", "copy flash:config.text system:running-config");
-
-        //Confirm copy
-        responses.put("Destination filename [running-config]?", "\r");
-
-        //Enter Global Configuration mode
-        responses.put("bytes/sec)\nSwitch#", "conf t");
-
-        //At this point, ask user what kind of password to overwrite, then overwrite.
-    }*/
-
     public boolean setMessage(String message){
         textView.setText(message);
         return true;
     }
 
-    public int read(String data){
-        int result = 0;
-        if (data.contains("witch:")) result = 1;
-        else if(data.contains("Continue with configuration dialog? [yes/no]:")) result = 2;
-        else if(data.contains("witch>")) result = 3;
-        else if(data.contains("witch#")) result = 4;
-        else if(data.contains("[config.text]")) result = 5;
-        else if(data.contains("[running-config]")) result = 6;
-        else if(data.contains("Sw") && data.contains("#")) result = 7;
-        else result = -1;
+    public void startRecovery(String data){
+        String[] fields = data.split(",");
+        secretPw = fields[0].trim();
+        enablePw = fields[1].trim();
+        consolePw = fields[2].trim();
+        mListener.onPasswordFragment("Starting Recovery -- Waiting For System to Enter Recovery Mode");
+        recoveryStarted = true;
+    }
 
-        return result;
+    public void read(String data){
+        record += data;
+        //mListener.onPasswordFragment(record);
+        if(recoveryStarted) {
+            if (record.contains("no]")) {
+                mListener.writeData("n");
+                record = "";
+            } else if (record.contains("MORE") || record.contains("RETURN") || record.contains("]")) {
+                mListener.writeData("");
+                record = "";
+            }
+            else {
+                switch (state) {
+                    case 0:
+                        if (record.toLowerCase().contains("switch:")) {
+                            mListener.writeData("flash_init");
+                            mListener.onPasswordFragment("flash_init executed!");
+                            state++;
+                            record = "";
+                        }
+                        break;
+                    case 1:
+                        if (record.toLowerCase().contains("switch:")) {
+                            mListener.writeData("rename flash:config.text flash:config.old");
+                            mListener.onPasswordFragment("renamed config.txt!");
+                            state++;
+                            record = "";
+                        }
+                        break;
+                    case 2:
+                        if (record.toLowerCase().contains("switch:")) {
+                            mListener.writeData("boot");
+                            mListener.onPasswordFragment("booting!");
+                            state++;
+                            record = "";
+                        }
+                        break;
+                    case 3:
+                        if (record.toLowerCase().contains(">")) {
+                            mListener.writeData("en");
+                            mListener.onPasswordFragment("enable");
+                            state++;
+                            record = "";
+
+                        }
+                        break;
+                    case 4:
+                        if (record.toLowerCase().contains("#")) {
+                            mListener.writeData("rename flash:config.old flash:config.text");
+                            mListener.onPasswordFragment("rename config.old to config.text");
+                            state++;
+                            record = "";
+                        }
+                        else if(record.toLowerCase().contains("connection")){
+                            mListener.writeData("en");
+                        }
+                        break;
+                    case 5:
+                        if (record.toLowerCase().contains("#")) {
+                            mListener.writeData("copy flash:config.text system:running-config");
+                            mListener.onPasswordFragment("copy to running-config");
+                            state++;
+                            record = "";
+                        }
+                        break;
+                    case 6:
+                        if (record.toLowerCase().contains("#")) {
+                            mListener.writeData("conf t");
+                            mListener.onPasswordFragment("entered conf");
+                            state++;
+                            record = "";
+                        }
+                        break;
+                    case 7:
+                        if (record.toLowerCase().contains("(config)")) {
+                            mListener.writeData("enable secret " + secretPw);
+                            mListener.onPasswordFragment("set secret password");
+                            state++;
+                            record = "";
+                        }
+                        break;
+                    case 8:
+                        if (record.toLowerCase().contains("(config)")) {
+                            mListener.writeData("enable password " + enablePw);
+                            mListener.onPasswordFragment("set enable password");
+                            state++;
+                            record = "";
+                        }
+                        break;
+                    case 9:
+                        if (record.toLowerCase().contains("(config)")) {
+                            mListener.writeData("line con 0");
+                            mListener.onPasswordFragment("entered line conf");
+                            state++;
+                            record = "";
+                        }
+                        break;
+                    case 10:
+                        if (record.toLowerCase().contains("(config-line)")) {
+                            mListener.writeData("password " + consolePw);
+                            mListener.onPasswordFragment("set console password");
+                            state++;
+                            record = "";
+                        }
+                        break;
+                    case 11:
+                        if (record.toLowerCase().contains("(config-line)")) {
+                            mListener.writeData("!!!esc");
+                            mListener.onPasswordFragment("exited conf");
+                            state++;
+                            record = "";
+                        }
+                        break;
+                    case 12:
+                        if (record.toLowerCase().contains("#")) {
+                            mListener.writeData("write memory");
+                            mListener.onPasswordFragment("wrote memory");
+                            state++;
+                            record = "";
+                        }
+                        break;
+                    case 13:
+                        if (record.toLowerCase().contains("#")) {
+                            mListener.writeData("write memory");
+                            state++;
+                            record = "";
+                        }
+                        break;
+                    case 14:
+                        if (record.toLowerCase().contains("#")) {
+                            mListener.onPasswordFragment("Password Recovery Complete!");
+                            state++;
+                            record = "";
+                        }
+                        break;
+                }
+            }
+        }
     }
 
 }

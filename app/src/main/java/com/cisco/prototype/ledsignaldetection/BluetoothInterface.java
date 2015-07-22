@@ -12,9 +12,10 @@ public interface BluetoothInterface {
     public void onImageFragment(boolean kick);
     public void onSelectImageKick(int position);
     public void onSelectImageSys(int position);
-    public void onPasswordFragment();
+    public void onPasswordFragment(String message);
     public void disconnect();
     public void onSoftwareFragment();
     public void softwareMode(int mode);
     public void onKickstartFragment();
+    public void writeData(String data);
 }

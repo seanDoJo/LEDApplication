@@ -47,7 +47,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Train System"
+        android:text="Bluetooth Diagnosis"
         android:id="@+id/train"
         android:textColor="#ffaa052a"
         android:textStyle="bold"

@@ -22,10 +22,10 @@ android:background="@drawable/gradient_box">
         android:onClick="switchAlive"
         android:clickable="true"
         android:textSize="25dp"
-        android:layout_above="@+id/terminal"
-        android:layout_alignLeft="@+id/soft_image"
-        android:layout_alignStart="@+id/soft_image" />
-    <Button
+        android:layout_centerVertical="true"
+        android:layout_alignLeft="@+id/password"
+        android:layout_alignStart="@+id/password" />
+    <!--<Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Software image"
@@ -43,7 +43,7 @@ android:background="@drawable/gradient_box">
         android:textSize="25dp"
         android:layout_above="@+id/password"
         android:layout_alignLeft="@+id/password"
-        android:layout_alignStart="@+id/password" />
+        android:layout_alignStart="@+id/password" />-->
 
     <Button
         android:layout_width="wrap_content"
@@ -80,9 +80,8 @@ android:background="@drawable/gradient_box">
         android:onClick="switchCommunication"
         android:clickable="true"
         android:textSize="25dp"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/alive_dead"
         android:layout_alignLeft="@+id/alive_dead"
-        android:layout_alignStart="@+id/alive_dead"
-        android:layout_marginBottom="50dp" />
+        android:layout_alignStart="@+id/alive_dead" />
 
 </RelativeLayout>

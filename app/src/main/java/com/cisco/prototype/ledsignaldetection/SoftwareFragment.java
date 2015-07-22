@@ -62,11 +62,11 @@ public class SoftwareFragment extends Fragment {
             //fully loaded
             log = "";
             mListener.softwareMode(3);
-        } else {}
-    }
-
-    public void startSoft(){
-
+        }else if(log.contains("URN")){
+            //Press RETURN to get started
+            mListener.softwareMode(4);
+        }
+        else {}
     }
 
     public void setText(String string){ textView.setText(string); }

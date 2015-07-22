@@ -6,4 +6,15 @@
     <ListView android:layout_width="match_parent" android:layout_height="wrap_content"
         android:id="@+id/image_list" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/image_text"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/image_button"
+        android:onClick=""/>
+
 </FrameLayout>

@@ -1,3 +1,2 @@
-include ':sshj'
 include ':openCVLibrary2482'
 include ':app'

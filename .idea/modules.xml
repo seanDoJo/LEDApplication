@@ -5,6 +5,8 @@
       <module fileurl="file://$PROJECT_DIR$/LEDApplication.iml" filepath="$PROJECT_DIR$/LEDApplication.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/openCVLibrary2482/openCVLibrary2482.iml" filepath="$PROJECT_DIR$/openCVLibrary2482/openCVLibrary2482.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sshj/sshj.iml" filepath="$PROJECT_DIR$/sshj/sshj.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sshj/sshj.iml" filepath="$PROJECT_DIR$/sshj/sshj.iml" />
     </modules>
   </component>
 </project>

@@ -35,6 +35,8 @@ public class ImageFragment extends Fragment {
     };
     Button button;
 
+    public ImageFragment(){}
+
     public ImageFragment(boolean inKickPrompt) {
         kickstart = inKickPrompt;
     }

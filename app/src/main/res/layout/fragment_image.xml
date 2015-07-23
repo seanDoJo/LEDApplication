@@ -1,27 +1,38 @@
-<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.cisco.prototype.ledsignaldetection.ImageFragment"
-    android:orientation="horizontal">
-
-    <TableRow android:layout_width="match_parent"
-        android:layout_height="wrap_content"><TextView
+    android:orientation="vertical"
+    android:background="@drawable/gradient_box">
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/image_text"/></TableRow>
-
-    <TableRow android:layout_width="match_parent"
-        android:layout_height="wrap_content"><ListView android:layout_width="match_parent" android:layout_height="370dp"
-        android:id="@+id/image_list"/></TableRow>
-
-    <TableRow android:layout_width="match_parent"
-        android:layout_height="wrap_content"><Button
+        android:id="@+id/image_text"
+        android:layout_weight="0"
+        android:textColor="#ff020000"
+        android:typeface="sans"
+        android:textSize="19sp"/>
+    <ListView android:layout_width="match_parent" android:layout_height="match_parent"
+        android:id="@+id/image_list"
+        android:textColor="#ffaa052a"
+        android:typeface="sans"
+        android:scrollbars="vertical"
+        android:layout_weight="1"/>
+    <Button
+        android:layout_weight="0"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:id="@+id/image_button"
-        android:onClick=""
-        android:text="Download"/></TableRow>
-
-
-
-</TableLayout>
+        android:layout_height="wrap_content"
+        android:text="Download"
+        android:id="@+id/download"
+        android:textColor="#ffaa052a"
+        android:textStyle="bold"
+        android:typeface="sans"
+        android:background="@drawable/button_home"
+        android:padding="10dp"
+        android:minWidth="300dp"
+        android:minHeight="60dp"
+        android:enabled="true"
+        android:onClick="onImageClick"
+        android:clickable="true"
+        android:textSize="25sp"/>
+</LinearLayout>

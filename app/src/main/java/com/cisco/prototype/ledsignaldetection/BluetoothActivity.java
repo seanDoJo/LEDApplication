@@ -69,6 +69,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     private String message = "";
     private String currentKickImage = "";
     private String currentSysImage = "";
+    private boolean kick;
     //Where the asynchronous bluetooth actions are received
     private final BroadcastReceiver btReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
@@ -446,6 +447,10 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         cFrag.collapse();
     }
 
+    public void setImageMode(){
+        iFrag.kickstart = kick;
+    }
+
     public void onImageFragment(){
         String identifier = "kickstart";
         kickstartImageList = new ArrayList<String>();
@@ -529,17 +534,31 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     else currentSysImage = imageList.get(position).systemImage;
                     iFrag.populate(new ArrayList<String>()); //clear out file list
                 case 6: //System booted!
-                    iFrag.setText("Yes! The switch booted! The following image names will be" +
+                    iFrag.success = true;
+                    iFrag.success("Yes! The switch booted! The following image names will be" +
                             "displayed if they were changed during the troubleshooting process. " +
                             "Kickstart: " + currentKickImage + " System: " + currentSysImage +
                             " Please update the configuration accordingly.");
-                    //TODO set the button to take you back to BT screen
                     return;
-                case 7: //Download
-                    //TODO call download function
-                    break;
                 default:break;
             }
+        }
+    }
+
+    public void onImageClick(View view){
+        if(iFrag.success){
+            //go back to BT menu
+            FragmentManager frag = getSupportFragmentManager();
+            frag.popBackStack("menu", 0);
+        } else {
+            imgRestore = new ImageRestoreFragment();
+            FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
+            tran.replace(R.id.fragment_container, imgRestore);
+            tran.addToBackStack(null);
+            tran.commit();
+            connection.pau();
+            fragIndex = 6;
+            connection.res();
         }
     }
 
@@ -579,18 +598,17 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     }
 
     public void softwareMode(int mode){
-        boolean inKickLoader = false;
         boolean ready = false;
 
         if(mode == 1){
             //loader
             soFrag.setText("kickstart loader");
-            inKickLoader = true;
+            kick = true;
             ready = true;
         } else if(mode == 2){
             //(boot)#
             soFrag.setText("system loader");
-            inKickLoader = false;
+            kick = false;
             ready = true;
         } else if(mode == 3){
             //<switch name>#
@@ -602,8 +620,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         }
 
         if(ready){
-            iFrag = new ImageFragment(inKickLoader);
-
+            iFrag = new ImageFragment();
             FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
             tran.replace(R.id.fragment_container, iFrag);
             tran.addToBackStack(null);

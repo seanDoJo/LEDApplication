@@ -15,4 +15,5 @@ public interface BluetoothInterface {
     public void imageStateMachine(int...arg);
     public void onPasswordFragment(String message);
     public void writeData(String data);
+    public void setImageMode();
 }

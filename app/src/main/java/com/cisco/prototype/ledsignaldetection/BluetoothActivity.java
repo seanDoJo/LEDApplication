@@ -15,12 +15,14 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -32,6 +34,9 @@ import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -72,6 +77,9 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     private String currentKickImage = "";
     private String currentSysImage = "";
     private boolean kick;
+    private File outputFile;
+    private BufferedWriter writer = null;
+    private boolean captureEnabled = false;
     //Where the asynchronous bluetooth actions are received
     private final BroadcastReceiver btReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
@@ -101,6 +109,11 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 String result = new String(data);
                 if(!result.contains("@")){
                     cFrag.addMessage(result);
+                    if(captureEnabled){
+                        try {
+                            writer.write(result);
+                        }catch(IOException e){e.printStackTrace();}
+                    }
                     ScrollView sView = (ScrollView)findViewById(R.id.scrollView);
                     sView.fullScroll(View.FOCUS_DOWN);
                 }
@@ -560,6 +573,61 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         EditText editText = (EditText)findViewById(R.id.edit_message);
         connection.write(editText.getText().toString());
         cFrag.collapse();
+    }
+
+    public void onCheckClick(View view){
+        EditText editText = (EditText)findViewById(R.id.file_edit_text);
+        Button button = (Button)findViewById(R.id.file_ok_button);
+        TextView textView = (TextView)findViewById(R.id.save_output);
+
+        CheckBox checkBox = (CheckBox)findViewById(R.id.checkbox);
+        if(checkBox.isChecked()){
+            textView.setVisibility(View.GONE);
+            editText.setVisibility(View.VISIBLE);
+            editText.setEnabled(true);
+            button.setVisibility(View.VISIBLE);
+            button.setEnabled(true);
+        } else {
+            //clear up UI stuff
+            editText.setEnabled(false);
+            editText.setVisibility(View.GONE);
+            button.setEnabled(false);
+            button.setVisibility(View.GONE);
+            textView.setText("Save console output?");
+            textView.setVisibility(View.VISIBLE);
+            if(!(editText.isShown() || button.isShown())){destroyFile();}
+        }
+    }
+
+    private void destroyFile(){
+        //toast with "filename saved"
+        captureEnabled = false;
+    }
+
+    private void createFile(String filename){
+        outputFile = new File(getFilesDir(), filename + ".capture");
+        try {
+            outputFile.createNewFile();
+            writer = new BufferedWriter(new FileWriter(outputFile));
+            captureEnabled = true;
+        }catch(IOException e){e.printStackTrace();}
+    }
+
+    public void onOKClick(View view){
+        EditText editText = (EditText)findViewById(R.id.file_edit_text);
+        Button button = (Button)findViewById(R.id.file_ok_button);
+        TextView textView = (TextView)findViewById(R.id.save_output);
+
+        String fileName = editText.getText().toString().trim();
+        editText.setEnabled(false);
+        editText.setVisibility(View.GONE);
+        button.setEnabled(false);
+        button.setVisibility(View.GONE);
+        textView.setText("Current file name: " + fileName);
+        textView.setVisibility(View.VISIBLE);
+
+        createFile(fileName.replaceAll("^(.*)\\..*$", "$1"));
+        //Open file
     }
 
     public void setImageMode(){

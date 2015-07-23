@@ -4,6 +4,35 @@
     android:orientation="vertical"
     tools:context="com.cisco.prototype.ledsignaldetection.CommunicationFragment">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/checkbox"
+            android:onClick="onCheckClick"/>
+        <TextView android:id="@+id/save_output"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/save_console_output" />
+        <EditText
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Enter desired file name"
+            android:visibility="gone"
+            android:id="@+id/file_edit_text"
+            android:enabled="false"/>
+        <Button android:id="@+id/file_ok_button"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="OK"
+            android:visibility="gone"
+            android:enabled="false"
+            android:onClick="onOKClick"/>
+    </LinearLayout>
     <ScrollView android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"

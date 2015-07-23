@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.TextView;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -21,29 +23,38 @@ public class ImageFragment extends Fragment {
     private ArrayAdapter<String> mAdapter;
     private BluetoothInterface mListener;
     private ArrayList<String> mList;
-    private boolean kickstart;
+    private TextView textView;
+    private View view;
+    private int state = 31;
+    public boolean kickstart;
     private AdapterView.OnItemClickListener mMessageClickedHandler = new AdapterView.OnItemClickListener() {
         public void onItemClick(AdapterView parent, View v, int position, long id) {
-            if(kickstart) mListener.onSelectImageKick(position);
-            else mListener.onSelectImageSys(position);
+            state = 5;
+            mListener.imageStateMachine(state);
         }
     };
+    Button button;
 
-    public ImageFragment() {
-        // Required empty public constructor
+    public ImageFragment(){}
+
+    public ImageFragment(boolean inKickPrompt) {
+        kickstart = inKickPrompt;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // upgrade software image
+        log = "";
+        button = (Button) getView().findViewById(R.id.image_button);
+        mListener.onImageFragment();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_image, container, false);
+        view = inflater.inflate(R.layout.fragment_image, container, false);
         mList = new ArrayList<String>();
         mAdapter = new ArrayAdapter<String>(getActivity(), R.layout.fragment_image, mList);
+        textView = (TextView) view.findViewById(R.id.image_text);
 
         return view;
     }
@@ -62,10 +73,13 @@ public class ImageFragment extends Fragment {
         mListener = null;
     }
 
-    public void populate(ArrayList<String> imagePairs, boolean kick){
+    public void populate(ArrayList<String> imagePairs){
         mList = imagePairs;
         mAdapter.notifyDataSetChanged();
-        kickstart = kick;
     }
+
+    public void setText(String message){textView.setText(message);}
+
+    public int checkState(){return state;}
 
 }

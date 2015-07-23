@@ -67,17 +67,8 @@ public class PasswordFragment extends Fragment {
     }
 
     public void updateProgress(){
-        if(pBar.getProgress() >= 98)scrollProgress(100);
-        else scrollProgress(pBar.getProgress() + 7);
-    }
-    private void scrollProgress(int addition){
-        double currTime = 0;
-        int difference = addition - pBar.getProgress();
-        for(int i = 0; i < difference; i++){
-            pBar.setProgress(pBar.getProgress() + 1);
-            currTime = System.currentTimeMillis();
-            while((System.currentTimeMillis() - currTime) < 1000){};
-        }
+        if(pBar.getProgress() >= 98)pBar.setProgress(100);
+        else pBar.setProgress(pBar.getProgress() + 7);
     }
 
     public void startRecovery(String data){
@@ -117,7 +108,7 @@ public class PasswordFragment extends Fragment {
                     case 1:
                         if (record.toLowerCase().contains("switch:")) {
                             mListener.writeData("rename flash:config.text flash:config.old");
-                            mListener.onPasswordFragment("");
+                            mListener.onPasswordFragment("renaming config.text to config.old");
                             state++;
                             record = "";
                         }
@@ -125,7 +116,7 @@ public class PasswordFragment extends Fragment {
                     case 2:
                         if (record.toLowerCase().contains("switch:")) {
                             mListener.writeData("boot");
-                            mListener.onPasswordFragment("The switch is rebooting -- this may take a bit...");
+                            mListener.onPasswordFragment("rebooting the switch");
                             state++;
                             record = "";
                         }
@@ -133,7 +124,7 @@ public class PasswordFragment extends Fragment {
                     case 3:
                         if (record.toLowerCase().contains(">")) {
                             mListener.writeData("en");
-                            mListener.onPasswordFragment("");
+                            mListener.onPasswordFragment("enabling the switch");
                             state++;
                             record = "";
 
@@ -142,7 +133,7 @@ public class PasswordFragment extends Fragment {
                     case 4:
                         if (record.toLowerCase().contains("#")) {
                             mListener.writeData("rename flash:config.old flash:config.text");
-                            mListener.onPasswordFragment("");
+                            mListener.onPasswordFragment("renaming config.old back to config.text");
                             state++;
                             record = "";
                         }
@@ -158,7 +149,7 @@ public class PasswordFragment extends Fragment {
                     case 5:
                         if (record.toLowerCase().contains("#")) {
                             mListener.writeData("copy flash:config.text system:running-config");
-                            mListener.onPasswordFragment("");
+                            mListener.onPasswordFragment("copying config.text to the system running-config");
                             state++;
                             record = "";
                         }
@@ -166,7 +157,7 @@ public class PasswordFragment extends Fragment {
                     case 6:
                         if (record.toLowerCase().contains("#")) {
                             mListener.writeData("conf t");
-                            mListener.onPasswordFragment("");
+                            mListener.onPasswordFragment("entering configuration");
                             state++;
                             record = "";
                         }
@@ -174,7 +165,7 @@ public class PasswordFragment extends Fragment {
                     case 7:
                         if (record.toLowerCase().contains("(config)")) {
                             mListener.writeData("enable secret " + secretPw);
-                            mListener.onPasswordFragment("set secret password");
+                            mListener.onPasswordFragment("setting secret password");
                             state++;
                             record = "";
                         }
@@ -182,7 +173,7 @@ public class PasswordFragment extends Fragment {
                     case 8:
                         if (record.toLowerCase().contains("(config)")) {
                             mListener.writeData("enable password " + enablePw);
-                            mListener.onPasswordFragment("set enable password");
+                            mListener.onPasswordFragment("setting enable password");
                             state++;
                             record = "";
                         }
@@ -198,7 +189,7 @@ public class PasswordFragment extends Fragment {
                     case 10:
                         if (record.toLowerCase().contains("(config-line)")) {
                             mListener.writeData("password " + consolePw);
-                            mListener.onPasswordFragment("set console password");
+                            mListener.onPasswordFragment("setting console password");
                             state++;
                             record = "";
                         }
@@ -206,45 +197,39 @@ public class PasswordFragment extends Fragment {
                     case 11:
                         if (record.toLowerCase().contains("(config-line)")) {
                             mListener.writeData("!!!ctrlz");
-                            mListener.onPasswordFragment("");
+                            mListener.onPasswordFragment("exiting configuration");
                             state++;
                             record = "";
                         }
                         break;
                     case 12:
-                        if (record.toLowerCase().contains("#")) {
-                            mListener.writeData("write memory");
-                            mListener.onPasswordFragment("");
-                            state++;
-                            record = "";
-                        } else if (record.toLowerCase().contains("config-line)") || record.toLowerCase().contains("(config)")){
+                        if (record.toLowerCase().contains("config-line)") || record.toLowerCase().contains("(config)")){
                             mListener.writeData("end");
+                            record = "";
+                        }
+                        else if (record.toLowerCase().contains("#")) {
+                            mListener.writeData("write memory");
+                            mListener.onPasswordFragment("saving configuration");
+                            state++;
                             record = "";
                         }
                         break;
                     case 13:
                         if (record.toLowerCase().contains("#")) {
-                            mListener.writeData("write memory");
+                            mListener.onPasswordFragment("deleting config.old");
+                            mListener.writeData("del flash:config.old");
                             state++;
                             record = "";
                         }
                         break;
                     case 14:
                         if (record.toLowerCase().contains("#")) {
-                            mListener.onPasswordFragment("");
-                            mListener.writeData("del flash:config.old");
-                            state++;
-                            record = "";
-                        }
-                        break;
-                    case 15:
-                        if (record.toLowerCase().contains("#")) {
                             mListener.onPasswordFragment("Password Recovery Complete!");
                             state++;
                             record = "";
                         }
                         break;
-                    case 16:
+                    case 15:
                         if (record.toLowerCase().contains("#") && toAutoBootConf) {
                             mListener.onPasswordFragment("Enabling Automatic Booting...");
                             mListener.writeData("conf t");
@@ -252,31 +237,32 @@ public class PasswordFragment extends Fragment {
                             record = "";
                         }
                         break;
-                    case 17:
+                    case 16:
                         if (record.toLowerCase().contains("(config)")) {
                             mListener.writeData("no boot manual");
                             state++;
                             record = "";
                         }
                         break;
-                    case 18:
+                    case 17:
                         if (record.toLowerCase().contains("(config)")) {
-                            mListener.writeData("!!!esc");
+                            mListener.writeData("!!!ctrlz");
+                            state++;
+                            record = "";
+                        }
+                        break;
+                    case 18:
+                        if (record.toLowerCase().contains("config-line)") || record.toLowerCase().contains("(config)")){
+                            mListener.writeData("end");
+                            record = "";
+                        }
+                        else if (record.toLowerCase().contains("#")) {
+                            mListener.writeData("write memory");
                             state++;
                             record = "";
                         }
                         break;
                     case 19:
-                        if (record.toLowerCase().contains("#")) {
-                            mListener.writeData("write memory");
-                            state++;
-                            record = "";
-                        } else if (record.toLowerCase().contains("config-line)") || record.toLowerCase().contains("(config)")){
-                            mListener.writeData("end");
-                            record = "";
-                        }
-                        break;
-                    case 20:
                         if(record.toLowerCase().contains("#")){
                             mListener.onPasswordFragment("Auto-Booting Configured!");
                             record = "";

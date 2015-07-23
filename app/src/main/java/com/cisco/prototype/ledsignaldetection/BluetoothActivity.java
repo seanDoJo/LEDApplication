@@ -608,6 +608,9 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     private void destroyFile(){
         //toast with "filename saved"
         captureEnabled = false;
+        try{
+            if(writer != null)writer.close();
+        } catch (IOException e){e.printStackTrace();}
     }
 
     private void createFile(String filename){

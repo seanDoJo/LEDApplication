@@ -23,6 +23,8 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.Scroller;
 import android.widget.TextView;
@@ -374,7 +376,8 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         tran.commit();
         //connection.pau();
         fragIndex = 30;
-        for(int i = 0; i< 5; i++) connection.write("");
+        //for(int i = 0; i< 5; i++)
+        connection.write("");
         //connection.res();
     }
 
@@ -490,7 +493,24 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     }
 
     public void onPasswordFragment(String message){
-        pFrag.updateProgress();
+        if(!message.toLowerCase().contains("automatic") && !message.toLowerCase().contains("auto-booting"))pFrag.updateProgress();
+        if(message != "")pFrag.setMessage(message);
+        if(message.toLowerCase().contains("recovery complete!")){
+            Button boot = (Button)findViewById(R.id.confautoboot);
+            ProgressBar pBar = (ProgressBar)findViewById(R.id.progressBar);
+            boot.setEnabled(true);
+            boot.setVisibility(SurfaceView.VISIBLE);
+            pBar.setEnabled(true);
+            pBar.setVisibility(SurfaceView.GONE);
+        }
+    }
+
+    public void configureAutoBoot(View view){
+        pFrag.setAutoBootConf();
+        writeData("");
+        Button boot = (Button)findViewById(R.id.confautoboot);
+        boot.setEnabled(false);
+        boot.setVisibility(SurfaceView.GONE);
     }
 
     public void passwordStart(View view){
@@ -500,7 +520,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         TextView secretV = (TextView)findViewById(R.id.secretpwh);
         TextView enableV = (TextView)findViewById(R.id.enablepwh);
         TextView consoleV = (TextView)findViewById(R.id.consolepwh);
-        LinearLayout writeV = (LinearLayout)findViewById(R.id.password_text);
+        RelativeLayout writeV = (RelativeLayout)findViewById(R.id.password_text);
         Button start = (Button)findViewById(R.id.recoverpw);
         String data = secret.getText().toString() + "," + enable.getText().toString() + "," + console.getText().toString();
 

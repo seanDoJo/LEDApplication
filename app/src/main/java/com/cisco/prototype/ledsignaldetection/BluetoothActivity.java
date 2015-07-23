@@ -319,16 +319,22 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         public void ping() {
             paused = true;
             byte[] buffer = new byte[1024];
+            double time = 0;
+            int pingcounter = 0;
+            int[] pingcount = {1, 0, 0};
+            int found = 0;
             double start = System.currentTimeMillis();
             try {
                 int bytes = 0;
-                for(int i = 0; i<3; i++){
-                    this.write("");
-                }
-                while (System.currentTimeMillis() - start < 3000){
+                this.write("");
+                while ((time = System.currentTimeMillis() - start) < 3000){
                     if(mmInStream.available() > 0){
-                        bytes = mmInStream.read(buffer);
-                        if(bytes > 0)break;
+                        found = 1;
+                        break;
+                    }
+                    else if(pingcount[(int)Math.floor(time) / 1000] == 0){
+                        pingcount[(int)Math.floor(time) / 1000] = 1;
+                        this.write("");
                     }
                 }
                 if(mmInStream.available() > 0) {
@@ -341,7 +347,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                         }
                     }
                 }
-                pingval[0] = bytes > 0 ? 1 : 0;
+                pingval[0] = found > 0 ? 1 : 0;
             }catch(Exception e){
                 Log.e("LedApp", "error in ping!");
                 e.printStackTrace();

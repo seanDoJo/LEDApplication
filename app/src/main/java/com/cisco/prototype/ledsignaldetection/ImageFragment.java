@@ -42,7 +42,7 @@ public class ImageFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         log = "";
-        button = (Button) getView().findViewById(R.id.image_button);
+        button = (Button) getView().findViewById(R.id.download);
         mListener.setImageMode();
         mListener.onImageFragment();
         success = false;

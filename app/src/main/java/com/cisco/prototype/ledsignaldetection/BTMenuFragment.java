@@ -28,15 +28,23 @@ public class BTMenuFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_btmenu, container, false);
+        View view = inflater.inflate(R.layout.fragment_btmenu, container, false);
+        return view;
     }
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        /*try{
+        try{
             mListener = (BluetoothInterface)activity;
-        } catch (ClassCastException e){}*/
+        } catch (ClassCastException e){}
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        mListener.updateFragIndex(0);
+        mListener.configureMenu();
     }
 
     @Override

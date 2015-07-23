@@ -7,7 +7,9 @@ import android.app.DialogFragment;
  */
 public interface BluetoothInterface {
     public void onSelectionFragment(int index);
-    public void onAliveFragment();
+    public void updateFragIndex(int index);
+    public boolean onAliveFragment();
+    public void configureMenu();
     public void onImageFragment();
     public void disconnect();
     public void onSoftwareFragment();

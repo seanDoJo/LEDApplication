@@ -62,7 +62,7 @@ public class CommunicationFragment extends Fragment {
 
     public void addMessage(String message) {
         TextView text = (TextView) getView().findViewById(R.id.text_view);
-        text.append(message);
+        if(text != null)text.append(message);
     }
 
     public void collapse(){

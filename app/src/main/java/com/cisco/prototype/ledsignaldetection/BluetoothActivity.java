@@ -48,7 +48,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     private ArrayList<BluetoothDevice> devices;
     private String activeDevice = "";
     private int REQUEST_ENABLE_BT = 123;
-    private int fragIndex;
+    private int fragIndex = -1;
     private CommunicationFragment cFrag;
     private SelectionFragment sFrag;
     private BTMenuFragment btmFrag;
@@ -229,7 +229,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     while(content.charAt(i) == '!'){ i++; };
                     String specComm = content.substring(i, content.length());
                     Log.i("LEDApp", specComm);
-                    if(specComm.contains("esc")){
+                    if(specComm.replace("-","").contains("ctrlz")){
                         char stop = (char)0x1A;
                         mmOutStream.write((byte)stop);
                         Log.i("LEDApp", "Special esc char sent");
@@ -275,6 +275,38 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             running = false;
             connectionHandler.obtainMessage(22222222, 1, -1, 1).sendToTarget();
         }
+        public String sendCont(String command){
+            double timeout = System.currentTimeMillis();
+            byte[] buffer = new byte[1024];
+            byte[] readB;
+            int bytes;
+            String output =  "";
+            write(command);
+            try {
+                while ((System.currentTimeMillis() - timeout) < 5000) {
+                    if(mmInStream.available() > 0)break;
+                }
+                if (mmInStream != null && mmInStream.available() > 0) {
+                    double latest = System.currentTimeMillis();
+                    while(mmInStream.available() > 0 || (System.currentTimeMillis() - latest) < 500) {
+                        if(mmInStream.available() > 0) {
+                            bytes = mmInStream.read(buffer);
+                            readB = new byte[bytes];
+                            //Log.e("LEDapp", new String(readB));
+                            for (int i = 0; i < bytes; i++) readB[i] = buffer[i];
+                            String newStr = new String(readB);
+                            output += newStr;
+                            for (int i = 0; i < 1024; i++) buffer[i] = 0;
+                            latest = System.currentTimeMillis();
+                        }
+                    }
+                }
+            }catch (IOException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+            return output;
+        }
 
         public void pau() {
             paused = true;
@@ -297,6 +329,16 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     if(mmInStream.available() > 0){
                         bytes = mmInStream.read(buffer);
                         if(bytes > 0)break;
+                    }
+                }
+                if(mmInStream.available() > 0) {
+                    double latest = System.currentTimeMillis();
+                    while (mmInStream.available() > 0 || (System.currentTimeMillis() - latest) < 500) {
+                        if (mmInStream.available() > 0) {
+                            bytes = mmInStream.read(buffer);
+                            for (int i = 0; i < 1024; i++) buffer[i] = 0;
+                            latest = System.currentTimeMillis();
+                        }
                     }
                 }
                 pingval[0] = bytes > 0 ? 1 : 0;
@@ -352,6 +394,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         mBluetooth.cancelDiscovery();
         if(!devices.get(index).getName().equals(activeDevice)) {
             tready = new CountDownLatch(1);
+            latch = new CountDownLatch(1);
             if (connection != null) connection.close();
             connection = new BTConnection(devices.get(index), latch);
             connection.start();
@@ -369,6 +412,80 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         fragIndex = 0;
         connection.res();
 
+    }
+
+    public void configureMenu(){
+        clearBtMenu();
+        boolean isAlive = false;
+        int stage = 0;
+        Button currbutton = null;
+        isAlive = onAliveFragment();
+        TextView mStatus = (TextView)findViewById(R.id.menu_status);
+        if(isAlive){
+            connection.pau();
+            String returned = connection.sendCont("");
+            Log.i("LEDapp", returned);
+            if(returned.contains("#") || returned.toLowerCase().contains("switch>") || returned.toLowerCase().contains("password:")){
+                stage = 2;
+            }
+            else if(returned.toLowerCase().contains("(boot)#")){
+                stage = 1;
+            }
+            else if(returned.toLowerCase().contains("switch:") || returned.toLowerCase().contains("loader>")){
+                stage = 0;
+            }
+            connection.res();
+        }
+        if(!isAlive){
+            mStatus.setText("Device could not be reached! The device is either off or damaged");
+        }
+        else{
+            LinearLayout lin = (LinearLayout)findViewById(R.id.bt_lin);
+            lin.setVisibility(SurfaceView.VISIBLE);
+            switch(stage){
+                case 2:
+                    mStatus.setText("Device is Booted");
+
+                    currbutton = (Button)findViewById(R.id.password);
+                    currbutton.setEnabled(true);
+                    currbutton.setVisibility(SurfaceView.VISIBLE);
+
+                    currbutton = (Button)findViewById(R.id.terminal);
+                    currbutton.setEnabled(true);
+                    currbutton.setVisibility(SurfaceView.VISIBLE);
+                    break;
+                case 1:
+                    mStatus.setText("Device is in Loader (only kickstart image booted)");
+
+                    currbutton = (Button)findViewById(R.id.terminal);
+                    currbutton.setEnabled(true);
+                    currbutton.setVisibility(SurfaceView.VISIBLE);
+                    break;
+                case 0:
+                    mStatus.setText("Device is in Boot (no image booted)");
+
+                    currbutton = (Button)findViewById(R.id.terminal);
+                    currbutton.setEnabled(true);
+                    currbutton.setVisibility(SurfaceView.VISIBLE);
+                    break;
+
+            }
+        }
+
+    }
+
+    private void clearBtMenu(){
+        Button currbutton = null;
+        TextView mStatus = (TextView)findViewById(R.id.menu_status);
+        mStatus.setText("");
+
+        currbutton = (Button)findViewById(R.id.password);
+        currbutton.setEnabled(false);
+        currbutton.setVisibility(SurfaceView.GONE);
+
+        currbutton = (Button)findViewById(R.id.terminal);
+        currbutton.setEnabled(false);
+        currbutton.setVisibility(SurfaceView.GONE);
     }
 
     public void switchCommunication(View view){
@@ -426,22 +543,17 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         }
     }
 
-    public void onAliveFragment(){
+    public boolean onAliveFragment(){
         connection.ping();
         try {
             latch.await();
         }catch(InterruptedException e){}
         int alive = pingval[0];
-        aFrag.enButton();
         if(alive > 0){
-            aFrag.setMessage("It's alive");
-            letsGoSoftware = true;
+            return true;
         } else {
-            aFrag.setMessage("It's dead");
-            letsGoSoftware = false;
+            return false;
         }
-        Log.i("LedApp", "end of onalive response");
-        connection.res();
     }
 
     public void onCommunicationFragment(View view){
@@ -666,6 +778,12 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
 
     public void writeData(String data){
         connection.write(data);
+    }
+
+    public void updateFragIndex(int index){
+        connection.pau();
+        fragIndex = index;
+        connection.res();
     }
 
     public void disconnect(){

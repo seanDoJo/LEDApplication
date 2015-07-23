@@ -205,7 +205,7 @@ public class PasswordFragment extends Fragment {
                         break;
                     case 11:
                         if (record.toLowerCase().contains("(config-line)")) {
-                            mListener.writeData("!!!esc");
+                            mListener.writeData("!!!ctrlz");
                             mListener.onPasswordFragment("");
                             state++;
                             record = "";

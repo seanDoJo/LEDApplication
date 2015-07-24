@@ -6,10 +6,16 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Surface;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 import java.util.HashMap;
 
@@ -18,7 +24,7 @@ public class PasswordFragment extends Fragment {
     private BluetoothInterface mListener;
     private Boolean recoveryStarted = false;
     private HashMap<String, String> responses;
-    private TextView textView;
+    private TextView textView, output;
     private ProgressBar pBar;
     private int state = 0;
     private String record = "";
@@ -26,6 +32,7 @@ public class PasswordFragment extends Fragment {
     private String consolePw = "";
     private String enablePw = "";
     private boolean toAutoBootConf = false;
+    private boolean outputEnabled = false;
 
     public PasswordFragment() {
         // Required empty public constructor
@@ -43,6 +50,7 @@ public class PasswordFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_password, container, false);
         textView = (TextView) view.findViewById(R.id.password_prompt);
+        output = (TextView)view.findViewById(R.id.password_output);
         pBar = (ProgressBar)view.findViewById(R.id.progressBar);
         return view;
     }
@@ -84,7 +92,31 @@ public class PasswordFragment extends Fragment {
         toAutoBootConf = true;
     }
 
+    public void toggleOuput(){
+        if(!outputEnabled) {
+            Button button = (Button)getActivity().findViewById(R.id.togOutput);
+            button.setText("Hide Terminal Output");
+            ScrollView scrollview = (ScrollView) getActivity().findViewById(R.id.passwordScroll);
+            scrollview.setEnabled(true);
+            scrollview.setVisibility(SurfaceView.VISIBLE);
+            scrollview.fullScroll(View.FOCUS_DOWN);
+        }
+        else{
+            Button button = (Button)getActivity().findViewById(R.id.togOutput);
+            button.setText("Show Terminal Output");
+            ScrollView scrollview = (ScrollView) getActivity().findViewById(R.id.passwordScroll);
+            scrollview.setEnabled(false);
+            scrollview.setVisibility(SurfaceView.GONE);
+        }
+        outputEnabled = !outputEnabled;
+    }
+
     public void read(String data){
+        output.setText(output.getText() + data);
+        if(outputEnabled) {
+            ScrollView sView = (ScrollView) getActivity().findViewById(R.id.passwordScroll);
+            sView.fullScroll(View.FOCUS_DOWN);
+        }
         record += data;
         //mListener.onPasswordFragment(record);
         if(recoveryStarted) {

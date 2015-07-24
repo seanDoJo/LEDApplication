@@ -39,7 +39,7 @@
         android:layout_weight="8"
         android:scrollbars="vertical"
         android:fillViewport="true">
-        <TextView android:layout_width="fill_parent" android:layout_height="fill_parent"
+        <TextView android:layout_width="fill_parent" android:layout_height="wrap_content"
             android:layout_weight="1.0"
             android:id="@+id/text_view"
             android:background="#fffefefe"/>

@@ -4,6 +4,9 @@ import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.Layout;
+import android.text.StaticLayout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +27,8 @@ public class ViewFileFragment extends Fragment {
     private BufferedReader reader = null;
     private File viewedFile = null;
     private TextView fileText = null;
+    private TextView fileName = null;
+    private TextView lineNumber = null;
 
 
     public ViewFileFragment() {
@@ -40,6 +45,8 @@ public class ViewFileFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_view_file, container, false);
         fileText = (TextView)view.findViewById(R.id.fileText);
+        fileName = (TextView)view.findViewById(R.id.file_name);
+        lineNumber = (TextView)view.findViewById(R.id.line_numbers);
         return view;
     }
 
@@ -85,13 +92,18 @@ public class ViewFileFragment extends Fragment {
     public void viewCurrentFile(File file){
         viewedFile = file;
         String line;
+        int i = 1;
         try {
             reader = new BufferedReader(new FileReader(viewedFile));
             while((line = reader.readLine()) != null){
                 fileText.setText(fileText.getText() + "\n" + line);
             }
-        }catch(FileNotFoundException e){e.printStackTrace();} catch (IOException e){ e.printStackTrace();}
-
+            fileText.getViewTreeObserver();
+            i = fileText.getLineCount();
+            for(int x = 1; x <= i; x++)lineNumber.setText(lineNumber.getText() + "\n" + Integer.toString(x));
+        }catch(FileNotFoundException e){e.printStackTrace();} catch (IOException e) {
+            e.printStackTrace();}
+        fileName.setText(viewedFile.getName());
     }
 
 }

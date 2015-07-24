@@ -891,6 +891,8 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         imgRestore.collectInfo(passed);
     }
 
+
+
     public void writeData(String data){
         connection.write(data);
     }

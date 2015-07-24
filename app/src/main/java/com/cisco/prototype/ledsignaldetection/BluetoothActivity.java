@@ -1,7 +1,5 @@
 package com.cisco.prototype.ledsignaldetection;
 
-import android.app.DialogFragment;
-import android.inputmethodservice.KeyboardView;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
@@ -15,9 +13,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.text.TextWatcher;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
@@ -28,11 +24,8 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
-import android.widget.Scroller;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.w3c.dom.Text;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -40,12 +33,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 
 public class BluetoothActivity extends FragmentActivity implements BluetoothInterface {
@@ -57,11 +48,12 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     private CommunicationFragment cFrag;
     private SelectionFragment sFrag;
     private BTMenuFragment btmFrag;
-    private AliveFragment aFrag;
     private PasswordFragment pFrag;
     private ImageFragment iFrag;
     private SoftwareFragment soFrag;
     private ImageRestoreFragment imgRestore;
+    private FileExplorerFragment fileFrag;
+    private ViewFileFragment fileViewer;
     private int citer = 0;
     private boolean letsGoSoftware;
     private int passResult = 0;
@@ -80,6 +72,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     private File outputFile;
     private BufferedWriter writer = null;
     private boolean captureEnabled = false;
+    private File viewedFile = null;
     //Where the asynchronous bluetooth actions are received
     private final BroadcastReceiver btReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
@@ -436,6 +429,10 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     public void configureMenu(){
         clearBtMenu();
         boolean isAlive = false;
+        boolean hasFiles = false;
+        File appFolder = new File(getFilesDir().getAbsolutePath());
+        File[] folderContents = appFolder.listFiles();
+        if(folderContents.length > 0)hasFiles = true;
         int stage = 0;
         Button currbutton = null;
         isAlive = onAliveFragment();
@@ -472,6 +469,12 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     currbutton = (Button)findViewById(R.id.terminal);
                     currbutton.setEnabled(true);
                     currbutton.setVisibility(SurfaceView.VISIBLE);
+
+                    if(hasFiles) {
+                        currbutton = (Button) findViewById(R.id.files);
+                        currbutton.setEnabled(true);
+                        currbutton.setVisibility(SurfaceView.VISIBLE);
+                    }
                     break;
                 case 1:
                     mStatus.setText("Device is in Loader (only kickstart image booted)");
@@ -479,6 +482,12 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     currbutton = (Button)findViewById(R.id.terminal);
                     currbutton.setEnabled(true);
                     currbutton.setVisibility(SurfaceView.VISIBLE);
+
+                    if(hasFiles) {
+                        currbutton = (Button) findViewById(R.id.files);
+                        currbutton.setEnabled(true);
+                        currbutton.setVisibility(SurfaceView.VISIBLE);
+                    }
                     break;
                 case 0:
                     mStatus.setText("Device is in Boot (no image booted)");
@@ -486,6 +495,12 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     currbutton = (Button)findViewById(R.id.terminal);
                     currbutton.setEnabled(true);
                     currbutton.setVisibility(SurfaceView.VISIBLE);
+
+                    if(hasFiles) {
+                        currbutton = (Button) findViewById(R.id.files);
+                        currbutton.setEnabled(true);
+                        currbutton.setVisibility(SurfaceView.VISIBLE);
+                    }
                     break;
 
             }
@@ -521,16 +536,38 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         //connection.res();
     }
 
-    public void switchAlive(View view){
+    public void switchFileExplorer(View view){
         //connection.pau();
-        aFrag = new AliveFragment();
+        fileFrag = new FileExplorerFragment();
         FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
-        tran.replace(R.id.fragment_container, aFrag);
+        tran.replace(R.id.fragment_container, fileFrag);
         tran.addToBackStack(null);
         tran.commit();
-        //connection.pau();
-        fragIndex = 1;
-        //connection.res();
+        connection.pau();
+        fragIndex = 7;
+        connection.res();
+    }
+
+    public void startFileExplorer(){
+        File appFolder = new File(getFilesDir().getAbsolutePath());
+        File[] folderContents = appFolder.listFiles();
+        fileFrag.init(folderContents);
+    }
+
+    public void viewFile(File file){
+        viewedFile = file;
+        fileViewer = new ViewFileFragment();
+        FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
+        tran.replace(R.id.fragment_container, fileViewer);
+        tran.addToBackStack(null);
+        tran.commit();
+        connection.pau();
+        fragIndex = 8;
+        connection.res();
+    }
+
+    public void initFileView(){
+        fileViewer.viewCurrentFile(viewedFile);
     }
 
     public void switchPassword(View view){
@@ -605,7 +642,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         }
     }
 
-    private void destroyFile(){
+    public void destroyFile(){
         //toast with "filename saved"
         captureEnabled = false;
         try{
@@ -616,6 +653,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     private void createFile(String filename){
         outputFile = new File(getFilesDir(), filename + ".capture");
         try {
+            if(outputFile.exists())outputFile.delete();
             outputFile.createNewFile();
             writer = new BufferedWriter(new FileWriter(outputFile));
             captureEnabled = true;

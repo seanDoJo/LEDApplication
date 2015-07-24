@@ -43,16 +43,17 @@ public class CommunicationFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        /*try {
-            mListener = (onSendListener) activity;
+        try {
+            mListener = (BluetoothInterface) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString() + " must implement onSendListener");
-        }*/
+        }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
+        mListener.destroyFile();
         mListener = null;
     }
 

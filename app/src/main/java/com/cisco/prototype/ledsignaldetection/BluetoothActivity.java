@@ -1,5 +1,6 @@
 package com.cisco.prototype.ledsignaldetection;
 
+import android.graphics.Color;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
@@ -96,6 +97,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     //Where the connection thread communicates with the main activity
     Handler connectionHandler = new Handler(){
         public void handleMessage(Message m){
+            Log.i("LEDApp", "Handler received message for: " + Integer.toString(m.what));
             if(m.what == 30){
                 //Communication
                 byte[] data = (byte[])m.obj;
@@ -149,6 +151,48 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 byte[] data = (byte[]) m.obj;
                 String result = new String(data);
                 imgRestore.step(result);
+            }
+            else if(m.what == 56){
+                int status = (int)m.obj;
+                Log.i("LEDApp", "called handler with 56");
+                Button currbutton = null;
+                LinearLayout lin = null;
+                TextView statlabel = (TextView)findViewById(R.id.status_label);
+                clearBtMenu();
+                switch(status){
+                    case -1:
+                        statlabel.setText("Device Status: unreachable");
+                        statlabel.setTextColor(Color.parseColor("#ffcb120f"));
+                        break;
+                    case 0:
+                        statlabel.setText("Device Status: booting...");
+                        statlabel.setTextColor(Color.parseColor("#FFCBC60D"));
+                        break;
+                    case 1:
+                        statlabel.setText("Device Status: bootloader");
+                        statlabel.setTextColor(Color.parseColor("#FFCB7423"));
+                        lin = (LinearLayout)findViewById(R.id.bt_lin);
+                        lin.setVisibility(SurfaceView.VISIBLE);
+                        currbutton = (Button) findViewById(R.id.password);
+                        currbutton.setEnabled(true);
+                        currbutton.setVisibility(SurfaceView.VISIBLE);
+                        currbutton = (Button) findViewById(R.id.terminal);
+                        currbutton.setEnabled(true);
+                        currbutton.setVisibility(SurfaceView.VISIBLE);
+                        break;
+                    case 2:
+                        statlabel.setText("Device Status: booted");
+                        statlabel.setTextColor(Color.parseColor("#FF1ACB1E"));
+                        lin = (LinearLayout)findViewById(R.id.bt_lin);
+                        lin.setVisibility(SurfaceView.VISIBLE);
+                        currbutton = (Button) findViewById(R.id.password);
+                        currbutton.setEnabled(true);
+                        currbutton.setVisibility(SurfaceView.VISIBLE);
+                        currbutton = (Button) findViewById(R.id.terminal);
+                        currbutton.setEnabled(true);
+                        currbutton.setVisibility(SurfaceView.VISIBLE);
+                        break;
+                }
             }
         }
     };
@@ -322,7 +366,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             paused = false;
         }
 
-        public void ping() {
+        public void ping(CountDownLatch pingLatch) {
             paused = true;
             byte[] buffer = new byte[1024];
             double time = 0;
@@ -343,15 +387,49 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                         this.write("");
                     }
                 }
+                String returned = "";
+                boolean booting = false;
                 if(mmInStream.available() > 0) {
+                    double first = System.currentTimeMillis();
                     double latest = System.currentTimeMillis();
+                    byte[] readB;
                     while (mmInStream.available() > 0 || (System.currentTimeMillis() - latest) < 500) {
                         if (mmInStream.available() > 0) {
                             bytes = mmInStream.read(buffer);
+                            readB = new byte[bytes];
+                            //Log.e("LEDapp", new String(readB));
+                            for (int i = 0; i < bytes; i++) readB[i] = buffer[i];
+                            String newStr = new String(readB);
+                            returned += newStr;
                             for (int i = 0; i < 1024; i++) buffer[i] = 0;
                             latest = System.currentTimeMillis();
                         }
+                        if(System.currentTimeMillis() - first > 5000){
+                            booting = true;
+                            break;
+                        }
                     }
+                    Log.i("LEDApp", returned);
+                    if(!booting) {
+                        if (returned.contains("#") || returned.toLowerCase().contains("switch>") || returned.toLowerCase().contains("password:")) {
+                            connectionHandler.obtainMessage(56, 1, -1, 2).sendToTarget();
+                            Log.i("LEDApp", "message sent to handler");
+                        } else if (returned.toLowerCase().contains("(boot)#")) {
+                            connectionHandler.obtainMessage(56, 1, -1, 1).sendToTarget();
+                            Log.i("LEDApp", "message sent to handler");
+                        } else if (returned.toLowerCase().contains("switch:") || returned.toLowerCase().contains("loader>")) {
+                            connectionHandler.obtainMessage(56, 1, -1, 1).sendToTarget();
+                            Log.i("LEDApp", "message sent to handler");
+                        }
+                    }
+                    else {
+                        connectionHandler.obtainMessage(56, 1, -1, 0).sendToTarget();
+                        Log.i("LEDApp", "message sent to handler");
+                    }
+                }
+                else{
+                    connectionHandler.obtainMessage(56, 1, -1, -1).sendToTarget();
+                    Log.i("LEDApp", "message sent to handler");
                 }
                 pingval[0] = found > 0 ? 1 : 0;
             }catch(Exception e){
@@ -359,6 +437,8 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 e.printStackTrace();
             }
             synchron.countDown();
+            if(pingLatch != null)pingLatch.countDown();
+            Log.i("LEDApp", "ping executed");
             paused = false;
         }
 
@@ -427,91 +507,28 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     }
 
     public void configureMenu(){
-        clearBtMenu();
-        boolean isAlive = false;
         boolean hasFiles = false;
         File appFolder = new File(getFilesDir().getAbsolutePath());
         File[] folderContents = appFolder.listFiles();
         if(folderContents.length > 0)hasFiles = true;
         int stage = 0;
         Button currbutton = null;
-        isAlive = onAliveFragment();
-        TextView mStatus = (TextView)findViewById(R.id.menu_status);
-        if(isAlive){
-            connection.pau();
-            String returned = connection.sendCont("");
-            Log.i("LEDapp", returned);
-            if(returned.contains("#") || returned.toLowerCase().contains("switch>") || returned.toLowerCase().contains("password:")){
-                stage = 2;
-            }
-            else if(returned.toLowerCase().contains("(boot)#")){
-                stage = 1;
-            }
-            else if(returned.toLowerCase().contains("switch:") || returned.toLowerCase().contains("loader>")){
-                stage = 0;
-            }
-            connection.res();
+        if(hasFiles) {
+            currbutton = (Button) findViewById(R.id.files);
+            currbutton.setEnabled(true);
+            currbutton.setVisibility(SurfaceView.VISIBLE);
         }
-        if(!isAlive){
-            mStatus.setText("Device could not be reached! The device is either off or damaged");
-        }
-        else{
-            LinearLayout lin = (LinearLayout)findViewById(R.id.bt_lin);
-            lin.setVisibility(SurfaceView.VISIBLE);
-            switch(stage){
-                case 2:
-                    mStatus.setText("Device is Booted");
-
-                    currbutton = (Button)findViewById(R.id.password);
-                    currbutton.setEnabled(true);
-                    currbutton.setVisibility(SurfaceView.VISIBLE);
-
-                    currbutton = (Button)findViewById(R.id.terminal);
-                    currbutton.setEnabled(true);
-                    currbutton.setVisibility(SurfaceView.VISIBLE);
-
-                    if(hasFiles) {
-                        currbutton = (Button) findViewById(R.id.files);
-                        currbutton.setEnabled(true);
-                        currbutton.setVisibility(SurfaceView.VISIBLE);
-                    }
-                    break;
-                case 1:
-                    mStatus.setText("Device is in Loader (only kickstart image booted)");
-
-                    currbutton = (Button)findViewById(R.id.terminal);
-                    currbutton.setEnabled(true);
-                    currbutton.setVisibility(SurfaceView.VISIBLE);
-
-                    if(hasFiles) {
-                        currbutton = (Button) findViewById(R.id.files);
-                        currbutton.setEnabled(true);
-                        currbutton.setVisibility(SurfaceView.VISIBLE);
-                    }
-                    break;
-                case 0:
-                    mStatus.setText("Device is in Boot (no image booted)");
-
-                    currbutton = (Button)findViewById(R.id.terminal);
-                    currbutton.setEnabled(true);
-                    currbutton.setVisibility(SurfaceView.VISIBLE);
-
-                    if(hasFiles) {
-                        currbutton = (Button) findViewById(R.id.files);
-                        currbutton.setEnabled(true);
-                        currbutton.setVisibility(SurfaceView.VISIBLE);
-                    }
-                    break;
-
-            }
-        }
+        CountDownLatch configL = new CountDownLatch(1);
+        connection.ping(configL);
+        try {
+            configL.await();
+        }catch(InterruptedException e){e.printStackTrace();}
+        Log.i("LEDApp", "returned from ping");
 
     }
 
     private void clearBtMenu(){
         Button currbutton = null;
-        TextView mStatus = (TextView)findViewById(R.id.menu_status);
-        mStatus.setText("");
 
         currbutton = (Button)findViewById(R.id.password);
         currbutton.setEnabled(false);
@@ -596,19 +613,6 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         } else{
             FragmentManager frag = getSupportFragmentManager();
             frag.popBackStack();
-        }
-    }
-
-    public boolean onAliveFragment(){
-        connection.ping();
-        try {
-            latch.await();
-        }catch(InterruptedException e){}
-        int alive = pingval[0];
-        if(alive > 0){
-            return true;
-        } else {
-            return false;
         }
     }
 

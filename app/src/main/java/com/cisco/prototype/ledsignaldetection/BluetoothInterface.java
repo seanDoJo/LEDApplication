@@ -10,7 +10,6 @@ import java.io.File;
 public interface BluetoothInterface {
     public void onSelectionFragment(int index);
     public void updateFragIndex(int index);
-    public boolean onAliveFragment();
     public void configureMenu();
     public void onImageFragment();
     public void disconnect();

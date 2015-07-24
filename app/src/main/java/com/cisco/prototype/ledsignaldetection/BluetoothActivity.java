@@ -840,6 +840,10 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         pFrag.startRecovery(data);
     }
 
+    public void togglePasswordOutput(View view){
+        pFrag.toggleOuput();
+    }
+
     public void onSoftwareFragment(){
         connection.write("");
     }

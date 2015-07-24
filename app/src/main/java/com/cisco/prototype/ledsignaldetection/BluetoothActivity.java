@@ -681,6 +681,19 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         //Open file
     }
 
+    public void onCheckView(View view){
+        CheckBox check = (CheckBox)findViewById(R.id.view_check);
+        TextView fileText = (TextView)findViewById(R.id.fileText);
+        TextView lineNumber = (TextView)findViewById(R.id.line_numbers);
+
+        if(check.isChecked()) {
+            int lines = fileText.getLineCount();
+            for (int i = 1; i <= lines; i++) {
+                lineNumber.setText(lineNumber.getText() + "\n" + Integer.toString(i));
+            }
+        } else { lineNumber.setText(""); }
+    }
+
     public void setImageMode(){
         iFrag.kickstart = kick;
     }

@@ -132,8 +132,14 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             }
             else if(m.what == 3){
                 //Password
+
                 byte[] data = (byte[]) m.obj;
                 String result = new String(data);
+                if(captureEnabled){
+                    try {
+                        writer.write(result);
+                    }catch(IOException e){e.printStackTrace();}
+                }
                 if(!result.contains("@"))pFrag.read(result);
             }
             else if(m.what == 4){
@@ -167,6 +173,11 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     case 0:
                         statlabel.setText("Device Status: booting...");
                         statlabel.setTextColor(Color.parseColor("#FFCBC60D"));
+                        lin = (LinearLayout)findViewById(R.id.bt_lin);
+                        lin.setVisibility(SurfaceView.VISIBLE);
+                        currbutton = (Button) findViewById(R.id.terminal);
+                        currbutton.setEnabled(true);
+                        currbutton.setVisibility(SurfaceView.VISIBLE);
                         break;
                     case 1:
                         statlabel.setText("Device Status: bootloader");
@@ -420,6 +431,8 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                         } else if (returned.toLowerCase().contains("switch:") || returned.toLowerCase().contains("loader>")) {
                             connectionHandler.obtainMessage(56, 1, -1, 1).sendToTarget();
                             Log.i("LEDApp", "message sent to handler");
+                        } else {
+                            connectionHandler.obtainMessage(56, 1, -1, 0).sendToTarget();
                         }
                     }
                     else {
@@ -479,6 +492,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         super.onDestroy();
         //we need this otherwise poo flinging will ensue
         if (connection != null)connection.close();
+        mBluetooth.cancelDiscovery();
         unregisterReceiver(btReceiver);
     }
 
@@ -518,11 +532,11 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             currbutton.setEnabled(true);
             currbutton.setVisibility(SurfaceView.VISIBLE);
         }
-        CountDownLatch configL = new CountDownLatch(1);
-        connection.ping(configL);
-        try {
+        //CountDownLatch configL = new CountDownLatch(1);
+        connection.ping(null);
+        /*try {
             configL.await();
-        }catch(InterruptedException e){e.printStackTrace();}
+        }catch(InterruptedException e){e.printStackTrace();}*/
         Log.i("LEDApp", "returned from ping");
 
     }
@@ -654,7 +668,8 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         } catch (IOException e){e.printStackTrace();}
     }
 
-    private void createFile(String filename){
+    private void createFile(String filenamel){
+        String filename = filenamel.replaceAll("\\s+", "");
         outputFile = new File(getFilesDir(), filename + ".capture");
         try {
             if(outputFile.exists())outputFile.delete();
@@ -837,10 +852,23 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         TextView secretV = (TextView)findViewById(R.id.secretpwh);
         TextView enableV = (TextView)findViewById(R.id.enablepwh);
         TextView consoleV = (TextView)findViewById(R.id.consolepwh);
+        TextView outputV = (TextView)findViewById(R.id.outputpwh);
         RelativeLayout writeV = (RelativeLayout)findViewById(R.id.password_text);
+        CheckBox check = (CheckBox)findViewById(R.id.pwcheck);
+        EditText fname = (EditText)findViewById(R.id.outputpw);
         Button start = (Button)findViewById(R.id.recoverpw);
         String data = secret.getText().toString() + "," + enable.getText().toString() + "," + console.getText().toString();
-
+        if(check.isChecked()){
+            String file = fname.getText().toString().trim();
+            if(file.length() > 0){
+                createFile(file);
+            }
+            else{
+                fname.setBackgroundColor(Color.RED);
+                ScrollView sView = (ScrollView)findViewById(R.id.pwscroll);
+                sView.fullScroll(View.FOCUS_DOWN);
+            }
+        }
         secret.setEnabled(false);
         secret.setVisibility(SurfaceView.GONE);
         enable.setEnabled(false);
@@ -849,9 +877,14 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         console.setVisibility(SurfaceView.GONE);
         start.setEnabled(false);
         start.setVisibility(SurfaceView.GONE);
+        check.setEnabled(false);
+        check.setVisibility(SurfaceView.GONE);
+        fname.setEnabled(false);
+        fname.setVisibility(SurfaceView.GONE);
         secretV.setVisibility(SurfaceView.GONE);
         enableV.setVisibility(SurfaceView.GONE);
         consoleV.setVisibility(SurfaceView.GONE);
+        outputV.setVisibility(SurfaceView.GONE);
         writeV.setVisibility(SurfaceView.VISIBLE);
 
         pFrag.startRecovery(data);
@@ -859,6 +892,21 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
 
     public void togglePasswordOutput(View view){
         pFrag.toggleOuput();
+    }
+
+    public void passwordCheck(View view){
+        CheckBox check = (CheckBox)findViewById(R.id.pwcheck);
+        EditText fname = (EditText)findViewById(R.id.outputpw);
+        if(check.isChecked()) {
+            fname.setEnabled(true);
+            fname.setVisibility(SurfaceView.VISIBLE);
+            ScrollView sView = (ScrollView)findViewById(R.id.pwscroll);
+            sView.fullScroll(View.FOCUS_DOWN);
+        }
+        else{
+            fname.setEnabled(false);
+            fname.setVisibility(SurfaceView.GONE);
+        }
     }
 
     public void onSoftwareFragment(){

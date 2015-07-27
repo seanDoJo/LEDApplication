@@ -75,10 +75,12 @@ public class FileExplorerFragment extends Fragment {
     @Override
     public void onStart(){
         super.onStart();
-        if(!prevActive){
-            prevActive = true;
-            mListener.startFileExplorer();
+        if(prevActive){
+            myFiles.clear();
+            fileNames.clear();
         }
+        prevActive = true;
+        mListener.startFileExplorer();
     }
 
     public void init(File[] files){

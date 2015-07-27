@@ -1,6 +1,7 @@
 package com.cisco.prototype.ledsignaldetection.Activities;
 
 import android.graphics.Color;
+import android.net.Uri;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
@@ -31,6 +32,7 @@ import android.widget.Toast;
 import com.cisco.prototype.ledsignaldetection.Fragments.BTMenuFragment;
 import com.cisco.prototype.ledsignaldetection.BluetoothInterface;
 import com.cisco.prototype.ledsignaldetection.Fragments.CommunicationFragment;
+import com.cisco.prototype.ledsignaldetection.Fragments.EmailFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.FileExplorerFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ImageFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ImageRestoreFragment;
@@ -40,6 +42,8 @@ import com.cisco.prototype.ledsignaldetection.Fragments.SelectionFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.SoftwareFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ViewFileFragment;
 import com.cisco.prototype.ledsignaldetection.imagePair;
+
+import org.w3c.dom.Text;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -70,6 +74,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     private ImageRestoreFragment imgRestore;
     private FileExplorerFragment fileFrag;
     private ViewFileFragment fileViewer;
+    private EmailFragment eFrag;
     private int citer = 0;
     private boolean letsGoSoftware;
     private int passResult = 0;
@@ -625,7 +630,42 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         fileViewer.viewCurrentFile(viewedFile);
     }
 
+    public void switchEmail(View view){
+        eFrag = new EmailFragment();
+        FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
+        tran.replace(R.id.fragment_container, eFrag);
+        tran.addToBackStack(null);
+        tran.commit();
+        if(connection != null) {
+            connection.pau();
+            fragIndex = 8;
+            connection.res();
+        }
+    }
+
+    public void sendEmail(View view){
+        TextView email = (TextView) view.findViewById(R.id.email_address);
+        TextView subject = (TextView) view.findViewById(R.id.subject);
+        TextView body = (TextView) view.findViewById(R.id.body);
+
+        Intent i = new Intent(Intent.ACTION_SEND);
+        i.setType("message/rfc822");
+
+        Uri uri = Uri.fromFile(viewedFile);
+        i.putExtra(Intent.EXTRA_STREAM, uri);
+
+        /*i.putExtra(Intent.EXTRA_EMAIL  , email.getText());
+        i.putExtra(Intent.EXTRA_SUBJECT, subject.getText());*/
+        i.putExtra(Intent.EXTRA_TEXT   , viewedFile.getAbsolutePath());
+        try {
+            startActivity(Intent.createChooser(i, "Send mail..."));
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(BluetoothActivity.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     public void deleteFile(View view){
+        destroyFile();
         viewedFile.delete();
         FragmentManager frag = getSupportFragmentManager();
         frag.popBackStack();

@@ -32,8 +32,13 @@
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:src="@drawable/email"
+            android:onClick="switchEmail"/>
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:src="@drawable/trash"
-            android:onClick="deleteFile"/>
+            android:onClick="deleteFile" />
     </LinearLayout>
     <ScrollView
         android:layout_width="match_parent"

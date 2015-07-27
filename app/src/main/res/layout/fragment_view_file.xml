@@ -29,6 +29,10 @@
             android:text="Show line numbers"
             android:textColor="#ffaa052a"
             android:textSize="15sp"/>
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/trash"/>
     </LinearLayout>
     <ScrollView
         android:layout_width="match_parent"

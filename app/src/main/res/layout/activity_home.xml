@@ -17,7 +17,7 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="50dp"
+        android:layout_marginBottom="40dp"
         android:layout_alignParentBottom="true"
         android:orientation="vertical"
         android:id="@+id/homelinear"
@@ -34,11 +34,11 @@
             android:background="@drawable/button_home"
             android:padding="10dp"
             android:minWidth="300dp"
-            android:minHeight="80dp"
+            android:minHeight="60dp"
             android:enabled="true"
             android:onClick="switchScanContext"
             android:clickable="true"
-            android:textSize="25dp" />
+            android:textSize="20dp" />
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -51,11 +51,11 @@
             android:background="@drawable/button_home"
             android:padding="10dp"
             android:minWidth="300dp"
-            android:minHeight="80dp"
+            android:minHeight="60dp"
             android:enabled="true"
             android:onClick="switchRecognize"
             android:clickable="true"
-            android:textSize="25dp" />
+            android:textSize="20dp" />
 
         <Button
             android:layout_width="wrap_content"
@@ -69,12 +69,31 @@
             android:background="@drawable/button_home"
             android:padding="10dp"
             android:minWidth="300dp"
-            android:minHeight="80dp"
+            android:minHeight="60dp"
             android:enabled="true"
             android:onClick="switchConnect"
             android:clickable="true"
-            android:textSize="25dp"
+            android:textSize="20dp"
             android:layout_centerHorizontal="true" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="App Files"
+            android:id="@+id/files"
+            android:textColor="#ffaa052a"
+            android:textStyle="bold"
+            android:typeface="sans"
+            android:background="@drawable/button_home"
+            android:padding="10dp"
+            android:minWidth="300dp"
+            android:minHeight="60dp"
+            android:enabled="false"
+            android:onClick="switchFiles"
+            android:clickable="true"
+            android:textSize="20dp"
+            android:layout_margin="10dp"
+            android:visibility="gone"/>
     </LinearLayout>
 
 </RelativeLayout>

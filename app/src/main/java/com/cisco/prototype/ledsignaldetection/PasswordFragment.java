@@ -39,7 +39,7 @@ public class PasswordFragment extends Fragment {
     private Pattern yesNo = Pattern.compile("(?s).*\\[yes/?no\\].*");
     private Pattern gt = Pattern.compile("(?s).*>[^>]*");
     private Pattern id = Pattern.compile("(?s)[^#]+#{1}[^#]*");
-    private Pattern brackets = Pattern.compile("(?s)\\[.*\\].*");
+    private Pattern brackets = Pattern.compile("(?s).*\\[.*\\].*");
 
     public PasswordFragment() {
         // Required empty public constructor

@@ -18,6 +18,8 @@ import android.widget.TextView;
 import org.w3c.dom.Text;
 
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class PasswordFragment extends Fragment {
@@ -33,6 +35,11 @@ public class PasswordFragment extends Fragment {
     private String enablePw = "";
     private boolean toAutoBootConf = false;
     private boolean outputEnabled = false;
+
+    private Pattern yesNo = Pattern.compile("(?s).*\\[yes/?no\\].*");
+    private Pattern gt = Pattern.compile("(?s).*>[^>]*");
+    private Pattern id = Pattern.compile("(?s)[^#]+#{1}[^#]*");
+    private Pattern brackets = Pattern.compile("(?s)\\[.*\\].*");
 
     public PasswordFragment() {
         // Required empty public constructor
@@ -66,6 +73,7 @@ public class PasswordFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
+        mListener.destroyFile();
         mListener = null;
     }
 
@@ -120,10 +128,10 @@ public class PasswordFragment extends Fragment {
         record += data;
         //mListener.onPasswordFragment(record);
         if(recoveryStarted) {
-            if (record.contains("no]")) {
+            if (yesNo.matcher(record.toLowerCase()).matches()) {
                 mListener.writeData("n");
                 record = "";
-            } else if (record.contains("MORE") || record.contains("RETURN") || record.contains("]")) {
+            } else if (record.contains("MORE") || record.contains("RETURN") || brackets.matcher(record.toLowerCase()).matches()) {
                 mListener.writeData("");
                 record = "";
             }
@@ -154,7 +162,7 @@ public class PasswordFragment extends Fragment {
                         }
                         break;
                     case 3:
-                        if (record.toLowerCase().contains(">")) {
+                        if (gt.matcher(record.toLowerCase()).find()) {
                             mListener.writeData("en");
                             mListener.onPasswordFragment("enabling the switch");
                             state++;
@@ -163,13 +171,13 @@ public class PasswordFragment extends Fragment {
                         }
                         break;
                     case 4:
-                        if (record.toLowerCase().contains("#")) {
+                        if (id.matcher(record.toLowerCase()).find()) {
                             mListener.writeData("rename flash:config.old flash:config.text");
                             mListener.onPasswordFragment("renaming config.old back to config.text");
                             state++;
                             record = "";
                         }
-                        else if(record.toLowerCase().contains("connection") || record.contains(">")){
+                        else if(record.toLowerCase().contains("connection") || gt.matcher(record.toLowerCase()).find()){
                             mListener.writeData("en");
                             record = "";
                         }
@@ -179,7 +187,7 @@ public class PasswordFragment extends Fragment {
                         }
                         break;
                     case 5:
-                        if (record.toLowerCase().contains("#")) {
+                        if (id.matcher(record.toLowerCase()).find()) {
                             mListener.writeData("copy flash:config.text system:running-config");
                             mListener.onPasswordFragment("copying config.text to the system running-config");
                             state++;
@@ -187,7 +195,7 @@ public class PasswordFragment extends Fragment {
                         }
                         break;
                     case 6:
-                        if (record.toLowerCase().contains("#")) {
+                        if (id.matcher(record.toLowerCase()).find()) {
                             mListener.writeData("conf t");
                             mListener.onPasswordFragment("entering configuration");
                             state++;
@@ -239,7 +247,7 @@ public class PasswordFragment extends Fragment {
                             mListener.writeData("end");
                             record = "";
                         }
-                        else if (record.toLowerCase().contains("#")) {
+                        else if (id.matcher(record.toLowerCase()).find()) {
                             mListener.writeData("write memory");
                             mListener.onPasswordFragment("saving configuration");
                             state++;
@@ -247,7 +255,7 @@ public class PasswordFragment extends Fragment {
                         }
                         break;
                     case 13:
-                        if (record.toLowerCase().contains("#")) {
+                        if (id.matcher(record.toLowerCase()).find()) {
                             mListener.onPasswordFragment("deleting config.old");
                             mListener.writeData("del flash:config.old");
                             state++;
@@ -255,14 +263,14 @@ public class PasswordFragment extends Fragment {
                         }
                         break;
                     case 14:
-                        if (record.toLowerCase().contains("#")) {
+                        if (id.matcher(record.toLowerCase()).find()) {
                             mListener.onPasswordFragment("Password Recovery Complete!");
                             state++;
                             record = "";
                         }
                         break;
                     case 15:
-                        if (record.toLowerCase().contains("#") && toAutoBootConf) {
+                        if (id.matcher(record.toLowerCase()).find() && toAutoBootConf) {
                             mListener.onPasswordFragment("Enabling Automatic Booting...");
                             mListener.writeData("conf t");
                             state++;
@@ -288,20 +296,23 @@ public class PasswordFragment extends Fragment {
                             mListener.writeData("end");
                             record = "";
                         }
-                        else if (record.toLowerCase().contains("#")) {
+                        else if (id.matcher(record.toLowerCase()).find()) {
                             mListener.writeData("write memory");
                             state++;
                             record = "";
                         }
                         break;
                     case 19:
-                        if(record.toLowerCase().contains("#")){
+                        if(id.matcher(record.toLowerCase()).find()){
                             mListener.onPasswordFragment("Auto-Booting Configured!");
                             record = "";
                         }
 
                 }
             }
+        }
+        if(record.length() >= 400){
+            record = "";
         }
     }
 

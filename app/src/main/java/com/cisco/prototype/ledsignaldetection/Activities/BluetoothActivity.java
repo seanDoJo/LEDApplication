@@ -2,6 +2,7 @@ package com.cisco.prototype.ledsignaldetection.Activities;
 
 import android.graphics.Color;
 import android.net.Uri;
+import android.graphics.drawable.Drawable;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
@@ -181,47 +182,56 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             else if(m.what == 56){
                 int status = (int)m.obj;
                 Log.i("LEDApp", "called handler with 56");
+                LinearLayout terminal = null;
                 Button currbutton = null;
                 LinearLayout lin = null;
                 TextView statlabel = (TextView)findViewById(R.id.status_label);
+                View circle = (View)findViewById(R.id.status_indc);
+                Drawable resid = null;
                 clearBtMenu();
                 switch(status){
                     case -1:
                         statlabel.setText("Device Status: unreachable");
-                        statlabel.setTextColor(Color.parseColor("#ffcb120f"));
+                        resid = getResources().getDrawable(R.drawable.circle_red);
+                        terminal = (LinearLayout) findViewById(R.id.terminal);
+                        terminal.setClickable(false);
+                        circle.setBackground(resid);
                         break;
                     case 0:
                         statlabel.setText("Device Status: booting...");
-                        statlabel.setTextColor(Color.parseColor("#FFCBC60D"));
+                        resid = getResources().getDrawable(R.drawable.circle_yellow);
+                        circle.setBackground(resid);
                         lin = (LinearLayout)findViewById(R.id.bt_lin);
                         lin.setVisibility(SurfaceView.VISIBLE);
-                        currbutton = (Button) findViewById(R.id.terminal);
-                        currbutton.setEnabled(true);
-                        currbutton.setVisibility(SurfaceView.VISIBLE);
+                        terminal = (LinearLayout) findViewById(R.id.terminal);
+                        terminal.setClickable(true);
+                        terminal.setVisibility(SurfaceView.VISIBLE);
                         break;
                     case 1:
                         statlabel.setText("Device Status: bootloader");
-                        statlabel.setTextColor(Color.parseColor("#FFCB7423"));
+                        resid = getResources().getDrawable(R.drawable.circle_yellow);
+                        circle.setBackground(resid);
                         lin = (LinearLayout)findViewById(R.id.bt_lin);
                         lin.setVisibility(SurfaceView.VISIBLE);
                         currbutton = (Button) findViewById(R.id.password);
                         currbutton.setEnabled(true);
                         currbutton.setVisibility(SurfaceView.VISIBLE);
-                        currbutton = (Button) findViewById(R.id.terminal);
-                        currbutton.setEnabled(true);
-                        currbutton.setVisibility(SurfaceView.VISIBLE);
+                        terminal = (LinearLayout) findViewById(R.id.terminal);
+                        terminal.setClickable(true);
+                        terminal.setVisibility(SurfaceView.VISIBLE);
                         break;
                     case 2:
                         statlabel.setText("Device Status: booted");
-                        statlabel.setTextColor(Color.parseColor("#FF1ACB1E"));
+                        resid = getResources().getDrawable(R.drawable.circle_green);
+                        circle.setBackground(resid);
                         lin = (LinearLayout)findViewById(R.id.bt_lin);
                         lin.setVisibility(SurfaceView.VISIBLE);
                         currbutton = (Button) findViewById(R.id.password);
                         currbutton.setEnabled(true);
                         currbutton.setVisibility(SurfaceView.VISIBLE);
-                        currbutton = (Button) findViewById(R.id.terminal);
-                        currbutton.setEnabled(true);
-                        currbutton.setVisibility(SurfaceView.VISIBLE);
+                        terminal = (LinearLayout) findViewById(R.id.terminal);
+                        terminal.setClickable(true);
+                        terminal.setVisibility(SurfaceView.VISIBLE);
                         break;
                 }
             }
@@ -568,14 +578,14 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
 
     private void clearBtMenu(){
         Button currbutton = null;
+        LinearLayout terminal = null;
 
         currbutton = (Button)findViewById(R.id.password);
         currbutton.setEnabled(false);
         currbutton.setVisibility(SurfaceView.GONE);
 
-        currbutton = (Button)findViewById(R.id.terminal);
+        terminal = (LinearLayout)findViewById(R.id.terminal);
         currbutton.setEnabled(false);
-        currbutton.setVisibility(SurfaceView.GONE);
     }
 
     public void switchCommunication(View view){

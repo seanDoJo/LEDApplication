@@ -5,15 +5,52 @@ android:layout_height="match_parent"
 tools:context="com.cisco.prototype.ledsignaldetection.Fragments.BTMenuFragment"
 android:id="@+id/bt_menu"
 android:background="@drawable/gradient_box">
-
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/status_label"
-        android:text="Device Status: obtaining..."
-        android:textSize="20dp"
-        android:textColor="#ff84cb23"
-        android:textStyle="bold" />
+        android:orientation="horizontal"
+        android:id="@+id/topStuff">
+        <!--<TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:id="@+id/status_label"
+            android:text="Device Status: obtaining..."
+            android:textSize="20dp"
+            android:textColor="#ff84cb23"
+            android:textStyle="bold" />-->
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/terminal"
+            android:background="@drawable/button_home"
+            android:padding="5dp"
+            android:minWidth="100dp"
+            android:minHeight="15dp"
+            android:enabled="false"
+            android:onClick="switchCommunication"
+            android:clickable="false"
+            android:visibility="visible">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/status_label"
+                android:text="View Terminal"
+                android:textStyle="bold"
+                android:textSize="10dp"
+                android:typeface="sans"
+                android:textColor="#ffaa052a"
+                android:layout_gravity="center" />
+            <View
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:id="@+id/status_indc"
+                android:layout_marginLeft="10dp"
+                android:background="@drawable/circle_red"
+                android:layout_gravity="center_vertical" />
+        </LinearLayout>
+    </LinearLayout>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -24,7 +61,7 @@ android:background="@drawable/gradient_box">
         android:textStyle="bold"
         android:textSize="50dp"
         android:visibility="visible"
-        android:layout_below="@+id/status_label"
+        android:layout_below="@+id/topStuff"
         android:text="Device Home" />
 
     <LinearLayout
@@ -32,8 +69,7 @@ android:background="@drawable/gradient_box">
         android:layout_height="wrap_content"
         android:id="@+id/bt_lin"
         android:orientation="vertical"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
+        android:layout_centerInParent="true"
         android:visibility="gone">
 
         <Button
@@ -50,25 +86,6 @@ android:background="@drawable/gradient_box">
             android:minHeight="80dp"
             android:enabled="false"
             android:onClick="switchPassword"
-            android:clickable="true"
-            android:textSize="25dp"
-            android:layout_margin="20dp"
-            android:visibility="gone"/>
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Terminal"
-            android:id="@+id/terminal"
-            android:textColor="#ffaa052a"
-            android:textStyle="bold"
-            android:typeface="sans"
-            android:background="@drawable/button_home"
-            android:padding="10dp"
-            android:minWidth="300dp"
-            android:minHeight="80dp"
-            android:enabled="false"
-            android:onClick="switchCommunication"
             android:clickable="true"
             android:textSize="25dp"
             android:layout_margin="20dp"

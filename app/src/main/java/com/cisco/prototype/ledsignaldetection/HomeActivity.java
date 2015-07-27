@@ -7,8 +7,11 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
+
+import java.io.File;
 
 
 public class HomeActivity extends Activity {
@@ -18,6 +21,16 @@ public class HomeActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY);
+        boolean hasFiles = false;
+        File appFolder = new File(getFilesDir().getAbsolutePath());
+        File[] folderContents = appFolder.listFiles();
+        if(folderContents.length > 0)hasFiles = true;
+        Button currbutton = null;
+        if(hasFiles) {
+            currbutton = (Button) findViewById(R.id.files);
+            currbutton.setEnabled(true);
+            currbutton.setVisibility(SurfaceView.VISIBLE);
+        }
     }
 
     public void switchScanContext(View view){
@@ -39,6 +52,13 @@ public class HomeActivity extends Activity {
 
     public void switchConnect(View view){
         Intent nextIntent = new Intent(this, BluetoothActivity.class);
+        nextIntent.putExtra(EXTRA_MESSAGE, 0);
+        startActivity(nextIntent);
+    }
+
+    public void switchFiles(View view){
+        Intent nextIntent = new Intent(this, BluetoothActivity.class);
+        nextIntent.putExtra(EXTRA_MESSAGE, 1);
         startActivity(nextIntent);
     }
 }

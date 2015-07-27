@@ -44,6 +44,8 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     private BluetoothAdapter mBluetooth;
     private ArrayList<BluetoothDevice> devices;
     private String activeDevice = "";
+    private int currMode = 0;
+    private boolean stepped = false;
     private int REQUEST_ENABLE_BT = 123;
     private int fragIndex = -1;
     private CommunicationFragment cFrag;
@@ -464,36 +466,52 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bluetooth);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        sFrag = new SelectionFragment();
-        sFrag.setArguments(getIntent().getExtras());
-        getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, sFrag).commit();
+        Intent intent = getIntent();
+        currMode = intent.getIntExtra(HomeActivity.EXTRA_MESSAGE, 0);
+        if(currMode == 0) {
+            sFrag = new SelectionFragment();
+            sFrag.setArguments(getIntent().getExtras());
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, sFrag).commit();
 
-        latch = new CountDownLatch(1);
+            latch = new CountDownLatch(1);
 
-        //registering a filter allows us to catch specific actions
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        registerReceiver(btReceiver, filter);
+            //registering a filter allows us to catch specific actions
+            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+            registerReceiver(btReceiver, filter);
 
-        //the bluetooth adapter is where we discover devices
-        mBluetooth = BluetoothAdapter.getDefaultAdapter();
-        devices = new ArrayList<BluetoothDevice>();
+            //the bluetooth adapter is where we discover devices
+            mBluetooth = BluetoothAdapter.getDefaultAdapter();
+            devices = new ArrayList<BluetoothDevice>();
 
-        //this is where we ask to enable bluetooth
-        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
-        startActivity(discoverableIntent);
+            //this is where we ask to enable bluetooth
+            Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
+            startActivity(discoverableIntent);
 
-        //start discovering devices -- this is handled in the broadcast receiver
-        mBluetooth.startDiscovery();
+            //start discovering devices -- this is handled in the broadcast receiver
+            mBluetooth.startDiscovery();
+        }
+        else{
+            fileFrag = new FileExplorerFragment();
+            fileFrag.setArguments(getIntent().getExtras());
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, fileFrag).commit();
+        }
+    }
+    @Override
+    public void onResume(){
+        super.onResume();
+        Log.i("LEDApp", "resumed");
     }
 
     @Override
     public void onDestroy(){
         super.onDestroy();
         //we need this otherwise poo flinging will ensue
-        if (connection != null)connection.close();
-        mBluetooth.cancelDiscovery();
-        unregisterReceiver(btReceiver);
+        if(currMode == 0) {
+            if (connection != null) connection.close();
+            if (mBluetooth != null) mBluetooth.cancelDiscovery();
+            unregisterReceiver(btReceiver);
+        }
     }
 
     public void onSelectionFragment(int index){
@@ -521,17 +539,6 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     }
 
     public void configureMenu(){
-        boolean hasFiles = false;
-        File appFolder = new File(getFilesDir().getAbsolutePath());
-        File[] folderContents = appFolder.listFiles();
-        if(folderContents.length > 0)hasFiles = true;
-        int stage = 0;
-        Button currbutton = null;
-        if(hasFiles) {
-            currbutton = (Button) findViewById(R.id.files);
-            currbutton.setEnabled(true);
-            currbutton.setVisibility(SurfaceView.VISIBLE);
-        }
         //CountDownLatch configL = new CountDownLatch(1);
         connection.ping(null);
         /*try {
@@ -574,9 +581,11 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         tran.replace(R.id.fragment_container, fileFrag);
         tran.addToBackStack(null);
         tran.commit();
-        connection.pau();
-        fragIndex = 7;
-        connection.res();
+        if(connection != null) {
+            connection.pau();
+            fragIndex = 7;
+            connection.res();
+        }
     }
 
     public void startFileExplorer(){
@@ -592,9 +601,11 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         tran.replace(R.id.fragment_container, fileViewer);
         tran.addToBackStack(null);
         tran.commit();
-        connection.pau();
-        fragIndex = 8;
-        connection.res();
+        if(connection != null) {
+            connection.pau();
+            fragIndex = 8;
+            connection.res();
+        }
     }
 
     public void initFileView(){

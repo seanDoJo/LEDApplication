@@ -1,4 +1,4 @@
-package com.cisco.prototype.ledsignaldetection.Recognizers;
+package com.cisco.prototype.ledsignaldetection;
 
 import android.content.Context;
 import android.util.AttributeSet;

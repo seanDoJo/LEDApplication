@@ -1,4 +1,4 @@
-package com.cisco.prototype.ledsignaldetection.Recognizers;
+package com.cisco.prototype.ledsignaldetection.Fragments;
 
 import android.app.Activity;
 import android.os.Bundle;

@@ -8,7 +8,7 @@ import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.view.WindowManager;
 
-import com.cisco.prototype.ledsignaldetection.Recognizers.CustomView;
+import com.cisco.prototype.ledsignaldetection.CustomView;
 import com.cisco.prototype.ledsignaldetection.R;
 
 import org.opencv.android.BaseLoaderCallback;

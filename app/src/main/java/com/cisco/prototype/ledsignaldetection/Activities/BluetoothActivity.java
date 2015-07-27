@@ -31,7 +31,7 @@ import android.widget.Toast;
 import com.cisco.prototype.ledsignaldetection.Fragments.BTMenuFragment;
 import com.cisco.prototype.ledsignaldetection.BluetoothInterface;
 import com.cisco.prototype.ledsignaldetection.Fragments.CommunicationFragment;
-import com.cisco.prototype.ledsignaldetection.Recognizers.FileExplorerFragment;
+import com.cisco.prototype.ledsignaldetection.Fragments.FileExplorerFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ImageFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ImageRestoreFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.PasswordFragment;

@@ -1,4 +1,4 @@
-package Activities;
+package com.cisco.prototype.ledsignaldetection.Activities;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -13,7 +13,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import Recognizers.LbphRecognizer;
+import com.cisco.prototype.ledsignaldetection.Recognizers.LbphRecognizer;
 import com.cisco.prototype.ledsignaldetection.R;
 
 import org.opencv.android.BaseLoaderCallback;

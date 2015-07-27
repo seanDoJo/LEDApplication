@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical"
-    tools:context="Fragments.CommunicationFragment">
+    tools:context="com.cisco.prototype.ledsignaldetection.Fragments.CommunicationFragment">
 
     <LinearLayout
         android:layout_width="match_parent"

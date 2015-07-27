@@ -1,4 +1,4 @@
-package Recognizers;
+package com.cisco.prototype.ledsignaldetection.Recognizers;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -10,7 +10,6 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
-import android.widget.ListView;
 
 import com.cisco.prototype.ledsignaldetection.BluetoothInterface;
 import com.cisco.prototype.ledsignaldetection.R;

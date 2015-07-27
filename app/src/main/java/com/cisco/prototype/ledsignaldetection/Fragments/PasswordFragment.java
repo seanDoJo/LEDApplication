@@ -1,12 +1,10 @@
-package Fragments;
+package com.cisco.prototype.ledsignaldetection.Fragments;
 
 import android.app.Activity;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,10 +16,7 @@ import android.widget.TextView;
 import com.cisco.prototype.ledsignaldetection.BluetoothInterface;
 import com.cisco.prototype.ledsignaldetection.R;
 
-import org.w3c.dom.Text;
-
 import java.util.HashMap;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 

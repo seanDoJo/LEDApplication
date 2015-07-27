@@ -1,4 +1,4 @@
-package Activities;
+package com.cisco.prototype.ledsignaldetection.Activities;
 
 import android.app.Activity;
 import android.os.*;
@@ -8,7 +8,7 @@ import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.view.WindowManager;
 
-import Recognizers.CustomView;
+import com.cisco.prototype.ledsignaldetection.Recognizers.CustomView;
 import com.cisco.prototype.ledsignaldetection.R;
 
 import org.opencv.android.BaseLoaderCallback;

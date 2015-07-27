@@ -28,15 +28,13 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
-    <android:uses-permission android:name="android.permission.READ_PHONE_STATE" />
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/Base.Widget.AppCompat.ListView.Menu" >
         <activity
-            android:name="Activities.HomeActivity"
+            android:name=".Activities.HomeActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
@@ -48,33 +46,33 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="Activities.CameraActivity"
+            android:name=".Activities.CameraActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_camera"
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
         </activity>
         <activity
-            android:name="Activities.RecognizeActivity"
+            android:name=".Activities.RecognizeActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_recognize"
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.NoTitleBar" >
         </activity>
         <activity
-            android:name="Activities.HandleRecognizeActivity"
+            android:name=".Activities.HandleRecognizeActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_handle_recognize"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.NoTitleBar" >
         </activity>
         <activity
-            android:name="Activities.BluetoothActivity"
+            android:name=".Activities.BluetoothActivity"
             android:label="@string/title_activity_bluetooth"
             android:theme="@android:style/Theme.NoTitleBar" >
         </activity>
         <activity
-            android:name="Activities.LedFilterActivity"
+            android:name=".Activities.LedFilterActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_led_filter"
             android:screenOrientation="landscape"

@@ -2,7 +2,7 @@
 xmlns:tools="http://schemas.android.com/tools"
 android:layout_width="match_parent"
 android:layout_height="match_parent"
-tools:context="Fragments.BTMenuFragment"
+tools:context="com.cisco.prototype.ledsignaldetection.Fragments.BTMenuFragment"
 android:id="@+id/bt_menu"
 android:background="@drawable/gradient_box">
 

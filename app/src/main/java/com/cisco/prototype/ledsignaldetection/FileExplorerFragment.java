@@ -23,13 +23,9 @@ public class FileExplorerFragment extends Fragment {
     private ArrayList<String> fileNames;
     private ArrayList<File> myFiles;
     private boolean prevActive = false;
-    public File selectedFile;
-    private int selectedPosition;
     private AdapterView.OnItemClickListener mMessageHandler = new AdapterView.OnItemClickListener(){
         public void onItemClick(AdapterView parent, View v, int position, long id){
-            mListener.selectFile();
-            selectedFile = myFiles.get(position);
-            selectedPosition = position;
+            mListener.viewFile(myFiles.get(position));
         }
     };
 
@@ -89,12 +85,6 @@ public class FileExplorerFragment extends Fragment {
             String currFileName = file.getName();
             mAdapter.add(currFileName);
         }
-    }
-
-    public void deleteFile(){
-        selectedFile.delete();
-        myFiles.remove(selectedPosition);
-        mAdapter.notifyDataSetChanged();
     }
 
 }

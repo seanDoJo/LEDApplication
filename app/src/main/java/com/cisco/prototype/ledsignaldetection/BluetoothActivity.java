@@ -587,22 +587,6 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         fileFrag.init(folderContents);
     }
 
-    public void selectFile(){
-        LinearLayout fileList = (LinearLayout)findViewById(R.id.file_options);
-        fileList.setVisibility(View.VISIBLE);
-    }
-
-    public void onOpenCheck(View view){
-        LinearLayout fileList = (LinearLayout)findViewById(R.id.file_options);
-        fileList.setVisibility(View.GONE);
-        fileFrag.deleteFile();
-    }
-
-    public void onDeleteCheck(View view){
-        LinearLayout fileList = (LinearLayout)findViewById(R.id.file_options);
-        fileList.setVisibility(View.GONE);
-    }
-
     public void viewFile(File file){
         viewedFile = file;
         fileViewer = new ViewFileFragment();

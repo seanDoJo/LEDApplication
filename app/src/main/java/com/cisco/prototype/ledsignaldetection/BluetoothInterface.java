@@ -23,5 +23,4 @@ public interface BluetoothInterface {
     public void viewFile(File file);
     public void initFileView();
     public void destroyFile();
-    public void selectFile();
 }

@@ -625,6 +625,12 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         fileViewer.viewCurrentFile(viewedFile);
     }
 
+    public void deleteFile(View view){
+        viewedFile.delete();
+        FragmentManager frag = getSupportFragmentManager();
+        frag.popBackStack();
+    }
+
     public void switchPassword(View view){
         citer = 0;
         pFrag = new PasswordFragment();

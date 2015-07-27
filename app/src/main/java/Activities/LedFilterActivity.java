@@ -1,4 +1,4 @@
-package com.cisco.prototype.ledsignaldetection;
+package Activities;
 
 import android.app.Activity;
 import android.support.v7.app.ActionBarActivity;
@@ -8,6 +8,8 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.WindowManager;
+
+import com.cisco.prototype.ledsignaldetection.R;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;

@@ -1,4 +1,4 @@
-package com.cisco.prototype.ledsignaldetection;
+package Recognizers;
 
 import android.content.Context;
 import android.hardware.Camera;

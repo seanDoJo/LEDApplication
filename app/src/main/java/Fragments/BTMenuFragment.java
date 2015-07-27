@@ -1,4 +1,4 @@
-package com.cisco.prototype.ledsignaldetection;
+package Fragments;
 
 import android.app.Activity;
 import android.net.Uri;
@@ -11,6 +11,9 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
+
+import com.cisco.prototype.ledsignaldetection.BluetoothInterface;
+import com.cisco.prototype.ledsignaldetection.R;
 
 import java.util.ArrayList;
 

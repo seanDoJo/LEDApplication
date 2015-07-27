@@ -1,4 +1,4 @@
-package com.cisco.prototype.ledsignaldetection;
+package Fragments;
 
 import android.app.Activity;
 import android.net.Uri;
@@ -12,6 +12,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import com.cisco.prototype.ledsignaldetection.BluetoothInterface;
+import com.cisco.prototype.ledsignaldetection.R;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

@@ -22,6 +22,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
@@ -36,6 +37,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
@@ -571,6 +573,22 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         fileFrag.init(folderContents);
     }
 
+    public void selectFile(){
+        LinearLayout fileList = (LinearLayout)findViewById(R.id.file_options);
+        fileList.setVisibility(View.VISIBLE);
+    }
+
+    public void onOpenCheck(View view){
+        LinearLayout fileList = (LinearLayout)findViewById(R.id.file_options);
+        fileList.setVisibility(View.GONE);
+        fileFrag.deleteFile();
+    }
+
+    public void onDeleteCheck(View view){
+        LinearLayout fileList = (LinearLayout)findViewById(R.id.file_options);
+        fileList.setVisibility(View.GONE);
+    }
+
     public void viewFile(File file){
         viewedFile = file;
         fileViewer = new ViewFileFragment();
@@ -687,11 +705,15 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         TextView lineNumber = (TextView)findViewById(R.id.line_numbers);
 
         if(check.isChecked()) {
+            lineNumber.setText("");
             int lines = fileText.getLineCount();
             for (int i = 1; i <= lines; i++) {
                 lineNumber.setText(lineNumber.getText() + "\n" + Integer.toString(i));
             }
-        } else { lineNumber.setText(""); }
+            lineNumber.setVisibility(View.VISIBLE);
+        } else {
+            lineNumber.setVisibility(View.GONE);
+        }
     }
 
     public void setImageMode(){

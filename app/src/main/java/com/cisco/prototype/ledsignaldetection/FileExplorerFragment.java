@@ -10,6 +10,8 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
+import android.widget.ListView;
+
 import java.io.File;
 import java.util.ArrayList;
 
@@ -21,9 +23,13 @@ public class FileExplorerFragment extends Fragment {
     private ArrayList<String> fileNames;
     private ArrayList<File> myFiles;
     private boolean prevActive = false;
+    public File selectedFile;
+    private int selectedPosition;
     private AdapterView.OnItemClickListener mMessageHandler = new AdapterView.OnItemClickListener(){
         public void onItemClick(AdapterView parent, View v, int position, long id){
-            mListener.viewFile(myFiles.get(position));
+            mListener.selectFile();
+            selectedFile = myFiles.get(position);
+            selectedPosition = position;
         }
     };
 
@@ -83,6 +89,12 @@ public class FileExplorerFragment extends Fragment {
             String currFileName = file.getName();
             mAdapter.add(currFileName);
         }
+    }
+
+    public void deleteFile(){
+        selectedFile.delete();
+        myFiles.remove(selectedPosition);
+        mAdapter.notifyDataSetChanged();
     }
 
 }

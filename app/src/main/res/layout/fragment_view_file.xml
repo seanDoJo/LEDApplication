@@ -16,7 +16,7 @@
             android:textColor="#ffaa052a"
             android:typeface="sans"
             android:gravity="center_vertical"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
         <CheckBox
             android:id="@+id/view_check"
             android:layout_width="wrap_content"
@@ -50,7 +50,8 @@
                     android:id="@+id/line_numbers"
                     android:textColor="#ffaa052a"
                     android:background="#ffbdbdbd"
-                    android:padding="3dp"/>
+                    android:padding="3dp"
+                    android:visibility="gone"/>
                 </LinearLayout>
             <LinearLayout
                 android:layout_width="wrap_content"

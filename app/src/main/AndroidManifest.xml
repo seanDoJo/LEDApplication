@@ -36,7 +36,7 @@
         android:label="@string/app_name"
         android:theme="@style/Base.Widget.AppCompat.ListView.Menu" >
         <activity
-            android:name=".HomeActivity"
+            android:name="Activities.HomeActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
@@ -48,33 +48,33 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".CameraActivity"
+            android:name="Activities.CameraActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_camera"
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
         </activity>
         <activity
-            android:name=".RecognizeActivity"
+            android:name="Activities.RecognizeActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_recognize"
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.NoTitleBar" >
         </activity>
         <activity
-            android:name=".HandleRecognizeActivity"
+            android:name="Activities.HandleRecognizeActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_handle_recognize"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.NoTitleBar" >
         </activity>
         <activity
-            android:name=".BluetoothActivity"
+            android:name="Activities.BluetoothActivity"
             android:label="@string/title_activity_bluetooth"
             android:theme="@android:style/Theme.NoTitleBar" >
         </activity>
         <activity
-            android:name=".LedFilterActivity"
+            android:name="Activities.LedFilterActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_led_filter"
             android:screenOrientation="landscape"

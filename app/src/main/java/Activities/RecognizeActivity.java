@@ -1,4 +1,4 @@
-package com.cisco.prototype.ledsignaldetection;
+package Activities;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -6,15 +6,13 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.*;
-import android.support.v7.app.ActionBarActivity;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
-import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.ImageView;
+
+import Recognizers.LbphRecognizer;
+import com.cisco.prototype.ledsignaldetection.R;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase.*;
@@ -23,7 +21,6 @@ import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.*;
-import org.opencv.highgui.*;
 import org.opencv.contrib.*;
 import org.opencv.imgproc.*;
 import org.opencv.utils.Converters;

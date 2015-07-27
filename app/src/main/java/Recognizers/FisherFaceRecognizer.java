@@ -1,4 +1,4 @@
-package com.cisco.prototype.ledsignaldetection;
+package Recognizers;
 
 import org.opencv.contrib.FaceRecognizer;
 

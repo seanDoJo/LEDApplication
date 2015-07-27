@@ -1,4 +1,4 @@
-package com.cisco.prototype.ledsignaldetection;
+package Recognizers;
 
 /**
  * Created by seandonohoe on 6/16/15.

@@ -1,15 +1,13 @@
-package com.cisco.prototype.ledsignaldetection;
+package Activities;
 
 import android.content.Intent;
-import android.graphics.Typeface;
-import android.support.v7.app.ActionBarActivity;
 import android.app.Activity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
+
+import com.cisco.prototype.ledsignaldetection.R;
 
 import java.io.File;
 
@@ -31,6 +29,21 @@ public class HomeActivity extends Activity {
             currbutton.setEnabled(true);
             currbutton.setVisibility(SurfaceView.VISIBLE);
         }
+    }
+    @Override
+    public void onResume(){
+        super.onResume();
+        boolean hasFiles = false;
+        File appFolder = new File(getFilesDir().getAbsolutePath());
+        File[] folderContents = appFolder.listFiles();
+        if(folderContents.length > 0)hasFiles = true;
+        Button currbutton = null;
+        if(hasFiles) {
+            currbutton = (Button) findViewById(R.id.files);
+            currbutton.setEnabled(true);
+            currbutton.setVisibility(SurfaceView.VISIBLE);
+        }
+
     }
 
     public void switchScanContext(View view){

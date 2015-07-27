@@ -1,4 +1,4 @@
-package com.cisco.prototype.ledsignaldetection;
+package Activities;
 
 import android.graphics.Color;
 import android.support.v4.app.FragmentManager;
@@ -22,12 +22,24 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import Fragments.BTMenuFragment;
+import com.cisco.prototype.ledsignaldetection.BluetoothInterface;
+import Fragments.CommunicationFragment;
+import Recognizers.FileExplorerFragment;
+import Fragments.ImageFragment;
+import Fragments.ImageRestoreFragment;
+import Fragments.PasswordFragment;
+import com.cisco.prototype.ledsignaldetection.R;
+import Fragments.SelectionFragment;
+import Fragments.SoftwareFragment;
+import Fragments.ViewFileFragment;
+import com.cisco.prototype.ledsignaldetection.imagePair;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -37,7 +49,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 

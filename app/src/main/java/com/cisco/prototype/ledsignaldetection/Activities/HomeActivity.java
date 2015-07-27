@@ -1,4 +1,4 @@
-package Activities;
+package com.cisco.prototype.ledsignaldetection.Activities;
 
 import android.content.Intent;
 import android.app.Activity;

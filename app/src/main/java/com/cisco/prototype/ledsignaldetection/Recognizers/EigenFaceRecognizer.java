@@ -1,10 +1,9 @@
-package Recognizers;
+package com.cisco.prototype.ledsignaldetection.Recognizers;
 
 /**
  * Created by seandonohoe on 6/16/15.
  */
 import org.opencv.contrib.FaceRecognizer;
-import org.opencv.core.Core;
 
 
 public class EigenFaceRecognizer extends FaceRecognizer {

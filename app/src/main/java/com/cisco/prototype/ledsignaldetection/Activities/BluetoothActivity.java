@@ -3,6 +3,7 @@ package com.cisco.prototype.ledsignaldetection.Activities;
 import android.graphics.Color;
 import android.net.Uri;
 import android.graphics.drawable.Drawable;
+import android.os.StrictMode;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
@@ -38,12 +39,15 @@ import com.cisco.prototype.ledsignaldetection.Fragments.FileExplorerFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ImageFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ImageRestoreFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.PasswordFragment;
+import com.cisco.prototype.ledsignaldetection.Fragments.TFTPFragment;
 import com.cisco.prototype.ledsignaldetection.R;
 import com.cisco.prototype.ledsignaldetection.Fragments.SelectionFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.SoftwareFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ViewFileFragment;
+import com.cisco.prototype.ledsignaldetection.TFTPUtil;
 import com.cisco.prototype.ledsignaldetection.imagePair;
 
+import org.apache.commons.net.telnet.TelnetClient;
 import org.w3c.dom.Text;
 
 import java.io.BufferedWriter;
@@ -52,6 +56,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
@@ -76,6 +82,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     private FileExplorerFragment fileFrag;
     private ViewFileFragment fileViewer;
     private EmailFragment eFrag;
+    private TFTPFragment tFrag;
     private int citer = 0;
     private boolean letsGoSoftware;
     private int passResult = 0;
@@ -240,36 +247,85 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     //Class for the connection thread -- reading is done automatically, writing is done by invoking the write(String) method
     private class BTConnection extends Thread {
         private BluetoothSocket sock = null;
-        private final CountDownLatch synchron;
+        private CountDownLatch synchron = null;
         private InputStream mmInStream;
         private OutputStream mmOutStream;
         private boolean running = true;
         private boolean paused = false;
         private boolean inHelp = false;
-        public BTConnection(BluetoothDevice newDevice, CountDownLatch synchron){
-            this.synchron = synchron;
-            BluetoothSocket tmp = null;
-            try {
-                tmp = newDevice.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805f9b34fb"));
-                Log.i("LedApp", "Created socket with device");
-            } catch (IOException e) {
-                Log.e("LedApp", "Failed in socket creation");
-                e.printStackTrace();
-                //System.exit(1);
+        private boolean telnet = false;
+        private TelnetClient tc = null;
+        public BTConnection(BluetoothDevice newDevice, CountDownLatch synchron, boolean telnet){
+            this.telnet = telnet;
+            if(!telnet) {
+                BluetoothSocket tmp = null;
+                try {
+                    tmp = newDevice.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805f9b34fb"));
+                    Log.i("LedApp", "Created socket with device");
+                } catch (IOException e) {
+                    Log.e("LedApp", "Failed in socket creation");
+                    e.printStackTrace();
+                    //System.exit(1);
+                }
+                sock = tmp;
             }
-            sock = tmp;
+            else {
+                StrictMode.ThreadPolicy tp = StrictMode.ThreadPolicy.LAX;
+                StrictMode.setThreadPolicy(tp);
+                tc = new TelnetClient();
+                byte[] buffer = new byte[1024];
+                byte[] readB;
+                int bytes;
+                try {
+                    tc.connect(InetAddress.getByName("10.48.94.143"), 2027);
+                    String record = "";
+                    mmInStream = tc.getInputStream();
+                    mmOutStream = tc.getOutputStream();
+                    while(!record.contains("Username:")){
+                        if(mmInStream.available() > 0){
+                            bytes = mmInStream.read(buffer);
+                            readB = new byte[bytes];
+                            for(int i = 0; i < bytes; i++)readB[i] = buffer[i];
+                            for(int i = 0; i < 1024; i++)buffer[i] = 0;
+                            Log.e("LEDApp", new String(readB));
+                            record += (new String(readB));
+                        }
+                    }
+                    record = "";
+                    byte[] uname = "bland\n".getBytes();
+                    mmOutStream.write(uname, 0, uname.length);
+                    mmOutStream.flush();
+                    while(!record.contains("Password:")){
+                        if(mmInStream.available() > 0){
+                            bytes = mmInStream.read(buffer);
+                            readB = new byte[bytes];
+                            for(int i = 0; i < bytes; i++)readB[i] = buffer[i];
+                            for(int i = 0; i < 1024; i++)buffer[i] = 0;
+                            Log.e("LEDApp", new String(readB));
+                            record += (new String(readB));
+                        }
+                    }
+                    uname = "yOuShOuLdUsEtHeScRiPt\n\n".getBytes();
+                    mmOutStream.write(uname, 0, uname.length);
+                    mmOutStream.flush();
+
+                }catch(UnknownHostException e){e.printStackTrace();}catch(IOException e){e.printStackTrace();}
+            }
+            if(synchron != null)synchron.countDown();
         }
         public void run(){
             byte[] buffer = new byte[1024];
             byte[] readB;
             int bytes;
             try{
-                sock.connect();
-                Log.i("LedApp", "Connected socket with device");
-                mmInStream = sock.getInputStream();
-                Log.i("LedApp", "Connected inputstream");
-                mmOutStream = sock.getOutputStream();
-                Log.i("LedApp", "Connected outputstream");
+                if(!telnet) {
+                    sock.connect();
+                    Log.i("LedApp", "Connected socket with device");
+                    mmInStream = sock.getInputStream();
+                    Log.i("LedApp", "Connected inputstream");
+                    mmOutStream = sock.getOutputStream();
+                    Log.i("LedApp", "Connected outputstream");
+                }
                 tready.countDown();
             } catch (IOException e){
                 e.printStackTrace();
@@ -288,7 +344,6 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
-                        System.exit(1);
                     }
                 }
             }
@@ -304,6 +359,9 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 if(sock != null){
                     sock.close();
                     sock = null;
+                }
+                if(tc != null){
+                    tc.disconnect();
                 }
             } catch (IOException e){
                 e.printStackTrace();
@@ -322,28 +380,62 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     Log.i("LEDApp", specComm);
                     if(specComm.replace("-","").contains("ctrlz")){
                         char stop = (char)0x1A;
-                        mmOutStream.write((byte)stop);
+                        byte[] bytes = ("" + stop).getBytes();
+                        if(telnet){
+                            mmOutStream.write(bytes, 0, bytes.length);
+                            mmOutStream.flush();
+                        }
+                        else {
+                            mmOutStream.write(bytes);
+                        }
                         Log.i("LEDApp", "Special esc char sent");
                     }
                     else if(specComm.contains("break")){
                         char breakC = (char)0x03;
-                        mmOutStream.write((byte)breakC);
+                        byte[] bytes = ("" + breakC).getBytes();
+                        if(telnet){
+                            mmOutStream.write(bytes, 0, bytes.length);
+                            mmOutStream.flush();
+                        }
+                        else {
+                            mmOutStream.write(bytes);
+                        }
                         Log.i("LEDApp", "Special break char sent");
                     }
                 }
                 else {
                     if (content.trim().length() > 0) {
                         byte[] bytes = content.getBytes();
-                        mmOutStream.write(bytes);
+                        if(telnet){
+                            mmOutStream.write(bytes, 0, bytes.length);
+                            mmOutStream.flush();
+                        }
+                        else {
+                            mmOutStream.write(bytes);
+                        }
                     }
                     if (!content.contains("?") && !inHelp) {
-                        mmOutStream.write((byte) ret);
+                        byte[] bytes = ("" + ret).getBytes();
+                        if(telnet){
+                            mmOutStream.write(bytes, 0, bytes.length);
+                            mmOutStream.flush();
+                        }
+                        else {
+                            mmOutStream.write(bytes);
+                        }
                     } else if (!inHelp && content.contains("?")) {
                         inHelp = true;
                     } else if (inHelp && content.toLowerCase().equals("q")) {
                         inHelp = false;
                     } else if (inHelp && content.equals("")) {
-                        mmOutStream.write((byte) ret);
+                        byte[] bytes = ("" + ret).getBytes();
+                        if(telnet){
+                            mmOutStream.write(bytes, 0, bytes.length);
+                            mmOutStream.flush();
+                        }
+                        else {
+                            mmOutStream.write(bytes);
+                        }
                     } else {
                         inHelp = false;
                     }
@@ -408,6 +500,11 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         }
 
         public void ping(CountDownLatch pingLatch) {
+            if(telnet){
+                connectionHandler.obtainMessage(56, 1, -1, 2).sendToTarget();
+                if(pingLatch != null)pingLatch.countDown();
+                return;
+            }
             paused = true;
             byte[] buffer = new byte[1024];
             double time = 0;
@@ -479,7 +576,6 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 Log.e("LedApp", "error in ping!");
                 e.printStackTrace();
             }
-            synchron.countDown();
             if(pingLatch != null)pingLatch.countDown();
             Log.i("LEDApp", "ping executed");
             paused = false;
@@ -548,7 +644,10 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             tready = new CountDownLatch(1);
             latch = new CountDownLatch(1);
             if (connection != null) connection.close();
-            connection = new BTConnection(devices.get(index), latch);
+            connection = new BTConnection(devices.get(index), latch, true);
+            try {
+                latch.await();
+            }catch(InterruptedException e){e.printStackTrace();}
             connection.start();
             try {
                 tready.await();
@@ -666,12 +765,41 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
 
         /*i.putExtra(Intent.EXTRA_EMAIL  , email.getText());
         i.putExtra(Intent.EXTRA_SUBJECT, subject.getText());*/
-        i.putExtra(Intent.EXTRA_TEXT   , viewedFile.getAbsolutePath());
+        i.putExtra(Intent.EXTRA_TEXT, viewedFile.getAbsolutePath());
         try {
             startActivity(Intent.createChooser(i, "Send mail..."));
         } catch (android.content.ActivityNotFoundException ex) {
             Toast.makeText(BluetoothActivity.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public void switchFtp(View view){
+        tFrag = new TFTPFragment();
+        FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
+        tran.replace(R.id.fragment_container, tFrag);
+        tran.addToBackStack(null);
+        tran.commit();
+        if(connection != null) {
+            connection.pau();
+            fragIndex = 9;
+            connection.res();
+        }
+    }
+
+    public void sendFtp(View view){
+        CountDownLatch latch = new CountDownLatch(1);
+        StrictMode.ThreadPolicy tp = StrictMode.ThreadPolicy.LAX;
+        StrictMode.setThreadPolicy(tp);
+        TFTPUtil sendUtil = new TFTPUtil();
+
+        EditText remote = (EditText)findViewById(R.id.tftRemote);
+        EditText address = (EditText)findViewById(R.id.tftIP);
+        EditText username = (EditText)findViewById(R.id.tftuname);
+        EditText password = (EditText)findViewById(R.id.tftpass);
+
+        sendUtil.start();
+        sendUtil.transfer(viewedFile.getAbsolutePath(), remote.getText().toString(), address.getText().toString(), username.getText().toString(), password.getText().toString(), null);
+        sendUtil.close();
     }
 
     public void deleteFile(View view){

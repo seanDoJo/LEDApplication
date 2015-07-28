@@ -32,6 +32,11 @@
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:src="@drawable/trash"
+            android:onClick="switchFtp"/>
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:src="@drawable/email"
             android:onClick="switchEmail"/>
         <ImageButton

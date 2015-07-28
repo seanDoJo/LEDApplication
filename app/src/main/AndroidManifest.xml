@@ -27,6 +27,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:allowBackup="true"
@@ -69,7 +70,8 @@
         <activity
             android:name=".Activities.BluetoothActivity"
             android:label="@string/title_activity_bluetooth"
-            android:theme="@android:style/Theme.NoTitleBar" >
+            android:theme="@android:style/Theme.NoTitleBar"
+            android:windowSoftInputMode="adjustPan">
         </activity>
         <activity
             android:name=".Activities.LedFilterActivity"

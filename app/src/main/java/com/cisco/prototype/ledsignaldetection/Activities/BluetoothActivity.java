@@ -219,6 +219,9 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                         circle.setBackground(resid);
                         lin = (LinearLayout)findViewById(R.id.bt_lin);
                         lin.setVisibility(SurfaceView.VISIBLE);
+                        currbutton = (Button) findViewById(R.id.imageRec);
+                        currbutton.setEnabled(true);
+                        currbutton.setVisibility(SurfaceView.VISIBLE);
                         terminal = (LinearLayout) findViewById(R.id.terminal);
                         terminal.setClickable(true);
                         terminal.setVisibility(SurfaceView.VISIBLE);
@@ -691,9 +694,24 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         currbutton = (Button)findViewById(R.id.password);
         currbutton.setEnabled(false);
         currbutton.setVisibility(SurfaceView.GONE);
+        currbutton = (Button)findViewById(R.id.imageRec);
+        currbutton.setEnabled(false);
+        currbutton.setVisibility(SurfaceView.GONE);
 
         terminal = (LinearLayout)findViewById(R.id.terminal);
         currbutton.setEnabled(false);
+    }
+
+    public void switchImage(View view){
+        iFrag = new ImageFragment();
+        FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
+        tran.replace(R.id.fragment_container, iFrag);
+        tran.addToBackStack(null);
+        tran.commit();
+        connection.pau();
+        fragIndex = 2;
+        connection.write("");
+        connection.res();
     }
 
     public void switchCommunication(View view){
@@ -947,11 +965,8 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         }
     }
 
-    public void setImageMode(){
-        iFrag.kickstart = kick;
-    }
-
     public void onImageFragment(){
+        iFrag.kickstart = kick;
         String identifier = "kickstart";
         kickstartImageList = new ArrayList<String>();
         ArrayList<String> fileNames;

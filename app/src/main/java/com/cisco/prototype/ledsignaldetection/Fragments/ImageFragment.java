@@ -44,7 +44,6 @@ public class ImageFragment extends Fragment {
         super.onCreate(savedInstanceState);
         log = "";
         button = (Button) getView().findViewById(R.id.download);
-        mListener.setImageMode();
         mListener.onImageFragment();
         success = false;
     }

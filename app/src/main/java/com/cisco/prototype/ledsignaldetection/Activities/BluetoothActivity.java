@@ -1,10 +1,5 @@
 package com.cisco.prototype.ledsignaldetection.Activities;
 
-import android.graphics.Color;
-import android.net.Uri;
-import android.graphics.drawable.Drawable;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -12,10 +7,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.FragmentActivity;
-import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
@@ -30,21 +29,20 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.cisco.prototype.ledsignaldetection.Fragments.BTMenuFragment;
 import com.cisco.prototype.ledsignaldetection.BluetoothInterface;
+import com.cisco.prototype.ledsignaldetection.Fragments.BTMenuFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.CommunicationFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.EmailFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.FileExplorerFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ImageFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ImageRestoreFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.PasswordFragment;
-import com.cisco.prototype.ledsignaldetection.R;
 import com.cisco.prototype.ledsignaldetection.Fragments.SelectionFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.SoftwareFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ViewFileFragment;
+import com.cisco.prototype.ledsignaldetection.R;
+import com.cisco.prototype.ledsignaldetection.email;
 import com.cisco.prototype.ledsignaldetection.imagePair;
-
-import org.w3c.dom.Text;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -654,23 +652,22 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     }
 
     public void sendEmail(View view){
-        TextView email = (TextView) view.findViewById(R.id.email_address);
-        TextView subject = (TextView) view.findViewById(R.id.subject);
-        TextView body = (TextView) view.findViewById(R.id.body);
-
-        Intent i = new Intent(Intent.ACTION_SEND);
-        i.setType("message/rfc822");
-
-        Uri uri = Uri.fromFile(viewedFile);
-        i.putExtra(Intent.EXTRA_STREAM, uri);
-
-        /*i.putExtra(Intent.EXTRA_EMAIL  , email.getText());
-        i.putExtra(Intent.EXTRA_SUBJECT, subject.getText());*/
-        i.putExtra(Intent.EXTRA_TEXT   , viewedFile.getAbsolutePath());
-        try {
-            startActivity(Intent.createChooser(i, "Send mail..."));
-        } catch (android.content.ActivityNotFoundException ex) {
-            Toast.makeText(BluetoothActivity.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
+        EditText from = (EditText) findViewById(R.id.email_from);
+        EditText to = (EditText) findViewById(R.id.email_address);
+        EditText subject = (EditText) findViewById(R.id.subject);
+        EditText body = (EditText) findViewById(R.id.body);
+        EditText user = (EditText) findViewById(R.id.user);
+        EditText password = (EditText) findViewById(R.id.password_email);
+        email mail = new email(user.getText().toString(), password.getText().toString());
+        
+        mail.setFrom(from.getText().toString());
+        mail.setTo(to.getText().toString());
+        mail.setBody(body.getText().toString());
+        mail.setSubject(subject.getText().toString());
+        try{
+            mail.send();
+        } catch(Exception e){
+            e.printStackTrace();
         }
     }
 

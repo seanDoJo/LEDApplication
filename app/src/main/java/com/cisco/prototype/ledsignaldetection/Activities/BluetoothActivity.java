@@ -38,6 +38,7 @@ import android.widget.Toast;
 import com.cisco.prototype.ledsignaldetection.BluetoothInterface;
 import com.cisco.prototype.ledsignaldetection.Fragments.BTMenuFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.CommunicationFragment;
+import com.cisco.prototype.ledsignaldetection.Fragments.ConnectionSelectFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.EmailFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.FileExplorerFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ImageFragment;
@@ -92,6 +93,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     private ViewFileFragment fileViewer;
     private EmailFragment eFrag;
     private TFTPFragment tFrag;
+    private ConnectionSelectFragment csFrag;
     private int citer = 0;
     private boolean letsGoSoftware;
     private int passResult = 0;
@@ -260,12 +262,63 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         private InputStream mmInStream;
         private OutputStream mmOutStream;
         private boolean running = true;
+        private boolean ok = true;
         private boolean paused = false;
         private boolean inHelp = false;
         private boolean telnet = false;
         private TelnetClient tc = null;
-        public BTConnection(BluetoothDevice newDevice, CountDownLatch synchron, boolean telnet){
-            this.telnet = telnet;
+        public BTConnection(String ipaddr, int portNum, CountDownLatch synchron){
+            telnet = true;
+            StrictMode.ThreadPolicy tp = StrictMode.ThreadPolicy.LAX;
+            StrictMode.setThreadPolicy(tp);
+            tc = new TelnetClient();
+            byte[] buffer = new byte[1024];
+            byte[] readB;
+            int bytes;
+            try {
+                tc.connect(InetAddress.getByName(ipaddr), portNum);
+                String record = "";
+                mmInStream = tc.getInputStream();
+                mmOutStream = tc.getOutputStream();
+                while(!record.contains("Username:")){
+                    if(mmInStream.available() > 0){
+                        bytes = mmInStream.read(buffer);
+                        readB = new byte[bytes];
+                        for(int i = 0; i < bytes; i++)readB[i] = buffer[i];
+                        for(int i = 0; i < 1024; i++)buffer[i] = 0;
+                        Log.e("LEDApp", new String(readB));
+                        record += (new String(readB));
+                    }
+                }
+                record = "";
+                byte[] uname = "bland\n".getBytes();
+                mmOutStream.write(uname, 0, uname.length);
+                mmOutStream.flush();
+                while(!record.contains("Password:")){
+                    if(mmInStream.available() > 0){
+                        bytes = mmInStream.read(buffer);
+                        readB = new byte[bytes];
+                        for(int i = 0; i < bytes; i++)readB[i] = buffer[i];
+                        for(int i = 0; i < 1024; i++)buffer[i] = 0;
+                        Log.e("LEDApp", new String(readB));
+                        record += (new String(readB));
+                    }
+                }
+                uname = "yOuShOuLdUsEtHeScRiPt\n\n".getBytes();
+                mmOutStream.write(uname, 0, uname.length);
+                mmOutStream.flush();
+
+            }catch(UnknownHostException e){
+                e.printStackTrace();
+                ok = false;
+            }catch(IOException e){
+                e.printStackTrace();
+                ok = false;
+            }
+            if(synchron != null)synchron.countDown();
+        }
+        public BTConnection(BluetoothDevice newDevice, CountDownLatch synchron){
+            telnet = false;
             if(!telnet) {
                 BluetoothSocket tmp = null;
                 try {
@@ -274,51 +327,10 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 } catch (IOException e) {
                     Log.e("LedApp", "Failed in socket creation");
                     e.printStackTrace();
+                    ok = false;
                     //System.exit(1);
                 }
                 sock = tmp;
-            }
-            else {
-                StrictMode.ThreadPolicy tp = StrictMode.ThreadPolicy.LAX;
-                StrictMode.setThreadPolicy(tp);
-                tc = new TelnetClient();
-                byte[] buffer = new byte[1024];
-                byte[] readB;
-                int bytes;
-                try {
-                    tc.connect(InetAddress.getByName("10.48.94.143"), 2027);
-                    String record = "";
-                    mmInStream = tc.getInputStream();
-                    mmOutStream = tc.getOutputStream();
-                    while(!record.contains("Username:")){
-                        if(mmInStream.available() > 0){
-                            bytes = mmInStream.read(buffer);
-                            readB = new byte[bytes];
-                            for(int i = 0; i < bytes; i++)readB[i] = buffer[i];
-                            for(int i = 0; i < 1024; i++)buffer[i] = 0;
-                            Log.e("LEDApp", new String(readB));
-                            record += (new String(readB));
-                        }
-                    }
-                    record = "";
-                    byte[] uname = "bland\n".getBytes();
-                    mmOutStream.write(uname, 0, uname.length);
-                    mmOutStream.flush();
-                    while(!record.contains("Password:")){
-                        if(mmInStream.available() > 0){
-                            bytes = mmInStream.read(buffer);
-                            readB = new byte[bytes];
-                            for(int i = 0; i < bytes; i++)readB[i] = buffer[i];
-                            for(int i = 0; i < 1024; i++)buffer[i] = 0;
-                            Log.e("LEDApp", new String(readB));
-                            record += (new String(readB));
-                        }
-                    }
-                    uname = "yOuShOuLdUsEtHeScRiPt\n\n".getBytes();
-                    mmOutStream.write(uname, 0, uname.length);
-                    mmOutStream.flush();
-
-                }catch(UnknownHostException e){e.printStackTrace();}catch(IOException e){e.printStackTrace();}
             }
             if(synchron != null)synchron.countDown();
         }
@@ -357,20 +369,22 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 }
             }
             try{
-                if(mmOutStream != null){
-                    mmOutStream.close();
-                    mmOutStream = null;
-                }
-                if(mmInStream != null){
-                    mmInStream.close();
-                    mmInStream = null;
-                }
-                if(sock != null){
-                    sock.close();
-                    sock = null;
-                }
                 if(tc != null){
                     tc.disconnect();
+                }
+                if(!telnet) {
+                    if (mmOutStream != null) {
+                        mmOutStream.close();
+                        mmOutStream = null;
+                    }
+                    if (mmInStream != null) {
+                        mmInStream.close();
+                        mmInStream = null;
+                    }
+                    if (sock != null) {
+                        sock.close();
+                        sock = null;
+                    }
                 }
             } catch (IOException e){
                 e.printStackTrace();
@@ -462,6 +476,10 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             return returned;
         }
 
+        public boolean isOk(){
+            return this.ok;
+        }
+
         public void close(){
             paused = true;
             running = false;
@@ -509,11 +527,6 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         }
 
         public void ping(CountDownLatch pingLatch) {
-            if(telnet){
-                connectionHandler.obtainMessage(56, 1, -1, 2).sendToTarget();
-                if(pingLatch != null)pingLatch.countDown();
-                return;
-            }
             paused = true;
             byte[] buffer = new byte[1024];
             double time = 0;
@@ -558,7 +571,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     }
                     Log.i("LEDApp", returned);
                     if(!booting) {
-                        if (returned.contains("#") || returned.toLowerCase().contains("switch>") || returned.toLowerCase().contains("password:")) {
+                        if (returned.contains("#") || returned.toLowerCase().contains("switch>") || returned.toLowerCase().contains("password:") || returned.toLowerCase().contains("login:")) {
                             connectionHandler.obtainMessage(56, 1, -1, 2).sendToTarget();
                             Log.i("LEDApp", "message sent to handler");
                         } else if (returned.toLowerCase().contains("(boot)#")) {
@@ -602,27 +615,9 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         Intent intent = getIntent();
         currMode = intent.getIntExtra(HomeActivity.EXTRA_MESSAGE, 0);
         if(currMode == 0) {
-            sFrag = new SelectionFragment();
-            sFrag.setArguments(getIntent().getExtras());
-            getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, sFrag).commit();
-
-            latch = new CountDownLatch(1);
-
-            //registering a filter allows us to catch specific actions
-            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-            registerReceiver(btReceiver, filter);
-
-            //the bluetooth adapter is where we discover devices
-            mBluetooth = BluetoothAdapter.getDefaultAdapter();
-            devices = new ArrayList<BluetoothDevice>();
-
-            //this is where we ask to enable bluetooth
-            Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
-            startActivity(discoverableIntent);
-
-            //start discovering devices -- this is handled in the broadcast receiver
-            mBluetooth.startDiscovery();
+            csFrag = new ConnectionSelectFragment();
+            csFrag.setArguments(getIntent().getExtras());
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, csFrag).commit();
         }
         else{
             fileFrag = new FileExplorerFragment();
@@ -643,8 +638,39 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         if(currMode == 0) {
             if (connection != null) connection.close();
             if (mBluetooth != null) mBluetooth.cancelDiscovery();
+        }
+    }
+
+    public void closeBluetooth(){
+        if(currMode == 0) {
+            if (connection != null) connection.close();
+            if (mBluetooth != null) mBluetooth.cancelDiscovery();
             unregisterReceiver(btReceiver);
         }
+    }
+
+    public void switchBluetooth(View view){
+        sFrag = new SelectionFragment();
+        FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
+        tran.replace(R.id.fragment_container, sFrag);
+        tran.addToBackStack(null);
+        tran.commit();
+
+        //registering a filter allows us to catch specific actions
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(btReceiver, filter);
+
+        //the bluetooth adapter is where we discover devices
+        mBluetooth = BluetoothAdapter.getDefaultAdapter();
+        devices = new ArrayList<BluetoothDevice>();
+
+        //this is where we ask to enable bluetooth
+        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
+        startActivity(discoverableIntent);
+
+        //start discovering devices -- this is handled in the broadcast receiver
+        mBluetooth.startDiscovery();
     }
 
     public void onSelectionFragment(int index){
@@ -653,10 +679,11 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             tready = new CountDownLatch(1);
             latch = new CountDownLatch(1);
             if (connection != null) connection.close();
-            connection = new BTConnection(devices.get(index), latch, true);
+            connection = new BTConnection(devices.get(index), latch);
             try {
                 latch.await();
             }catch(InterruptedException e){e.printStackTrace();}
+            if(!connection.isOk())System.exit(1);
             connection.start();
             try {
                 tready.await();
@@ -672,6 +699,43 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         fragIndex = 0;
         connection.res();
 
+    }
+
+
+    public void switchTelnet(View view){
+        LinearLayout lin = (LinearLayout)findViewById(R.id.telMenu);
+        lin.setVisibility(SurfaceView.VISIBLE);
+        Button button = (Button)findViewById(R.id.bluetoothSwitch);
+        button.setEnabled(false);
+        button.setVisibility(SurfaceView.GONE);
+        button = (Button)findViewById(R.id.telnetSwitch);
+        button.setEnabled(false);
+        button.setVisibility(SurfaceView.GONE);
+    }
+
+    public void onTelnetStart(View view){
+        EditText address = (EditText)findViewById(R.id.telAddress);
+        EditText port = (EditText)findViewById(R.id.telPort);
+        tready = new CountDownLatch(1);
+        latch = new CountDownLatch(1);
+        if (connection != null) connection.close();
+        connection = new BTConnection(address.getText().toString().trim(),Integer.parseInt(port.getText().toString().trim()),latch);
+        try {
+            latch.await();
+        }catch(InterruptedException e){e.printStackTrace();}
+        if(!connection.isOk())System.exit(1);
+        connection.start();
+        try {
+            tready.await();
+        } catch (InterruptedException e){}
+        btmFrag = new BTMenuFragment();
+        FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
+        tran.replace(R.id.fragment_container, btmFrag);
+        tran.addToBackStack("menu");
+        tran.commit();
+        connection.pau();
+        fragIndex = 0;
+        connection.res();
     }
 
     public void configureMenu(){

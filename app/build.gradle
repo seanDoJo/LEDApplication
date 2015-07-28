@@ -34,7 +34,7 @@ android {
     tasks.withType(JavaCompile) {
         compileTask -> compileTask.dependsOn ndkBuild
     }*/
-    packagingOptions{
+    packagingOptions {
         exclude 'META-INF/LICENSE.txt'
     }
 }
@@ -43,10 +43,10 @@ dependencies {
     //compile project(':libraries:opencv')
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile project(':openCVLibrary2482')
-    compile 'com.android.support:appcompat-v7:22.2.1'
-    compile 'com.android.support:support-v4:22.2.1'
     compile files('src/main/libs/additionnal.jar')
     compile files('src/main/libs/activation.jar')
     compile files('src/main/libs/mail.jar')
+    compile 'com.android.support:appcompat-v7:22.2.1'
+    compile 'com.android.support:support-v4:22.2.1'
     compile 'commons-net:commons-net:20030805.205232'
 }

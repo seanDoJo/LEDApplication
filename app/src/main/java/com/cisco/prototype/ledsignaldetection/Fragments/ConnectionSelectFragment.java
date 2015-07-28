@@ -1,6 +1,7 @@
 package com.cisco.prototype.ledsignaldetection.Fragments;
 
 import android.app.Activity;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -10,10 +11,11 @@ import android.view.ViewGroup;
 import com.cisco.prototype.ledsignaldetection.BluetoothInterface;
 import com.cisco.prototype.ledsignaldetection.R;
 
-public class BTMenuFragment extends Fragment {
+public class ConnectionSelectFragment extends Fragment {
+
     private BluetoothInterface mListener;
 
-    public BTMenuFragment() {
+    public ConnectionSelectFragment() {
         // Required empty public constructor
     }
 
@@ -23,36 +25,33 @@ public class BTMenuFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_btmenu, container, false);
-        return view;
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_connection_select, container, false);
     }
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        try{
-            mListener = (BluetoothInterface)activity;
-        } catch (ClassCastException e){}
+        try {
+            mListener = (BluetoothInterface) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
     }
 
     @Override
     public void onResume(){
         super.onResume();
-        mListener.updateFragIndex(0);
-        mListener.configureMenu();
+        mListener.disconnect();
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
-    }
-
-    @Override
-    public void onDestroy(){
-        super.onDestroy();
-        //mListener.disconnect();
     }
 
 }

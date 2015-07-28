@@ -60,6 +60,7 @@ public class SelectionFragment extends Fragment  {
     @Override
     public void onDetach() {
         super.onDetach();
+        mListener.closeBluetooth();
         mListener = null;
     }
 

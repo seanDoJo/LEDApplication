@@ -1,11 +1,5 @@
 package com.cisco.prototype.ledsignaldetection.Activities;
 
-import android.graphics.Color;
-import android.net.Uri;
-import android.graphics.drawable.Drawable;
-import android.os.StrictMode;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -18,6 +12,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.StrictMode;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -46,20 +41,15 @@ import com.cisco.prototype.ledsignaldetection.Fragments.ImageRestoreFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.PasswordFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.SelectionFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.SoftwareFragment;
-import com.cisco.prototype.ledsignaldetection.Fragments.ViewFileFragment;
-import com.cisco.prototype.ledsignaldetection.R;
-import com.cisco.prototype.ledsignaldetection.email;
-import com.cisco.prototype.ledsignaldetection.imagePair;
 import com.cisco.prototype.ledsignaldetection.Fragments.TFTPFragment;
-import com.cisco.prototype.ledsignaldetection.R;
-import com.cisco.prototype.ledsignaldetection.Fragments.SelectionFragment;
-import com.cisco.prototype.ledsignaldetection.Fragments.SoftwareFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ViewFileFragment;
+import com.cisco.prototype.ledsignaldetection.R;
 import com.cisco.prototype.ledsignaldetection.TFTPUtil;
+import com.cisco.prototype.ledsignaldetection.email;
 import com.cisco.prototype.ledsignaldetection.imagePair;
 
 import org.apache.commons.net.telnet.TelnetClient;
-import org.w3c.dom.Text;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -221,9 +211,6 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                         circle.setBackground(resid);
                         lin = (LinearLayout)findViewById(R.id.bt_lin);
                         lin.setVisibility(SurfaceView.VISIBLE);
-                        currbutton = (Button) findViewById(R.id.imageRec);
-                        currbutton.setEnabled(true);
-                        currbutton.setVisibility(SurfaceView.VISIBLE);
                         terminal = (LinearLayout) findViewById(R.id.terminal);
                         terminal.setClickable(true);
                         terminal.setVisibility(SurfaceView.VISIBLE);
@@ -235,6 +222,9 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                         lin = (LinearLayout)findViewById(R.id.bt_lin);
                         lin.setVisibility(SurfaceView.VISIBLE);
                         currbutton = (Button) findViewById(R.id.password);
+                        currbutton.setEnabled(true);
+                        currbutton.setVisibility(SurfaceView.VISIBLE);
+                        currbutton = (Button) findViewById(R.id.imageRec);
                         currbutton.setEnabled(true);
                         currbutton.setVisibility(SurfaceView.VISIBLE);
                         terminal = (LinearLayout) findViewById(R.id.terminal);
@@ -1030,6 +1020,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     }
 
     public void onImageFragment(){
+        Log.i("image", "onImage entered");
         iFrag.kickstart = kick;
         String identifier = "kickstart";
         kickstartImageList = new ArrayList<String>();
@@ -1037,7 +1028,9 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
 
         //check for concurrent images
         connection.write("dir");
+        Log.i("image", "before while");
         while(!(iFrag.log.contains(">") || iFrag.log.contains("#"))){}
+        Log.i("image", "after while");
         files = iFrag.log.split("\n");
         Arrays.copyOf(files, files.length - 1); // get rid of last line, which is loader> prompt
         for(int i = 0; i < files.length; i++){

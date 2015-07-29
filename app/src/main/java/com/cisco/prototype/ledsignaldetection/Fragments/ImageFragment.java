@@ -43,7 +43,6 @@ public class ImageFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         log = "";
-        button = (Button) getView().findViewById(R.id.download);
         mListener.onImageFragment();
         success = false;
     }
@@ -54,6 +53,7 @@ public class ImageFragment extends Fragment {
         mList = new ArrayList<String>();
         mAdapter = new ArrayAdapter<String>(getActivity(), R.layout.fragment_image, mList);
         textView = (TextView) view.findViewById(R.id.image_text);
+        button = (Button) getView().findViewById(R.id.download);
 
         return view;
     }

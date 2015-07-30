@@ -1,7 +1,5 @@
 package com.cisco.prototype.ledsignaldetection;
 
-import android.app.DialogFragment;
-
 import java.io.File;
 
 /**
@@ -18,11 +16,11 @@ public interface BluetoothInterface {
     public void imageStateMachine(int...arg);
     public void onPasswordFragment(String message);
     public void writeData(String data);
-    public void setImageMode();
     public void startFileExplorer();
     public void viewFile(File file);
     public void initFileView();
     public void destroyFile();
     public void closeBluetooth();
     public void switchPasswordContext(String context);
+    public void onFileListObtained();
 }

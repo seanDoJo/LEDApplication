@@ -90,6 +90,24 @@ android:background="@drawable/gradient_box">
             android:textSize="25dp"
             android:layout_margin="20dp"
             android:visibility="gone"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Image Recovery"
+            android:id="@+id/imageRec"
+            android:textColor="#ffaa052a"
+            android:textStyle="bold"
+            android:typeface="sans"
+            android:background="@drawable/button_home"
+            android:padding="10dp"
+            android:minWidth="300dp"
+            android:minHeight="80dp"
+            android:enabled="false"
+            android:onClick="switchImage"
+            android:clickable="true"
+            android:textSize="25dp"
+            android:layout_margin="20dp"
+            android:visibility="gone"/>
     </LinearLayout>
 
 </RelativeLayout>

@@ -11,7 +11,8 @@
         android:layout_weight="0"
         android:textColor="#ff020000"
         android:typeface="sans"
-        android:textSize="19sp"/>
+        android:textSize="19sp"
+        android:text="Getting files..."/>
     <ListView android:layout_width="match_parent" android:layout_height="match_parent"
         android:id="@+id/image_list"
         android:textColor="#ffaa052a"

@@ -26,7 +26,7 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Telnet"
+        android:text="Comm Server Access"
         android:id="@+id/telnetSwitch"
         android:textColor="#ffaa052a"
         android:textStyle="bold"

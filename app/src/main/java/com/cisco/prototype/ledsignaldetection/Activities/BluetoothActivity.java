@@ -104,7 +104,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     private String message = "";
     private String currentKickImage = "";
     private String currentSysImage = "";
-    private boolean kick;
+    private boolean kick = false;
     private File outputFile;
     private BufferedWriter writer = null;
     private boolean captureEnabled = false;
@@ -601,7 +601,10 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                         if (booted1.matcher(returned).matches() || booted2.matcher(returned).matches() || booted3.matcher(returned).matches() || booted4.matcher(returned).matches()) {
                             connectionHandler.obtainMessage(56, 1, -1, 2).sendToTarget();
                             Log.i("LEDApp", "message sent to handler");
-                        }else if (ldr1.matcher(returned).matches() || ldr2.matcher(returned).matches() || ldr3.matcher(returned).matches()) {
+                        }else if(ldr3.matcher(returned).matches()){
+                            kick = true;
+                            connectionHandler.obtainMessage(56, 1, -1, 1).sendToTarget();
+                        } else if (ldr2.matcher(returned).matches() || ldr1.matcher(returned).matches()) {
                             connectionHandler.obtainMessage(56, 1, -1, 1).sendToTarget();
                             Log.i("LEDApp", "message sent to handler");
                         } else {

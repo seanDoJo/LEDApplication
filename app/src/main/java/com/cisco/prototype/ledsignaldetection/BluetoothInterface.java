@@ -21,5 +21,6 @@ public interface BluetoothInterface {
     public void initFileView();
     public void destroyFile();
     public void closeBluetooth();
+    public void switchPasswordContext(String context);
     public void onFileListObtained();
 }

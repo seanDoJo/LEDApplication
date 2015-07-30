@@ -27,6 +27,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -61,6 +62,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
 
 
 public class BluetoothActivity extends FragmentActivity implements BluetoothInterface {
@@ -89,6 +93,8 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     final int[] pingval = new int[1];
     CountDownLatch latch;
     CountDownLatch tready;
+    public boolean locked = false;
+    public final Lock mLock = new ReentrantLock(true);
     private int mode;
     private ArrayList<String> files;
     private ArrayList<imagePair> imageList = new ArrayList<imagePair>();
@@ -162,15 +168,22 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             }
             else if(m.what == 3){
                 //Password
-
+                mLock.lock();
+                locked = true;
+                mLock.unlock();
                 byte[] data = (byte[]) m.obj;
                 String result = new String(data);
-                if(captureEnabled){
+                if (captureEnabled) {
                     try {
                         writer.write(result);
-                    }catch(IOException e){e.printStackTrace();}
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
-                if(!result.contains("@"))pFrag.read(result);
+                if (!result.contains("@")) pFrag.read(result);
+                mLock.lock();
+                locked = false;
+                mLock.unlock();
             }
             else if(m.what == 4){
                 //Software
@@ -280,7 +293,6 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                         readB = new byte[bytes];
                         for(int i = 0; i < bytes; i++)readB[i] = buffer[i];
                         for(int i = 0; i < 1024; i++)buffer[i] = 0;
-                        Log.e("LEDApp", new String(readB));
                         record += (new String(readB));
                     }
                 }
@@ -294,7 +306,6 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                         readB = new byte[bytes];
                         for(int i = 0; i < bytes; i++)readB[i] = buffer[i];
                         for(int i = 0; i < 1024; i++)buffer[i] = 0;
-                        Log.e("LEDApp", new String(readB));
                         record += (new String(readB));
                     }
                 }
@@ -332,6 +343,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             byte[] buffer = new byte[1024];
             byte[] readB;
             int bytes;
+            double last = System.currentTimeMillis();
             try{
                 if(!telnet) {
                     sock.connect();
@@ -349,7 +361,8 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             while(running) {
                 while(!paused) {
                     try {
-                        if (mmInStream != null && mmInStream.available() > 0) {
+                        mLock.lock();
+                        if (mmInStream != null && mmInStream.available() > 0 && locked == false) {
                             bytes = mmInStream.read(buffer);
                             readB = new byte[bytes];
                             //Log.e("LEDapp", new String(readB));
@@ -357,6 +370,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                             connectionHandler.obtainMessage(fragIndex, bytes, -1, readB).sendToTarget();
                             for(int i = 0; i < 1024; i++)buffer[i] = 0;
                         }
+                        mLock.unlock();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -407,6 +421,18 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                         }
                         Log.i("LEDApp", "Special esc char sent");
                     }
+                    else if(specComm.replace("-", "").contains("ctrl]")){
+                        char inter = (char)0x1D;
+                        byte[] bytes = ("" + inter).getBytes();
+                        if(telnet){
+                            mmOutStream.write(bytes, 0, bytes.length);
+                            mmOutStream.flush();
+                        }
+                        else {
+                            mmOutStream.write(bytes);
+                        }
+                        Log.i("LEDApp", "Special break char sent");
+                    }
                     else if(specComm.contains("break")){
                         char breakC = (char)0x03;
                         byte[] bytes = ("" + breakC).getBytes();
@@ -417,7 +443,6 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                         else {
                             mmOutStream.write(bytes);
                         }
-                        Log.i("LEDApp", "Special break char sent");
                     }
                 }
                 else {
@@ -521,6 +546,14 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         }
 
         public void ping(CountDownLatch pingLatch) {
+            Pattern booted1 = Pattern.compile("(?s)[^()#]*#[^#]*");
+            Pattern booted2 = Pattern.compile("(?s).*[sS]{1}witch>[^>]*");
+            Pattern booted3 = Pattern.compile("(?s).*[pP]{1}assword:.*");
+            Pattern booted4 = Pattern.compile("(?s).*[lL]{1}ogin:.*");
+
+            Pattern ldr1 = Pattern.compile("(?s)[^()#]*\\(.*\\)#[^#]*");
+            Pattern ldr2 = Pattern.compile("(?s).*[sS]{1}witch:.*");
+            Pattern ldr3 = Pattern.compile("(?s).*[lL]{1}oader>[^>]*");
             paused = true;
             byte[] buffer = new byte[1024];
             double time = 0;
@@ -565,13 +598,10 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     }
                     Log.i("LEDApp", returned);
                     if(!booting) {
-                        if (returned.contains("#") || returned.toLowerCase().contains("switch>") || returned.toLowerCase().contains("password:") || returned.toLowerCase().contains("login:")) {
+                        if (booted1.matcher(returned).matches() || booted2.matcher(returned).matches() || booted3.matcher(returned).matches() || booted4.matcher(returned).matches()) {
                             connectionHandler.obtainMessage(56, 1, -1, 2).sendToTarget();
                             Log.i("LEDApp", "message sent to handler");
-                        } else if (returned.toLowerCase().contains("(boot)#")) {
-                            connectionHandler.obtainMessage(56, 1, -1, 1).sendToTarget();
-                            Log.i("LEDApp", "message sent to handler");
-                        } else if (returned.toLowerCase().contains("switch:") || returned.toLowerCase().contains("loader>")) {
+                        }else if (ldr1.matcher(returned).matches() || ldr2.matcher(returned).matches() || ldr3.matcher(returned).matches()) {
                             connectionHandler.obtainMessage(56, 1, -1, 1).sendToTarget();
                             Log.i("LEDApp", "message sent to handler");
                         } else {
@@ -592,7 +622,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 Log.e("LedApp", "error in ping!");
                 e.printStackTrace();
             }
-            if(pingLatch != null)pingLatch.countDown();
+            if (pingLatch != null) pingLatch.countDown();
             Log.i("LEDApp", "ping executed");
             paused = false;
         }
@@ -622,7 +652,6 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     @Override
     public void onResume(){
         super.onResume();
-        Log.i("LEDApp", "resumed");
     }
 
     @Override
@@ -1222,46 +1251,110 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         boot.setEnabled(false);
         boot.setVisibility(SurfaceView.GONE);
     }
-
-    public void passwordStart(View view){
+    public void switchPasswordContext(String context){
         EditText secret = (EditText)findViewById(R.id.secretpw);
         EditText enable = (EditText)findViewById(R.id.enablepw);
         EditText console = (EditText)findViewById(R.id.consolepw);
         TextView secretV = (TextView)findViewById(R.id.secretpwh);
         TextView enableV = (TextView)findViewById(R.id.enablepwh);
         TextView consoleV = (TextView)findViewById(R.id.consolepwh);
+        EditText admin = (EditText)findViewById(R.id.adminpw);
+        TextView adminV = (TextView)findViewById(R.id.adminpwh);
+        if(context.trim().contains("IOS")){
+            admin.setEnabled(false);
+            admin.setVisibility(SurfaceView.GONE);
+            adminV.setVisibility(SurfaceView.GONE);
+
+            secret.setEnabled(true);
+            secret.setVisibility(SurfaceView.VISIBLE);
+            enable.setEnabled(true);
+            enable.setVisibility(SurfaceView.VISIBLE);
+            console.setEnabled(true);
+            console.setVisibility(SurfaceView.VISIBLE);
+            secretV.setVisibility(SurfaceView.VISIBLE);
+            enableV.setVisibility(SurfaceView.VISIBLE);
+            consoleV.setVisibility(SurfaceView.VISIBLE);
+        }
+        else{
+            admin.setEnabled(true);
+            admin.setVisibility(SurfaceView.VISIBLE);
+            adminV.setVisibility(SurfaceView.VISIBLE);
+
+            secret.setEnabled(false);
+            secret.setVisibility(SurfaceView.GONE);
+            enable.setEnabled(false);
+            enable.setVisibility(SurfaceView.GONE);
+            console.setEnabled(false);
+            console.setVisibility(SurfaceView.GONE);
+            secretV.setVisibility(SurfaceView.GONE);
+            enableV.setVisibility(SurfaceView.GONE);
+            consoleV.setVisibility(SurfaceView.GONE);
+        }
+    }
+
+    public void passwordStart(View view){
+
         TextView outputV = (TextView)findViewById(R.id.outputpwh);
         RelativeLayout writeV = (RelativeLayout)findViewById(R.id.password_text);
         CheckBox check = (CheckBox)findViewById(R.id.pwcheck);
         EditText fname = (EditText)findViewById(R.id.outputpw);
         Button start = (Button)findViewById(R.id.recoverpw);
-        String data = secret.getText().toString() + "," + enable.getText().toString() + "," + console.getText().toString();
-        if(check.isChecked()){
+        Spinner spin = (Spinner)findViewById(R.id.selectpw);
+        String OS = spin.getSelectedItem().toString();
+        String data = "";
+        if (check.isChecked()) {
             String file = fname.getText().toString().trim();
-            if(file.length() > 0){
+            if (file.length() > 0) {
                 createFile(file);
-            }
-            else{
+            } else {
                 fname.setBackgroundColor(Color.RED);
-                ScrollView sView = (ScrollView)findViewById(R.id.pwscroll);
+                ScrollView sView = (ScrollView) findViewById(R.id.pwscroll);
                 sView.fullScroll(View.FOCUS_DOWN);
             }
         }
-        secret.setEnabled(false);
-        secret.setVisibility(SurfaceView.GONE);
-        enable.setEnabled(false);
-        enable.setVisibility(SurfaceView.GONE);
-        console.setEnabled(false);
-        console.setVisibility(SurfaceView.GONE);
+        if(OS.trim() == "IOS") {
+            EditText secret = (EditText)findViewById(R.id.secretpw);
+            EditText enable = (EditText)findViewById(R.id.enablepw);
+            EditText console = (EditText)findViewById(R.id.consolepw);
+            TextView secretV = (TextView)findViewById(R.id.secretpwh);
+            TextView enableV = (TextView)findViewById(R.id.enablepwh);
+            TextView consoleV = (TextView)findViewById(R.id.consolepwh);
+            data += secret.getText().toString() + "," + enable.getText().toString() + "," + console.getText().toString() + "," + "IOS";
+            secret.setEnabled(false);
+            secret.setVisibility(SurfaceView.GONE);
+            enable.setEnabled(false);
+            enable.setVisibility(SurfaceView.GONE);
+            console.setEnabled(false);
+            console.setVisibility(SurfaceView.GONE);
+            secretV.setVisibility(SurfaceView.GONE);
+            enableV.setVisibility(SurfaceView.GONE);
+            consoleV.setVisibility(SurfaceView.GONE);
+        } else{
+            EditText admin = (EditText)findViewById(R.id.adminpw);
+            TextView adminV = (TextView)findViewById(R.id.adminpwh);
+            connection.pau();
+            String line = connection.sendCont("");
+            connection.res();
+            Log.i("LINE", line);
+            data += admin.getText().toString() + "," + "null,null,NXOS,";
+            if (line.toLowerCase().contains("login:") || line.toLowerCase().contains("password:")) {
+                data += "T";
+            } else {
+                data += "F";
+            }
+            admin.setEnabled(false);
+            admin.setVisibility(SurfaceView.GONE);
+            adminV.setVisibility(SurfaceView.GONE);
+        }
+
         start.setEnabled(false);
         start.setVisibility(SurfaceView.GONE);
+        spin.setEnabled(false);
+        spin.setVisibility(SurfaceView.GONE);
         check.setEnabled(false);
         check.setVisibility(SurfaceView.GONE);
         fname.setEnabled(false);
         fname.setVisibility(SurfaceView.GONE);
-        secretV.setVisibility(SurfaceView.GONE);
-        enableV.setVisibility(SurfaceView.GONE);
-        consoleV.setVisibility(SurfaceView.GONE);
         outputV.setVisibility(SurfaceView.GONE);
         writeV.setVisibility(SurfaceView.VISIBLE);
 
@@ -1285,6 +1378,32 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             fname.setEnabled(false);
             fname.setVisibility(SurfaceView.GONE);
         }
+    }
+
+    public void passwordSetImages(View view){
+        Spinner sys = (Spinner)findViewById(R.id.selectSys);
+        Spinner ks = (Spinner)findViewById(R.id.selectKickstart);
+        int mode = sys.getVisibility();
+        if(mode == SurfaceView.VISIBLE){
+            String sysImage = sys.getSelectedItem().toString().trim();
+            String kickImage = ks.getSelectedItem().toString().trim();
+            pFrag.setImages(kickImage, sysImage);
+            writeData("boot " + kickImage);
+        }
+        else{
+            String[] images = ks.getSelectedItem().toString().split(":");
+            pFrag.setImages(images[0].trim(), images[1].trim());
+            writeData("boot " + images[0].trim());
+        }
+        RelativeLayout imageSelection = (RelativeLayout)findViewById(R.id.passwordImages);
+        imageSelection.setVisibility(SurfaceView.GONE);
+    }
+    public void passwordLoadSys(View view){
+        Spinner sys = (Spinner)findViewById(R.id.selectSys);
+        String sysImage = sys.getSelectedItem().toString().trim();
+        writeData("boot " + sysImage);
+        RelativeLayout imageSelection = (RelativeLayout)findViewById(R.id.passwordImages);
+        imageSelection.setVisibility(SurfaceView.GONE);
     }
 
     public void onSoftwareFragment(){

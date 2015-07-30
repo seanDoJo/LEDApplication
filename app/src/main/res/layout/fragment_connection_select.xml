@@ -5,94 +5,19 @@
     tools:context="com.cisco.prototype.ledsignaldetection.Fragments.ConnectionSelectFragment"
     android:background="@drawable/gradient_box"
     android:orientation="vertical">
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Bluetooth"
-        android:id="@+id/bluetoothSwitch"
-        android:textColor="#ffaa052a"
-        android:textStyle="bold"
-        android:typeface="sans"
-        android:background="@drawable/button_home"
-        android:padding="10dp"
-        android:minWidth="300dp"
-        android:minHeight="80dp"
-        android:enabled="true"
-        android:onClick="switchBluetooth"
-        android:clickable="true"
-        android:textSize="25dp"
-        android:layout_centerHorizontal="true" />
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Comm Server Access"
-        android:id="@+id/telnetSwitch"
-        android:textColor="#ffaa052a"
-        android:textStyle="bold"
-        android:typeface="sans"
-        android:background="@drawable/button_home"
-        android:padding="10dp"
-        android:minWidth="300dp"
-        android:minHeight="80dp"
-        android:enabled="true"
-        android:onClick="switchTelnet"
-        android:clickable="true"
-        android:textSize="25dp"
-        android:layout_centerHorizontal="true" />
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:id="@+id/telMenu"
-        android:visibility="gone">
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="Address:"
-            android:id="@+id/telAddressT"
-            android:gravity="bottom|left"
-            android:textColor="#ffffffff"
-            android:textStyle="bold"
-            android:textSize="25dp"
-            android:paddingLeft="10dp" />
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/telAddress"
-            android:layout_marginTop="20dp"
-            android:background="#ff92c8ee"
-            android:padding="10dp"
-            android:gravity="center"
-            android:textColor="#ffaa052a"
-            android:textSize="20dp"/>
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="Port:"
-            android:id="@+id/telPortT"
-            android:gravity="bottom|left"
-            android:textColor="#ffffffff"
-            android:textStyle="bold"
-            android:textSize="25dp"
-            android:paddingLeft="10dp" />
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/telPort"
-            android:layout_marginTop="20dp"
-            android:background="#ff92c8ee"
-            android:padding="10dp"
-            android:gravity="center"
-            android:textColor="#ffaa052a"
-            android:textSize="20dp"/>
+        android:id="@+id/connectButtons"
+        android:visibility="visible">
         <Button
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Connect"
-            android:id="@+id/telnetStart"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_margin="40dp"
+            android:text="Bluetooth"
+            android:id="@+id/bluetoothSwitch"
             android:textColor="#ffaa052a"
             android:textStyle="bold"
             android:typeface="sans"
@@ -101,10 +26,110 @@
             android:minWidth="300dp"
             android:minHeight="80dp"
             android:enabled="true"
-            android:onClick="onTelnetStart"
+            android:onClick="switchBluetooth"
             android:clickable="true"
             android:textSize="25dp"
             android:layout_centerHorizontal="true" />
-    </LinearLayout>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_margin="40dp"
+            android:text="Comm Server Access"
+            android:id="@+id/telnetSwitch"
+            android:textColor="#ffaa052a"
+            android:textStyle="bold"
+            android:typeface="sans"
+            android:background="@drawable/button_home"
+            android:padding="10dp"
+            android:minWidth="300dp"
+            android:minHeight="80dp"
+            android:enabled="true"
+            android:onClick="switchTelnet"
+            android:clickable="true"
+            android:textSize="25dp"
+            android:layout_centerHorizontal="true" />
+        </LinearLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/telMenu"
+        android:visibility="gone">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/connectiontitle"
+            android:text="Comm Server Information"
+            android:gravity="center"
+            android:textColor="#ffaa052a"
+            android:textStyle="bold"
+            android:textSize="50dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_below="@+id/connectiontitle">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Address:"
+                android:id="@+id/telAddressT"
+                android:gravity="bottom|left"
+                android:textColor="#ffffffff"
+                android:textStyle="bold"
+                android:textSize="25dp"
+                android:paddingLeft="10dp" />
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/telAddress"
+                android:layout_marginTop="20dp"
+                android:background="#ff92c8ee"
+                android:padding="10dp"
+                android:gravity="center"
+                android:textColor="#ffaa052a"
+                android:textSize="20dp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Port:"
+                android:id="@+id/telPortT"
+                android:gravity="bottom|left"
+                android:textColor="#ffffffff"
+                android:textStyle="bold"
+                android:textSize="25dp"
+                android:paddingLeft="10dp" />
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/telPort"
+                android:layout_marginTop="20dp"
+                android:background="#ff92c8ee"
+                android:padding="10dp"
+                android:gravity="center"
+                android:textColor="#ffaa052a"
+                android:textSize="20dp"/>
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:text="Connect"
+                android:id="@+id/telnetStart"
+                android:textColor="#ffaa052a"
+                android:textStyle="bold"
+                android:typeface="sans"
+                android:background="@drawable/button_home"
+                android:padding="10dp"
+                android:minWidth="300dp"
+                android:minHeight="80dp"
+                android:enabled="true"
+                android:onClick="onTelnetStart"
+                android:clickable="true"
+                android:textSize="25dp"
+                android:layout_centerHorizontal="true" />
+        </LinearLayout>
+    </RelativeLayout>
 
 </LinearLayout>

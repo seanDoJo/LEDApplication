@@ -1,0 +1,93 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.cisco.prototype.ledsignaldetection.Fragments.LoginFragment"
+    android:orientation="vertical"
+    android:background="@drawable/gradient_box">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:id="@+id/logintitle"
+        android:text="Login"
+        android:gravity="center"
+        android:textColor="#ffaa052a"
+        android:textStyle="bold"
+        android:textSize="50dp" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/logintitle"
+        android:layout_marginTop="50dp"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:text="Username:"
+            android:id="@+id/loginunameh"
+            android:gravity="bottom|left"
+            android:textColor="#ffffffff"
+            android:textStyle="bold"
+            android:textSize="25dp"
+            android:paddingLeft="20dp"
+            android:visibility="visible" />
+        <EditText
+            android:id="@+id/loginuname"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="3"
+            android:layout_margin="20dp"
+            android:background="#ff92c8ee"
+            android:padding="10dp"
+            android:gravity="center"
+            android:textColor="#ffaa052a"
+            android:textSize="20dp"
+            android:visibility="visible"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:text="Password:"
+            android:id="@+id/loginpwh"
+            android:gravity="bottom|left"
+            android:textColor="#ffffffff"
+            android:textStyle="bold"
+            android:textSize="25dp"
+            android:paddingLeft="20dp"
+            android:visibility="visible" />
+        <EditText
+            android:id="@+id/loginpw"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="3"
+            android:layout_margin="20dp"
+            android:background="#ff92c8ee"
+            android:padding="10dp"
+            android:gravity="center"
+            android:textColor="#ffaa052a"
+            android:textSize="20dp"
+            android:visibility="visible"/>
+    </LinearLayout>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Submit"
+        android:id="@+id/loginsub"
+        android:textColor="#ffaa052a"
+        android:textStyle="bold"
+        android:typeface="sans"
+        android:background="@drawable/button_home"
+        android:padding="10dp"
+        android:minWidth="300dp"
+        android:minHeight="80dp"
+        android:enabled="true"
+        android:onClick="passwordStart"
+        android:clickable="true"
+        android:textSize="25dp"
+        android:layout_alignParentBottom="true" />
+
+</RelativeLayout>

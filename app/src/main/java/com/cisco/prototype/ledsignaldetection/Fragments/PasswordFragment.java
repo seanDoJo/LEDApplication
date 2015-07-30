@@ -43,6 +43,7 @@ public class PasswordFragment extends Fragment {
     private String consolePw = "";
     private String enablePw = "";
     private String adminpass = "";
+    private boolean reloadConfirmed = false;
     private int os = 0;
     private boolean toAutoBootConf = false;
     private boolean outputEnabled = false;
@@ -67,7 +68,7 @@ public class PasswordFragment extends Fragment {
     private Pattern system = Pattern.compile("^.*\\.bin$");
     private Pattern version = Pattern.compile("^[^\\.]*\\.(\\d+.*)\\.bin$");
 
-    private Pattern recordP = Pattern.compile("(?s).*bootflash:(.*)[lL]oader>[^>]*");
+    private Pattern recordP = Pattern.compile("(?s).*bootflash:(.*)[lL]oader>.*");
     private Pattern weirdItem = Pattern.compile("^[^\\s]*$");
     private Pattern itemExtract = Pattern.compile("^*.\\s{1}([^\\s]*)$");
 
@@ -177,6 +178,8 @@ public class PasswordFragment extends Fragment {
     public void selectBoot(boolean pairs){
         RelativeLayout imageSelection = (RelativeLayout)getActivity().findViewById(R.id.passwordImages);
         imageSelection.setVisibility(SurfaceView.VISIBLE);
+        RelativeLayout old = (RelativeLayout)getActivity().findViewById(R.id.password_text);
+        old.setVisibility(SurfaceView.GONE);
         if(pairs){
             TextView out = (TextView)getActivity().findViewById(R.id.selectKickstartpwh);
             out.setText("Select an Image Pair:");
@@ -414,27 +417,34 @@ public class PasswordFragment extends Fragment {
                 }
             }
         } else if(recoveryStarted && os == 1){
+            if(record.toLowerCase().contains("bios") && state == 1 && !reloadConfirmed){
+                reloadConfirmed = true;
+            }
             if(record.toLowerCase().contains("y/n")){
                 mListener.writeData("y");
                 record = "";
+            }
+            else if(record.toLowerCase().contains("-more-")){
+                record = record.replaceAll("\\[.*\\[\\d*m?", "");
+                record = record.replaceAll("\\[d+m?", "");
+                mListener.writeData("!!!space");
+                if(state != 2 && state != 3)record = "";
+            }
+            else if(record.toLowerCase().contains("return to")){
+                record = record.replaceAll("\\[.*\\[\\d*m?", "");
+                record = record.replaceAll("\\[\\d+m?", "");
+                //mListener.writeData("");
+                if(state != 2 && state != 3)record = "";
             }
             else {
                 switch (state) {
                     case 0:
                         mListener.writeData("reload");
                         state++;
+                        reloadConfirmed = false;
                         record = "";
                     case 1:
-                        if (record.toLowerCase().contains("booting kickstart image")) {
-                            mListener.writeData("!!!break");
-                            state++;
-                            record = "";
-                        }else if (record.toLowerCase().contains("post completed")) {
-
-                            mListener.writeData("!!!ctrl]");
-                            state = 4;
-                            record = "";
-                        }else if(loader.matcher(record).matches()){
+                        if(loader.matcher(record).matches()){
                             mListener.writeData("");
                             state++;
                             record = "";
@@ -443,11 +453,20 @@ public class PasswordFragment extends Fragment {
                             mListener.writeData("");
                             record = "";
                         }
+                        else if (record.toLowerCase().contains("booting kickstart image")) {
+                            mListener.writeData("");
+                            state++;
+                            record = "";
+                        }else if (record.toLowerCase().contains("post completed")) {
+                            mListener.writeData("");
+                            state = 4;
+                            record = "";
+                        }
                         break;
                     case 2:
                         if (loader.matcher(record).matches() || boot.matcher(record).matches()) {
                             //load kickstart stuff
-                            mListener.writeData("dir bootflash:");
+                            mListener.writeData("dir");
                             state++;
                             record = "";
                         }
@@ -455,13 +474,15 @@ public class PasswordFragment extends Fragment {
                     case 3:
                         if (recordP.matcher(record).matches()) {
                             //load kickstart stuff
+                            record = record.replaceAll("\\[.*\\[\\d*m?", "");
+                            record = record.replaceAll("\\[\\d+m?", "");
                             Matcher recordM = recordP.matcher(record);
                             if(recordM.find()){
                                 record = recordM.group(1);
                                 Log.e("LEDApp", record);
                             }
                             ArrayList<String[]> imagePairs = new ArrayList<>();
-                            record = record.replaceAll("\\[\\d+m--More-- \\[\\d+m", "");
+                            record = record.replaceAll("\\[\\d+m?--More-- \\[\\d+m?", "");
                             String[] directoryContents = record.split("\n");
 
                             for (String piece : directoryContents) {
@@ -506,7 +527,7 @@ public class PasswordFragment extends Fragment {
                                         String[] ksverBreak = ksver.split("\\.");
                                         if(sysverBreak.length == ksverBreak.length && sysverBreak.length > 0){
                                             for(int x = 0; x < sysverBreak.length; x++){
-                                                if(Integer.parseInt(sysverBreak[x]) != Integer.parseInt(ksverBreak[x])){
+                                                if(!sysverBreak[x].trim().equals(ksverBreak[x].trim())){
                                                     equal = false;
                                                     break;
                                                 } else {
@@ -602,6 +623,10 @@ public class PasswordFragment extends Fragment {
                             }
                             state = 8;
                             record = "";
+                        } else if (loader.matcher(record).matches() && record.toLowerCase().contains("error")) {
+                            //load kickstart stuff
+                            mListener.writeData("dir");
+                            record = "";
                         }
                         break;
                     case 4:
@@ -617,7 +642,7 @@ public class PasswordFragment extends Fragment {
                         break;
                     case 5:
                         if (bootconfig.matcher(record).matches() || altbootconfig.matcher(record).matches()) {
-                            mListener.writeData("admin password " + adminpass);
+                            mListener.writeData("admin-password " + adminpass);
                             state++;
                             record = "";
                         } else if(record.toLowerCase().contains("invalid")){
@@ -639,18 +664,37 @@ public class PasswordFragment extends Fragment {
                     case 7:
                         if (boot.matcher(record).matches()) {
                             if(sysImage != ""){
+                                mListener.writeData("load bootflash:" + this.sysImage);
                                 state++;
+                                record = "";
                             }
                             else{
                                 state = 2;
                             }
                         }
                         break;
+                    case 8:
+                        if(record.toLowerCase().contains("login:")){
+                            mListener.writeData("admin");
+                            state++;
+                            record = "";
+                        }
+                        break;
+                    case 9:
+                        if(record.toLowerCase().contains("password:")){
+                            mListener.writeData(adminpass);
+                            state++;
+                            record = "";
+                        }
                 }
+            }
+            if(state == 1 && reloadConfirmed){
+                mListener.writeData("!!!break");
+                mListener.writeData("!!!ctrl]");
             }
 
         }
-        if(record.length() >= 1000){
+        if(record.length() >= 10000){
             record = "";
         }
     }

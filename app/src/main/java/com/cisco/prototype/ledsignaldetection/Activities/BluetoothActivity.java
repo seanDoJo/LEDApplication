@@ -444,6 +444,17 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                             mmOutStream.write(bytes);
                         }
                     }
+                    else if(specComm.contains("space")){
+                        char spaceC = (char)0x20;
+                        byte[] bytes = ("" + spaceC).getBytes();
+                        if(telnet){
+                            mmOutStream.write(bytes, 0, bytes.length);
+                            mmOutStream.flush();
+                        }
+                        else {
+                            mmOutStream.write(bytes);
+                        }
+                    }
                 }
                 else {
                     if (content.trim().length() > 0) {
@@ -470,7 +481,8 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     } else if (inHelp && content.toLowerCase().equals("q")) {
                         inHelp = false;
                     } else if (inHelp && content.equals("")) {
-                        byte[] bytes = ("" + ret).getBytes();
+                        char spaceC = (char)0x20;
+                        byte[] bytes = ("" + spaceC).getBytes();
                         if(telnet){
                             mmOutStream.write(bytes, 0, bytes.length);
                             mmOutStream.flush();
@@ -729,8 +741,10 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
 
 
     public void switchTelnet(View view){
-        LinearLayout lin = (LinearLayout)findViewById(R.id.telMenu);
-        lin.setVisibility(SurfaceView.VISIBLE);
+        RelativeLayout rel = (RelativeLayout)findViewById(R.id.telMenu);
+        rel.setVisibility(SurfaceView.VISIBLE);
+        LinearLayout lin = (LinearLayout)findViewById(R.id.connectButtons);
+        lin.setVisibility(SurfaceView.GONE);
         Button button = (Button)findViewById(R.id.bluetoothSwitch);
         button.setEnabled(false);
         button.setVisibility(SurfaceView.GONE);
@@ -742,6 +756,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     public void onTelnetStart(View view){
         EditText address = (EditText)findViewById(R.id.telAddress);
         EditText port = (EditText)findViewById(R.id.telPort);
+        csFrag.collapse();
         tready = new CountDownLatch(1);
         latch = new CountDownLatch(1);
         if (connection != null) connection.close();
@@ -1398,6 +1413,8 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             pFrag.setImages(images[0].trim(), images[1].trim());
             writeData("boot " + images[0].trim());
         }
+        RelativeLayout old = (RelativeLayout)findViewById(R.id.password_text);
+        old.setVisibility(SurfaceView.VISIBLE);
         RelativeLayout imageSelection = (RelativeLayout)findViewById(R.id.passwordImages);
         imageSelection.setVisibility(SurfaceView.GONE);
     }

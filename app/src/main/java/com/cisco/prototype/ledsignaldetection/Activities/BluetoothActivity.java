@@ -102,8 +102,6 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     private ArrayList<String> kickstartFinal = new ArrayList<String>();
     private int state;
     private String message = "";
-    private String currentKickImage = "";
-    private String currentSysImage = "";
     private boolean kick = false;
     private File outputFile;
     private BufferedWriter writer = null;
@@ -797,7 +795,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         tran.commit();
         connection.pau();
         fragIndex = 2;
-        connection.write("");
+        writeData("");
         connection.res();
     }
 
@@ -811,7 +809,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         //connection.pau();
         fragIndex = 30;
         //for(int i = 0; i< 5; i++)
-        connection.write("");
+        writeData("");
         //connection.res();
     }
 
@@ -971,7 +969,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
 
     public void onCommunicationFragment(View view){
         EditText editText = (EditText)findViewById(R.id.edit_message);
-        connection.write(editText.getText().toString());
+        writeData(editText.getText().toString());
         cFrag.collapse();
     }
 
@@ -1060,47 +1058,30 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         ArrayList<String> fileNames;
 
         //check for concurrent images
-        connection.write("dir");
+        writeData("dir");
         iFrag.log = "";
         iFrag.setReadOutput(true);
         Log.i("image1", "end of onImage: " + iFrag.readOutput);
         //fragment will call onFileListObtained to continue once prompt is reached.
     }
 
-    public void onFileListObtained(){
-        Log.i("image", "onFileListObtained entered");
-        String identifier = "kickstart";
-        String[] prelimFiles;
-        files = new ArrayList<String>();
+    public void imageSetImages(View view){
+        Spinner sys = (Spinner)findViewById(R.id.sysImages);
+        Spinner ks = (Spinner)findViewById(R.id.kickImages);
+        findViewById(R.id.download).setVisibility(View.GONE);
+        findViewById(R.id.download).setEnabled(false);
+        findViewById(R.id.submit_image).setVisibility(View.GONE);
+        findViewById(R.id.submit_image).setEnabled(false);
 
-        prelimFiles = iFrag.log.split("\n");
-        for(int i = 0; i < prelimFiles.length; i ++){
-            if(!(prelimFiles[i].contains("dir") || prelimFiles[i].contains("loader>") || prelimFiles[i].length() == 0)){
-                files.add(prelimFiles[i]);
-            }
+        if(ks.isShown()){
+            iFrag.kickImage = ks.getSelectedItem().toString().trim();
+            ks.setVisibility(View.GONE);
+            imageStateMachine(2);
+        } else if(sys.isShown()){
+            iFrag.sysImage = sys.getSelectedItem().toString().trim();
+            sys.setVisibility(View.GONE);
+            imageStateMachine(4);
         }
-        for(int i = 0; i<files.size(); i++) Log.i("files", "" + files.get(i));
-        for(int i = 0; i < files.size(); i++){
-            if (files.get(i).contains(identifier)){
-                kickstartImageList.add(files.get(i));
-            }
-        }
-        Log.i("files", "Number of ks images: " + kickstartImageList.size());
-        for(int i = 0; i<kickstartImageList.size(); i++) Log.i("filesKick", "" + kickstartImageList.get(i));
-
-        for(int i = 0; i < kickstartImageList.size(); i++){
-            String[]subStrings = kickstartImageList.get(i).split("-kickstart");
-            for(int k = 0; k < files.size(); k++){
-                if(files.get(k).contains(subStrings[0]) && files.get(k).contains(subStrings[1])){
-                    imageList.add(new imagePair(kickstartImageList.get(i), files.get(k)));
-                    kickstartFinal.add(kickstartImageList.get(i));
-                }
-            }
-        }
-
-        iFrag.populate(kickstartImageList);
-        state = 0;
-        imageStateMachine(0);
     }
 
     public void imageStateMachine(int...arg) {
@@ -1111,7 +1092,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         while(true){
             switch (state){
                 case 0: //home
-                    Log.i("state", Integer.toString(state));
+                    /*Log.i("state", Integer.toString(state));
                     if(imageList.size() == 1) state = 1;
                     else{
                         String imageType = iFrag.kickstart ? "kickstart": "system";
@@ -1120,73 +1101,83 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                                 " selecting a " + imageType + " image from the list below or " +
                                 "choosing to download a new set of images.";
                     }
+                    iFrag.state = state;*/
+                    state = 3;
                     iFrag.state = state;
+                    String imageType = iFrag.kickstart ? "kickstart": "system";
+                    message = "Please either choose a " + imageType + " image to boot or" +
+                            " press the Download button to download a new image.";
                     break;
                 case 1://only one set of concurrent images detected
                     Log.i("state", Integer.toString(state));
                     state = iFrag.kickstart ? 2 : 4;
-                    currentKickImage = imageList.get(0).kickstartImage;
-                    currentSysImage = imageList.get(0).systemImage;
                     iFrag.state = state;
                     break;
                 case 2: //try to boot kickstart image
+                    findViewById(R.id.image_output).setVisibility(View.VISIBLE);
                     Log.i("state", Integer.toString(state));
                     iFrag.log = "";
                     iFrag.kickstart = true;
                     iFrag.readOutput = true;
-                    connection.write("boot " + currentKickImage);
+                    writeData("boot " + iFrag.kickImage);
                     //return to wait for boot.
-                    iFrag.setText("Booting. This may take a bit...");
+                    iFrag.setText("Booting " + iFrag.kickImage + ". This may take a bit...");
 
                     iFrag.state = state;
                     return;
                 case 3: //Display image options with associated message
-                    downButton.setVisibility(View.VISIBLE);
-                    downButton.setEnabled(true);
+                    if(iFrag.kickstart) findViewById(R.id.kickImages).setVisibility(View.VISIBLE);
+                    else{
+                        findViewById(R.id.sysImages).setVisibility(View.VISIBLE);
+                        downButton.setVisibility(View.VISIBLE);
+                        downButton.setEnabled(true);
+                    }
+                    findViewById(R.id.submit_image).setVisibility(View.VISIBLE);
+                    findViewById(R.id.submit_image).setEnabled(true);
+
                     Log.i("state", Integer.toString(state));
                     iFrag.setText(message);
-                    iFrag.populate(files);
                     // Exit to wait for new input
                     iFrag.state = state;
                     return;
                 case 4://Try to load system image
+                    findViewById(R.id.image_output).setVisibility(View.VISIBLE);
                     Log.i("state", Integer.toString(state));
                     iFrag.log = "";
                     iFrag.kickstart = false;
                     iFrag.readOutput = true;
-                    connection.write("load " + currentSysImage);
-                    iFrag.setText("Booting. This may take a bit...");
+                    writeData("load " + iFrag.sysImage);
+                    iFrag.setText("Booting " + iFrag.sysImage + ". This may take a bit...");
                     iFrag.state = state;
                     return;
-                case 5: //set new kickstart or system variable after getting user input
+                /*case 5: //set new kickstart or system variable after getting user input
                     Log.i("state", Integer.toString(state));
                     downButton.setVisibility(View.GONE);
                     downButton.setEnabled(false);
                     if(iFrag.kickstart){
-                        currentKickImage = files.get(position);
+                        iFrag.kickImage = files.get(position);
                         state = 2;
                     }
                     else{
-                        currentSysImage = files.get(position);
+                        iFrag.sysImage = files.get(position);
                         state = 4;
                     }
-                    Log.i("image2", "ks: " + currentKickImage);
-                    Log.i("image2", "sys: " + currentSysImage);
-                    iFrag.populate(new ArrayList<String>()); //clear out file list
+                    Log.i("image2", "ks: " + iFrag.kickImage);
+                    Log.i("image2", "sys: " + iFrag.sysImage);
                     iFrag.state = state;
-                    break;
+                    break;*/
                 case 6: //System booted!
                     Log.i("state", Integer.toString(state));
                     iFrag.success = true;
                     iFrag.success("Yes! The switch booted! The following image names will be " +
                             "displayed if they were changed during the troubleshooting process. " +
-                            "Kickstart: " + currentKickImage + " System: " + currentSysImage);
+                            "Kickstart: " + iFrag.kickImage + " System: " + iFrag.sysImage);
                     iFrag.state = state;
                     return;
                 case 7: //failed to boot ks
                     Log.i("state", Integer.toString(state));
                     message = "It looks like there was something wrong with the following " +
-                    "image: " + currentKickImage + ". Please select a " +
+                    "image: " + iFrag.kickImage + ". Please select a " +
                             "kickstart image to boot from below or choose to download totally" +
                             " new images.";
                     state = 3;
@@ -1196,7 +1187,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     Log.i("state", Integer.toString(state));
                     state = 3;
                     message = "Looks like the following system image didn't load properly: " +
-                            currentSysImage + ". Please select a system image to boot from " +
+                            iFrag.sysImage + ". Please select a system image to boot from " +
                             "below or choose to download totally new images.";
                     iFrag.state = state;
                     break;
@@ -1410,7 +1401,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     }
 
     public void onSoftwareFragment(){
-        connection.write("");
+        writeData("");
     }
 
     public void softwareMode(int mode){
@@ -1432,7 +1423,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         }
         else if(mode == 4){
             //Press RETURN to get started
-            connection.write("");
+            writeData("");
         }
 
         if(ready){

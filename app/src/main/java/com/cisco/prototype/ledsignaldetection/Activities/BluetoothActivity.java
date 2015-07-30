@@ -570,12 +570,8 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                             Log.i("LEDApp", "message sent to handler");
                         } else if (returned.toLowerCase().contains("(boot)#")) {
                             connectionHandler.obtainMessage(56, 1, -1, 1).sendToTarget();
-                            //JESSICA
-                            kick = false;
                             Log.i("LEDApp", "message sent to handler");
                         } else if (returned.toLowerCase().contains("switch:") || returned.toLowerCase().contains("loader>")) {
-                            // JESSICA JESSICA
-                            kick = true;
                             connectionHandler.obtainMessage(56, 1, -1, 1).sendToTarget();
                             Log.i("LEDApp", "message sent to handler");
                         } else {
@@ -1076,6 +1072,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     }
 
     public void imageStateMachine(int...arg) {
+        Button downButton = (Button) findViewById(R.id.download);
         state = arg[0];
         int position = 0;
         if(arg.length > 1){ position= arg[1];}
@@ -1112,6 +1109,8 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     iFrag.state = state;
                     return;
                 case 3: //Display image options with associated message
+                    downButton.setVisibility(View.VISIBLE);
+                    downButton.setEnabled(true);
                     Log.i("state", Integer.toString(state));
                     iFrag.setText(message);
                     iFrag.populate(files);
@@ -1129,6 +1128,8 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     return;
                 case 5: //set new kickstart or system variable after getting user input
                     Log.i("state", Integer.toString(state));
+                    downButton.setVisibility(View.GONE);
+                    downButton.setEnabled(false);
                     if(iFrag.kickstart){
                         currentKickImage = files.get(position);
                         state = 2;
@@ -1173,9 +1174,15 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     message = "Ok, the kickstart image booted! Now let's try to load a system" +
                             " image. Please select from the options below.";
                     iFrag.state = state;
+                    break;
+                case 10: //
                 default:break;
             }
         }
+    }
+
+    public void onAuthenticateClick(View view){
+
     }
 
     public void onImageClick(View view){

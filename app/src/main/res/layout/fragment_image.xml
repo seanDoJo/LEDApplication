@@ -32,8 +32,27 @@
         android:padding="10dp"
         android:minWidth="300dp"
         android:minHeight="60dp"
-        android:enabled="true"
+        android:enabled="false"
+        android:visibility="gone"
         android:onClick="onImageClick"
         android:clickable="true"
-        android:textSize="25sp"/>
+        android:textSize="25sp" />
+    <Button
+        android:layout_weight="0"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Authenticate"
+        android:id="@+id/authenticate"
+        android:textColor="#ffaa052a"
+        android:textStyle="bold"
+        android:typeface="sans"
+        android:background="@drawable/button_home"
+        android:padding="10dp"
+        android:minWidth="300dp"
+        android:minHeight="60dp"
+        android:enabled="false"
+        android:visibility="gone"
+        android:onClick="onAuthenticateClick"
+        android:clickable="true"
+        android:textSize="25sp" />
 </LinearLayout>

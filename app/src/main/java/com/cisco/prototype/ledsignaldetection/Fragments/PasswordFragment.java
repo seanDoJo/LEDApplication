@@ -11,18 +11,14 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.cisco.prototype.ledsignaldetection.BluetoothInterface;
 import com.cisco.prototype.ledsignaldetection.R;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -585,7 +581,7 @@ public class PasswordFragment extends Fragment {
                             }
                             state++;
                             record = "";
-                        } else if(boot.matcher(record).matches()){
+                        } else if(boot.matcher(record).matches()){ //STOP HERE
                             Log.i("LEDApp", "Hit boot matcher");
                             record = record.replaceAll("\\[\\d+m--More-- \\[\\d+m", "");
                             String[] directoryContents = record.split("\n");

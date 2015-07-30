@@ -60,6 +60,7 @@ public class PasswordFragment extends Fragment {
 
     private Pattern boot = Pattern.compile("(?s).*[sS]witch\\(boot\\)#[^#]*");
     private Pattern bootconfig = Pattern.compile("(?s).*[sS]witch\\(boot-config\\)#[^#]*");
+    private Pattern altbootconfig = Pattern.compile("(?s).*[sS]witch\\(boot\\)\\(config\\)#[^#]*");
     private Pattern loader = Pattern.compile("(?s)[^>]*[lL]{1}oader>[^>]*");
 
     private Pattern kickstart = Pattern.compile("^.*-kickstart.*\\.bin$");
@@ -413,7 +414,7 @@ public class PasswordFragment extends Fragment {
                 }
             }
         } else if(recoveryStarted && os == 1){
-            if(record.toLowerCase().contains("yes/no")){
+            if(record.toLowerCase().contains("y/n")){
                 mListener.writeData("y");
                 record = "";
             }
@@ -615,14 +616,20 @@ public class PasswordFragment extends Fragment {
                         }
                         break;
                     case 5:
-                        if (bootconfig.matcher(record).matches()) {
+                        if (bootconfig.matcher(record).matches() || altbootconfig.matcher(record).matches()) {
                             mListener.writeData("admin password " + adminpass);
                             state++;
+                            record = "";
+                        } else if(record.toLowerCase().contains("invalid")){
+                            mListener.writeData("config terminal");
                             record = "";
                         }
                         break;
                     case 6:
-                        if (bootconfig.matcher(record).matches()) {
+                        if(record.toLowerCase().contains("long command")){
+                            mListener.writeData("admin " + adminpass);
+                            record = "";
+                        }else if (bootconfig.matcher(record).matches() || altbootconfig.matcher(record).matches()) {
                             mListener.writeData("exit");
                             state++;
                             record = "";

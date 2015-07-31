@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -33,25 +34,28 @@ public class ImageFragment extends Fragment {
     private boolean firstSys;
     private ArrayList<String> kst;
     private ArrayList<String> syst;
+    private ArrayList<String> files;
     public String sysImage = "";
     public String kickImage = "";
     private ArrayAdapter<String> kickAdapter;
     private ArrayAdapter<String> sysAdapter;
+    private ArrayAdapter<String> fileAdapter;
 
     private Pattern recordP = Pattern.compile("(?s).*bootflash:(.*)[lL]oader>[^>]*");
     private Pattern weirdItem = Pattern.compile("^[^\\s]*$");
     private Pattern itemExtract = Pattern.compile("^*.\\s{1}([^\\s]*)$");
     private Pattern ks = Pattern.compile("^.*-kickstart.*\\.bin$");
     private Pattern system = Pattern.compile("^.*\\.bin$");
-    private Pattern version = Pattern.compile("^[^\\.]*\\.(\\d+.*)\\.bin$");
+    private Pattern empty = Pattern.compile("");
 
     private View view;
     private TextView infoText;
-    private Button downButton;
     private Button submit;
     private TextView terminal;
     private Spinner kickSpin;
     private Spinner sysSpin;
+    private Spinner fileSpin;
+    private RelativeLayout imageOptions;
 
     public ImageFragment(){}
 
@@ -66,6 +70,7 @@ public class ImageFragment extends Fragment {
         firstSys = true;
         kst = new ArrayList<String>();
         syst = new ArrayList<String>();
+        files = new ArrayList<String>();
     }
 
     @Override
@@ -73,8 +78,8 @@ public class ImageFragment extends Fragment {
         view = inflater.inflate(R.layout.fragment_image, container, false);
         infoText = (TextView) view.findViewById(R.id.image_text);
         terminal = (TextView) view.findViewById(R.id.image_terminal);
-        downButton = (Button) view.findViewById(R.id.download);
         submit = (Button) view.findViewById(R.id.submit_image);
+        imageOptions = (RelativeLayout) view.findViewById(R.id.image_options);
 
         kickSpin = (Spinner) view.findViewById(R.id.kickImages);
         kickAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, kst);
@@ -85,6 +90,11 @@ public class ImageFragment extends Fragment {
         sysAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, syst);
         sysAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sysSpin.setAdapter(sysAdapter);
+
+        fileSpin = (Spinner) view.findViewById(R.id.file_spinner);
+        fileAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, files);
+        fileAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        fileSpin.setAdapter(fileAdapter);
 
         return view;
     }
@@ -104,8 +114,10 @@ public class ImageFragment extends Fragment {
     }
 
     public void success(String message){
+        imageOptions.setVisibility(View.GONE);
         infoText.setText(message);
-        downButton.setText("OK");
+        submit.setText("OK");
+        submit.setEnabled(true);
     }
 
     public void setText(String message){infoText.setText(message);}
@@ -148,21 +160,13 @@ public class ImageFragment extends Fragment {
                         //fail
                         state = 7;
                         readOutput = false;
-                        kickSpin.setVisibility(View.VISIBLE);
                         kickSpin.setEnabled(true);
-                        downButton.setEnabled(true);
-                        downButton.setVisibility(View.VISIBLE);
-                        submit.setVisibility(View.VISIBLE);
                         submit.setEnabled(true);
                         mListener.imageStateMachine(state);
                     } else if (log.contains("(boot)#")) {
                         //success!
                         state = 9;
-                        sysSpin.setVisibility(View.VISIBLE);
                         sysSpin.setEnabled(true);
-                        downButton.setEnabled(true);
-                        downButton.setVisibility(View.VISIBLE);
-                        submit.setVisibility(View.VISIBLE);
                         submit.setEnabled(true);
                         kickstart = false;
                         readOutput = false;
@@ -176,11 +180,7 @@ public class ImageFragment extends Fragment {
                         //fail
                         state = 8;
                         readOutput = false;
-                        sysSpin.setVisibility(View.VISIBLE);
                         sysSpin.setEnabled(true);
-                        downButton.setEnabled(true);
-                        downButton.setVisibility(View.VISIBLE);
-                        submit.setVisibility(View.VISIBLE);
                         submit.setEnabled(true);
                         mListener.imageStateMachine(state);
                     } else if(log.toLowerCase().contains("login") || log.toLowerCase().contains("user access")){
@@ -213,6 +213,7 @@ public class ImageFragment extends Fragment {
         String[] directoryContents = log.split("\n");
         Log.e("LEDApp", log);
         for (String piece : directoryContents) {
+            if(!empty.matcher(piece.trim()).matches()) files.add(piece);
             String item = "";
             if(weirdItem.matcher(piece.trim()).matches()){
                 item = piece;
@@ -234,6 +235,7 @@ public class ImageFragment extends Fragment {
         }
         Log.i("array", "ks: " + kst.size());
         Log.i("array", "sys: " + syst.size());
+        imageOptions.setEnabled(true);
         if (kst.size() == 1 && syst.size() == 1) {
             this.sysImage = syst.get(0).trim();
             this.kickImage = kst.get(0).trim();
@@ -242,9 +244,9 @@ public class ImageFragment extends Fragment {
             Log.e("LEDMatch", "image pair size is 0");
             kst.clear();
             syst.clear();
-            for(String item : directoryContents){
-                kst.add(item.trim());
-                syst.add(item.trim());
+            for(int i = 0; i < files.size(); i ++){
+                kst.add(files.get(i));
+                syst.add(files.get(i));
             }
             kickAdapter.notifyDataSetChanged();
             sysAdapter.notifyDataSetChanged();

@@ -9,7 +9,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.StrictMode;
@@ -25,6 +27,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.Spinner;
@@ -51,8 +54,11 @@ import com.cisco.prototype.ledsignaldetection.imagePair;
 
 import org.apache.commons.net.telnet.TelnetClient;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -866,8 +872,45 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         fileViewer.viewCurrentFile(viewedFile);
     }
 
+    public File getAlbumStorageDir(String albumName) {
+        // Get the directory for the user's public pictures directory.
+        File file = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS), albumName);
+        if (!file.mkdirs()) {
+            Log.e("email", "Directory not created");
+        }
+        return file;
+    }
+
     public void switchEmail(View view){
-        eFrag = new EmailFragment();
+        Intent i = new Intent(Intent.ACTION_SEND);
+        i.setType("message/rfc822");
+
+        File file = getAlbumStorageDir(viewedFile.getName());
+        try{
+            BufferedWriter emailWriter = new BufferedWriter(new FileWriter(file));
+            BufferedReader emailReader = new BufferedReader(new FileReader(viewedFile));
+            
+            while (emailReader.readLine() != null){
+                emailWriter.write(emailReader.readLine());
+            }
+        } catch (IOException e) {e.printStackTrace();}
+
+        if (!file.exists() || !file.canRead()) {
+            Toast.makeText(this, "Attachment Error", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+        Uri uri = Uri.fromFile(file);
+        i.putExtra(Intent.EXTRA_STREAM, uri);
+
+        try {
+            startActivityForResult(Intent.createChooser(i, "Send mail..."), 1);
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(BluetoothActivity.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
+        }
+
+        /*eFrag = new EmailFragment();
         FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
         tran.replace(R.id.fragment_container, eFrag);
         tran.addToBackStack(null);
@@ -876,7 +919,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             connection.pau();
             fragIndex = 8;
             connection.res();
-        }
+        }*/
     }
 
     public void sendEmail(View view){
@@ -1080,27 +1123,53 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         //fragment will call onFileListObtained to continue once prompt is reached.
     }
 
+    public void enableSubmit(View view){findViewById(R.id.submit_image).setEnabled(true);}
+
+    public void showTerminalOutput(View view){
+        CheckBox check = (CheckBox) findViewById(R.id.terminal_checkbox);
+        ScrollView scroll = (ScrollView) findViewById(R.id.image_output);
+
+        if(check.isChecked()) scroll.setVisibility(View.VISIBLE);
+        else scroll.setVisibility(View.GONE);
+    }
+
     public void imageSetImages(View view){
         Spinner sys = (Spinner)findViewById(R.id.sysImages);
         Spinner ks = (Spinner)findViewById(R.id.kickImages);
-        findViewById(R.id.download).setVisibility(View.GONE);
-        findViewById(R.id.download).setEnabled(false);
-        findViewById(R.id.submit_image).setVisibility(View.GONE);
+        Spinner fs = (Spinner) findViewById(R.id.file_spinner);
         findViewById(R.id.submit_image).setEnabled(false);
+        RadioButton guessButt = (RadioButton)findViewById(R.id.guess_button);
+        RadioButton fileButt = (RadioButton)findViewById(R.id.file_button);
+        RadioButton downButt = (RadioButton)findViewById(R.id.download);
 
-        if(ks.isShown()){
-            iFrag.kickImage = ks.getSelectedItem().toString().trim();
-            ks.setVisibility(View.GONE);
-            imageStateMachine(2);
-        } else if(sys.isShown()){
-            iFrag.sysImage = sys.getSelectedItem().toString().trim();
-            sys.setVisibility(View.GONE);
-            imageStateMachine(4);
+        if (iFrag.success){
+            FragmentManager frag = getSupportFragmentManager();
+            frag.popBackStack();
         }
+
+        if(guessButt.isChecked()){
+            if(ks.isShown()){
+                iFrag.kickImage = ks.getSelectedItem().toString().trim();
+                imageStateMachine(2);
+            } else if(sys.isShown()){
+                iFrag.sysImage = sys.getSelectedItem().toString().trim();
+                imageStateMachine(4);
+            }
+        } else if(fileButt.isChecked()){
+            if(iFrag.kickstart){
+                iFrag.kickImage = fs.getSelectedItem().toString().trim();
+                imageStateMachine(2);
+            } else {
+                iFrag.sysImage = fs.getSelectedItem().toString().trim();
+                imageStateMachine(2);
+            }
+        } else if(downButt.isChecked()){
+            onDownClick();
+        }
+
     }
 
     public void imageStateMachine(int...arg) {
-        Button downButton = (Button) findViewById(R.id.download);
         state = arg[0];
         int position = 0;
         if(arg.length > 1){ position= arg[1];}
@@ -1120,8 +1189,9 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     state = 3;
                     iFrag.state = state;
                     String imageType = iFrag.kickstart ? "kickstart": "system";
-                    message = "Please either choose a " + imageType + " image to boot or" +
-                            " press the Download button to download a new image.";
+                    findViewById(R.id.image_options).setVisibility(View.VISIBLE);
+                    message = "Select an image recovery option from the list below and an " +
+                            "approprate " + imageType + " image if necessary.";
                     break;
                 case 1://only one set of concurrent images detected
                     Log.i("state", Integer.toString(state));
@@ -1129,7 +1199,9 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     iFrag.state = state;
                     break;
                 case 2: //try to boot kickstart image
-                    findViewById(R.id.image_output).setVisibility(View.VISIBLE);
+                    findViewById(R.id.image_options).setVisibility(View.GONE);
+                    findViewById(R.id.kickImages).setVisibility(View.GONE);
+                    findViewById(R.id.sysImages).setVisibility(View.GONE);
                     Log.i("state", Integer.toString(state));
                     iFrag.log = "";
                     iFrag.kickstart = true;
@@ -1144,11 +1216,8 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     if(iFrag.kickstart) findViewById(R.id.kickImages).setVisibility(View.VISIBLE);
                     else{
                         findViewById(R.id.sysImages).setVisibility(View.VISIBLE);
-                        downButton.setVisibility(View.VISIBLE);
-                        downButton.setEnabled(true);
                     }
-                    findViewById(R.id.submit_image).setVisibility(View.VISIBLE);
-                    findViewById(R.id.submit_image).setEnabled(true);
+                    findViewById(R.id.image_options).setVisibility(View.VISIBLE);
 
                     Log.i("state", Integer.toString(state));
                     iFrag.setText(message);
@@ -1156,7 +1225,9 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     iFrag.state = state;
                     return;
                 case 4://Try to load system image
-                    findViewById(R.id.image_output).setVisibility(View.VISIBLE);
+                    findViewById(R.id.image_options).setVisibility(View.GONE);
+                    findViewById(R.id.kickImages).setVisibility(View.GONE);
+                    findViewById(R.id.sysImages).setVisibility(View.GONE);
                     Log.i("state", Integer.toString(state));
                     iFrag.log = "";
                     iFrag.kickstart = false;
@@ -1209,7 +1280,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 case 9://ks booted!
                     Log.i("state", Integer.toString(state));
                     state = 3;
-                    message = "Ok, the kickstart image booted! Now let's try to load a system" +
+                    message = "Ok, " + iFrag.kickImage + " booted! Now let's try to load a system" +
                             " image. Please select from the options below.";
                     iFrag.state = state;
                     break;
@@ -1223,21 +1294,15 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
 
     }
 
-    public void onImageClick(View view){
-        if(iFrag.success){
-            //go back to BT menu
-            FragmentManager frag = getSupportFragmentManager();
-            frag.popBackStack("menu", 0);
-        } else {
-            imgRestore = new ImageRestoreFragment();
-            FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
-            tran.replace(R.id.fragment_container, imgRestore);
-            tran.addToBackStack(null);
-            tran.commit();
-            connection.pau();
-            fragIndex = 6;
-            connection.res();
-        }
+    public void onDownClick(){
+        imgRestore = new ImageRestoreFragment();
+        FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
+        tran.replace(R.id.fragment_container, imgRestore);
+        tran.addToBackStack(null);
+        tran.commit();
+        connection.pau();
+        fragIndex = 6;
+        connection.res();
     }
 
     public void onPasswordFragment(String message){

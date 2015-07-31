@@ -5,18 +5,17 @@
     tools:context="com.cisco.prototype.ledsignaldetection.Fragments.ConnectionSelectFragment"
     android:background="@drawable/gradient_box"
     android:orientation="vertical">
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         android:id="@+id/connectButtons"
         android:visibility="visible">
         <Button
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:layout_margin="40dp"
-            android:text="Bluetooth"
+            android:layout_centerInParent="true"
+            android:text="Connect to Device"
             android:id="@+id/bluetoothSwitch"
             android:textColor="#ffaa052a"
             android:textStyle="bold"
@@ -24,32 +23,31 @@
             android:background="@drawable/button_home"
             android:padding="10dp"
             android:minWidth="300dp"
-            android:minHeight="80dp"
+            android:minHeight="100dp"
             android:enabled="true"
             android:onClick="switchBluetooth"
             android:clickable="true"
             android:textSize="25dp"
             android:layout_centerHorizontal="true" />
         <Button
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_margin="40dp"
-            android:text="Comm Server Access"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:text="Connect Through Comm Server"
             android:id="@+id/telnetSwitch"
             android:textColor="#ffaa052a"
             android:textStyle="bold"
             android:typeface="sans"
             android:background="@drawable/button_home"
             android:padding="10dp"
-            android:minWidth="300dp"
-            android:minHeight="80dp"
+            android:minWidth="70dp"
+            android:minHeight="30dp"
             android:enabled="true"
             android:onClick="switchTelnet"
             android:clickable="true"
-            android:textSize="25dp"
-            android:layout_centerHorizontal="true" />
-        </LinearLayout>
+            android:textSize="10dp" />
+    </RelativeLayout>
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"

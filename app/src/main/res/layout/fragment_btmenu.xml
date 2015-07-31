@@ -10,33 +10,23 @@ android:background="@drawable/gradient_box">
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:id="@+id/topStuff">
-        <!--<TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="left"
-            android:id="@+id/status_label"
-            android:text="Device Status: obtaining..."
-            android:textSize="20dp"
-            android:textColor="#ff84cb23"
-            android:textStyle="bold" />-->
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/terminal"
-            android:background="@drawable/button_home"
             android:padding="5dp"
             android:minWidth="100dp"
             android:minHeight="15dp"
             android:enabled="false"
-            android:onClick="switchCommunication"
-            android:clickable="false"
+            android:onClick="refreshStatus"
+            android:clickable="true"
             android:visibility="visible">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/status_label"
-                android:text="View Terminal"
+                android:text="Device Status"
                 android:textStyle="bold"
                 android:textSize="10dp"
                 android:typeface="sans"
@@ -64,23 +54,24 @@ android:background="@drawable/gradient_box">
         android:layout_below="@+id/topStuff"
         android:text="Device Home" />
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/bt_lin"
-        android:orientation="vertical"
-        android:layout_centerInParent="true"
-        android:visibility="gone">
+        android:layout_below="@+id/menu_status"
+        android:visibility="visible">
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_margin="10dp"
             android:text="Login"
             android:id="@+id/login"
-            android:textColor="#ffaa052a"
+            android:textColor="#85666666"
             android:textStyle="bold"
             android:typeface="sans"
-            android:background="@drawable/button_home"
+            android:background="@drawable/button_gray"
             android:padding="10dp"
             android:minWidth="300dp"
             android:minHeight="80dp"
@@ -88,17 +79,18 @@ android:background="@drawable/gradient_box">
             android:onClick="switchLogin"
             android:clickable="true"
             android:textSize="25dp"
-            android:layout_margin="20dp"
-            android:visibility="gone"/>
+            android:visibility="visible"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/login"
             android:text="Password Recovery"
             android:id="@+id/password"
-            android:textColor="#ffaa052a"
+            android:textColor="#85666666"
             android:textStyle="bold"
             android:typeface="sans"
-            android:background="@drawable/button_home"
+            android:background="@drawable/button_gray"
             android:padding="10dp"
             android:minWidth="300dp"
             android:minHeight="80dp"
@@ -106,17 +98,19 @@ android:background="@drawable/gradient_box">
             android:onClick="switchPassword"
             android:clickable="true"
             android:textSize="25dp"
-            android:layout_margin="20dp"
-            android:visibility="gone"/>
+            android:layout_margin="10dp"
+            android:visibility="visible"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_below="@+id/password"
+            android:layout_centerHorizontal="true"
             android:text="Image Recovery"
             android:id="@+id/imageRec"
-            android:textColor="#ffaa052a"
+            android:textColor="#85666666"
             android:textStyle="bold"
             android:typeface="sans"
-            android:background="@drawable/button_home"
+            android:background="@drawable/button_gray"
             android:padding="10dp"
             android:minWidth="300dp"
             android:minHeight="80dp"
@@ -124,8 +118,26 @@ android:background="@drawable/gradient_box">
             android:onClick="switchImage"
             android:clickable="true"
             android:textSize="25dp"
-            android:layout_margin="20dp"
-            android:visibility="gone"/>
-    </LinearLayout>
+            android:layout_margin="10dp"
+            android:visibility="visible"/>
+    </RelativeLayout>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="20dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="10dp"
+        android:text="Access Terminal"
+        android:id="@+id/terminalSwitch"
+        android:textColor="#ffaa052a"
+        android:textStyle="bold"
+        android:typeface="sans"
+        android:background="@drawable/button_home"
+        android:padding="2dp"
+        android:enabled="false"
+        android:onClick="switchCommunication"
+        android:clickable="true"
+        android:textSize="8dp"
+        android:visibility="visible"/>
 
 </RelativeLayout>

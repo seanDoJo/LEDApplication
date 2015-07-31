@@ -22,4 +22,5 @@ public interface BluetoothInterface {
     public void destroyFile();
     public void closeBluetooth();
     public void switchPasswordContext(String context);
+    public void setLoggedIn(boolean success);
 }

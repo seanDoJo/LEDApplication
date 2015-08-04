@@ -37,7 +37,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
                 <RadioButton android:id="@+id/guess_button"
-                    android:onClick="enableSubmit"
+                    android:onClick="onGuessedImage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Select from suggested image files"/>
@@ -56,14 +56,17 @@
                 <RadioButton android:id="@+id/file_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:onClick="onFileImage"
                     android:text="Select from all files on switch"/>
                 <Spinner android:id="@+id/file_spinner"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:spinnerMode="dropdown"/>
+                    android:spinnerMode="dropdown"
+                    android:visibility="gone"/>
                 <RadioButton android:id="@+id/download"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:onClick="onDownload"
                     android:text="Download a new image"/>
             </LinearLayout>
         </ScrollView>

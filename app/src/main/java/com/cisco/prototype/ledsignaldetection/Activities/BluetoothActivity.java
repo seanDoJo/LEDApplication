@@ -25,7 +25,6 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
@@ -55,11 +54,8 @@ import com.cisco.prototype.ledsignaldetection.imagePair;
 
 import org.apache.commons.net.telnet.TelnetClient;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -977,6 +973,8 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
 
     public File getAlbumStorageDir(String albumName) {
         // Get the directory for the user's public pictures directory.
+        new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS), albumName).delete();
         File file = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_DOWNLOADS), albumName);
         if (!file.mkdirs()) {
@@ -985,44 +983,92 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         return file;
     }
 
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
+        }
+        return false;
+    }
+
     public void switchEmail(View view){
-        Intent i = new Intent(Intent.ACTION_SEND);
-        i.setType("message/rfc822");
+        if(isExternalStorageWritable()){
+            Intent emailIntent = new Intent(Intent.ACTION_SEND);
+            emailIntent.setType("text/plain");
+            /*emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] {"email@example.com"});
+            emailIntent.putExtra(Intent.EXTRA_SUBJECT, "subject here");
+            emailIntent.putExtra(Intent.EXTRA_TEXT, "body text");
+            File root = Environment.getExternalStorageDirectory();
+            String pathToMyAttachedFile = "temp/attachement.xml";
+            File file = new File(root, pathToMyAttachedFile);
+            if (!file.exists() || !file.canRead()) {
+                return;
+            }*/
+            Uri uri = Uri.fromFile(viewedFile);
+            emailIntent.putExtra(Intent.EXTRA_STREAM, uri);
+            startActivity(Intent.createChooser(emailIntent, "Pick an Email provider"));
 
-        File file = getAlbumStorageDir(viewedFile.getName());
-        try{
-            BufferedWriter emailWriter = new BufferedWriter(new FileWriter(file));
-            BufferedReader emailReader = new BufferedReader(new FileReader(viewedFile));
-            
-            while (emailReader.readLine() != null){
-                emailWriter.write(emailReader.readLine());
+            /*Intent i = new Intent(Intent.ACTION_SEND);
+            i.setType("message/rfc822");
+
+            File file = getAlbumStorageDir(viewedFile.getName().replace("capture", "txt"));
+
+            BufferedReader emailReader = null;
+            BufferedWriter emailWriter = null;
+            try{
+                emailWriter = new BufferedWriter(new FileWriter(file));
+                emailReader = new BufferedReader(new FileReader(viewedFile));
+
+                while (emailReader.readLine() != null){
+                    emailWriter.write(emailReader.readLine());
+                }
+
+            } catch (IOException e) {
+                Log.i("FAIL", "FILE CREATION FAILED");
+                e.printStackTrace();
+            } finally {
+                try {
+
+                    if (null != emailWriter) {
+                        emailWriter.close();
+                    }
+
+                    if (null != emailReader) {
+                        emailReader.close();
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        } catch (IOException e) {e.printStackTrace();}
 
-        if (!file.exists() || !file.canRead()) {
-            Toast.makeText(this, "Attachment Error", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
+            if (!file.exists() || !file.canRead()) {
+                Toast.makeText(this, "Attachment Error", Toast.LENGTH_SHORT).show();
+                finish();
+                return;
+            }
+            Uri uri = Uri.fromFile(file);
+            i.putExtra(Intent.EXTRA_STREAM, uri);
+
+            try {
+                startActivityForResult(Intent.createChooser(i, "Send mail..."), 1);
+            } catch (android.content.ActivityNotFoundException ex) {
+                Toast.makeText(BluetoothActivity.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
+            }
+
+            /*eFrag = new EmailFragment();
+            FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
+            tran.replace(R.id.fragment_container, eFrag);
+            tran.addToBackStack(null);
+            tran.commit();
+            if(connection != null) {
+                connection.pau();
+                fragIndex = 8;
+                connection.res();
+            }*/
+        } else {
+            Toast.makeText(BluetoothActivity.this, "Sorry, couldn't make a file.", Toast.LENGTH_SHORT).show();
         }
-        Uri uri = Uri.fromFile(file);
-        i.putExtra(Intent.EXTRA_STREAM, uri);
-
-        try {
-            startActivityForResult(Intent.createChooser(i, "Send mail..."), 1);
-        } catch (android.content.ActivityNotFoundException ex) {
-            Toast.makeText(BluetoothActivity.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
-        }
-
-        /*eFrag = new EmailFragment();
-        FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
-        tran.replace(R.id.fragment_container, eFrag);
-        tran.addToBackStack(null);
-        tran.commit();
-        if(connection != null) {
-            connection.pau();
-            fragIndex = 8;
-            connection.res();
-        }*/
     }
 
     public void sendEmail(View view){
@@ -1226,7 +1272,62 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         //fragment will call onFileListObtained to continue once prompt is reached.
     }
 
-    public void enableSubmit(View view){findViewById(R.id.submit_image).setEnabled(true);}
+    public void enableSubmit(){findViewById(R.id.submit_image).setEnabled(true);}
+
+    public void onGuessedImage(View view){
+        RadioButton guess = (RadioButton)findViewById(R.id.guess_button);
+        RadioButton allFiles = (RadioButton)findViewById(R.id.file_button);
+        RadioButton download = (RadioButton)findViewById(R.id.download);
+        Spinner sys = (Spinner)findViewById(R.id.sysImages);
+        Spinner ks = (Spinner)findViewById(R.id.kickImages);
+        Spinner fs = (Spinner) findViewById(R.id.file_spinner);
+
+        fs.setVisibility(View.GONE);
+
+        allFiles.setChecked(false);
+        download.setChecked(false);
+
+        if(iFrag.kickstart) ks.setVisibility(View.VISIBLE);
+        else sys.setVisibility(View.VISIBLE);
+        enableSubmit();
+    }
+
+    public void onFileImage(View view){
+        RadioButton guess = (RadioButton)findViewById(R.id.guess_button);
+        RadioButton allFiles = (RadioButton)findViewById(R.id.file_button);
+        RadioButton download = (RadioButton)findViewById(R.id.download);
+        Spinner sys = (Spinner)findViewById(R.id.sysImages);
+        Spinner ks = (Spinner)findViewById(R.id.kickImages);
+        Spinner fs = (Spinner) findViewById(R.id.file_spinner);
+
+        ks.setVisibility(View.GONE);
+        sys.setVisibility(View.GONE);
+
+        guess.setChecked(false);
+        download.setChecked(false);
+
+        fs.setVisibility(View.VISIBLE);
+        enableSubmit();
+    }
+
+    public void onDownload(View view){
+        RadioButton guess = (RadioButton)findViewById(R.id.guess_button);
+        RadioButton allFiles = (RadioButton)findViewById(R.id.file_button);
+        RadioButton download = (RadioButton)findViewById(R.id.download);
+        Spinner sys = (Spinner)findViewById(R.id.sysImages);
+        Spinner ks = (Spinner)findViewById(R.id.kickImages);
+        Spinner fs = (Spinner) findViewById(R.id.file_spinner);
+
+        ks.setVisibility(View.GONE);
+        sys.setVisibility(View.GONE);
+        fs.setVisibility(View.GONE);
+
+        guess.setChecked(false);
+        allFiles.setChecked(false);
+
+        download.setChecked(true);
+        enableSubmit();
+    }
 
     public void showTerminalOutput(View view){
         CheckBox check = (CheckBox) findViewById(R.id.terminal_checkbox);
@@ -1263,7 +1364,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 iFrag.kickImage = fs.getSelectedItem().toString().trim();
                 imageStateMachine(2);
             } else {
-                iFrag.sysImage = fs.getSelectedItem().toString().trim();
+                iFrag.sysImage = sys.getSelectedItem().toString().trim();
                 imageStateMachine(2);
             }
         } else if(downButt.isChecked()){
@@ -1273,6 +1374,9 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     }
 
     public void imageStateMachine(int...arg) {
+        Spinner sys = (Spinner)findViewById(R.id.sysImages);
+        Spinner ks = (Spinner)findViewById(R.id.kickImages);
+        Spinner fs = (Spinner) findViewById(R.id.file_spinner);
         state = arg[0];
         int position = 0;
         if(arg.length > 1){ position= arg[1];}
@@ -1316,10 +1420,6 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     iFrag.state = state;
                     return;
                 case 3: //Display image options with associated message
-                    if(iFrag.kickstart) findViewById(R.id.kickImages).setVisibility(View.VISIBLE);
-                    else{
-                        findViewById(R.id.sysImages).setVisibility(View.VISIBLE);
-                    }
                     findViewById(R.id.image_options).setVisibility(View.VISIBLE);
 
                     Log.i("state", Integer.toString(state));

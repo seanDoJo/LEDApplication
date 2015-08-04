@@ -42,11 +42,13 @@ import com.cisco.prototype.ledsignaldetection.Fragments.EmailFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.FileExplorerFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ImageFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ImageRestoreFragment;
+import com.cisco.prototype.ledsignaldetection.Fragments.ImageSelectionFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.LoginFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.PasswordFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.SelectionFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.SoftwareFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.TFTPFragment;
+import com.cisco.prototype.ledsignaldetection.Fragments.TFTPPullFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ViewFileFragment;
 import com.cisco.prototype.ledsignaldetection.R;
 import com.cisco.prototype.ledsignaldetection.TFTPUtil;
@@ -68,12 +70,15 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
 public class BluetoothActivity extends FragmentActivity implements BluetoothInterface {
     private BluetoothAdapter mBluetooth;
     private ArrayList<BluetoothDevice> devices;
+    private ImageSelectionFragment isFrag = null;
+    private TFTPPullFragment tpFrag = null;
     private String activeDevice = "";
     private int currMode = 0;
     private boolean stepped = false;
@@ -730,6 +735,10 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             csFrag = new ConnectionSelectFragment();
             csFrag.setArguments(getIntent().getExtras());
             getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, csFrag).commit();
+        }else if(currMode == 3){
+            isFrag = new ImageSelectionFragment();
+            isFrag.setArguments(getIntent().getExtras());
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, isFrag).commit();
         }
         else{
             fileFrag = new FileExplorerFragment();
@@ -962,9 +971,14 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     }
 
     public void startFileExplorer(){
-        File appFolder = new File(Environment.getExternalStorageDirectory() + File.separator + "captures");
+        File appFolder = new File(Environment.getExternalStorageDirectory()+File.separator + "SwitchArmyKnife" + File.separator + "captures");
         File[] folderContents = appFolder.listFiles();
         fileFrag.init(folderContents);
+    }
+    public void startImageViewer(){
+        File appFolder = new File(Environment.getExternalStorageDirectory()+File.separator + "SwitchArmyKnife" + File.separator + "images");
+        File[] folderContents = appFolder.listFiles();
+        isFrag.init(folderContents);
     }
 
     public void viewFile(File file){
@@ -1116,6 +1130,14 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         }
     }
 
+    public void switchPullFtp(View view){
+        tpFrag = new TFTPPullFragment();
+        FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
+        tran.replace(R.id.fragment_container, tpFrag);
+        tran.addToBackStack(null);
+        tran.commit();
+    }
+
     public void sendFtp(View view){
         CountDownLatch latch = new CountDownLatch(1);
         StrictMode.ThreadPolicy tp = StrictMode.ThreadPolicy.LAX;
@@ -1126,15 +1148,49 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         EditText address = (EditText)findViewById(R.id.tftIP);
         EditText username = (EditText)findViewById(R.id.tftuname);
         EditText password = (EditText)findViewById(R.id.tftpass);
+        Button butt = (Button)findViewById(R.id.tftSend);
 
         sendUtil.start();
         sendUtil.transfer(viewedFile.getAbsolutePath(), remote.getText().toString(), address.getText().toString(), username.getText().toString(), password.getText().toString(), null);
         sendUtil.close();
+
+        FragmentManager frag = getSupportFragmentManager();
+        frag.popBackStack();
     }
 
     public void deleteFile(View view){
         destroyFile();
         viewedFile.delete();
+        FragmentManager frag = getSupportFragmentManager();
+        frag.popBackStack();
+    }
+
+    public void pullFtp(View view){
+        Pattern filename = Pattern.compile("^.*/([^/]+)$");
+        CountDownLatch latch = new CountDownLatch(1);
+        StrictMode.ThreadPolicy tp = StrictMode.ThreadPolicy.LAX;
+        StrictMode.setThreadPolicy(tp);
+        TFTPUtil sendUtil = new TFTPUtil();
+
+        EditText remote = (EditText)findViewById(R.id.tftpullRemote);
+        String localFile = remote.getText().toString();
+        Matcher myMatch = filename.matcher(localFile);
+        if(myMatch.find()){
+            localFile = myMatch.group(1);
+        }
+        EditText address = (EditText)findViewById(R.id.tftpullIP);
+        EditText username = (EditText)findViewById(R.id.tftpulluname);
+        EditText password = (EditText)findViewById(R.id.tftpullpass);
+        Button butt = (Button)findViewById(R.id.tftPull);
+        File newf = new File(Environment.getExternalStorageDirectory() + File.separator + "SwitchArmyKnife" + File.separator + "images" + File.separator + localFile);
+        try {
+            newf.createNewFile();
+        }catch(IOException e){e.printStackTrace();}
+
+        sendUtil.start();
+        sendUtil.receive(newf.getAbsolutePath(), remote.getText().toString(), address.getText().toString(), username.getText().toString(), password.getText().toString(), null);
+        sendUtil.close();
+
         FragmentManager frag = getSupportFragmentManager();
         frag.popBackStack();
     }
@@ -1208,7 +1264,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
 
     private void createFile(String filenamel){
         String filename = filenamel.replaceAll("\\s+", "");
-        outputFile = new File(Environment.getExternalStorageDirectory()+File.separator+"captures", filename + ".capture");
+        outputFile = new File(Environment.getExternalStorageDirectory()+File.separator + "SwitchArmyKnife" + File.separator + "captures", filename);
         try {
             if(outputFile.exists())outputFile.delete();
             outputFile.createNewFile();

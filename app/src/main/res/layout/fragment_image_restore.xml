@@ -17,73 +17,133 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Switch IP Address:"
+                        android:gravity="bottom|left"
+                        android:textColor="#ffffffff"
+                        android:textStyle="bold"
+                        android:textSize="25dp"
+                        android:paddingLeft="20dp" />
                     <EditText
                         android:id="@+id/ipaddr"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
                         android:layout_margin="20dp"
-                        android:hint="Machine IP Address (optional)"
                         android:gravity="bottom|left"
                         android:background="#ff92c8ee"
                         android:padding="10dp"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Switch Gateway:"
+                        android:gravity="bottom|left"
+                        android:textColor="#ffffffff"
+                        android:textStyle="bold"
+                        android:textSize="25dp"
+                        android:paddingLeft="20dp" />
                     <EditText
                         android:id="@+id/gwaddr"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
                         android:layout_margin="20dp"
-                        android:hint="Machine Gateway Address (optional)"
                         android:gravity="bottom|left"
                         android:background="#ff92c8ee"
                         android:padding="10dp"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="FTP Address:"
+                        android:gravity="bottom|left"
+                        android:textColor="#ffffffff"
+                        android:textStyle="bold"
+                        android:textSize="25dp"
+                        android:paddingLeft="20dp" />
                     <EditText
                         android:id="@+id/ftpaddr"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
                         android:layout_margin="20dp"
-                        android:hint="FTP Server Address (required)"
                         android:gravity="bottom|left"
                         android:background="#ff92c8ee"
                         android:padding="10dp"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Kickstart Image Name:"
+                        android:gravity="bottom|left"
+                        android:textColor="#ffffffff"
+                        android:textStyle="bold"
+                        android:textSize="25dp"
+                        android:paddingLeft="20dp" />
                     <EditText
                         android:id="@+id/ksimg"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
                         android:layout_margin="20dp"
-                        android:hint="Kickstart Image Name on FTP Server (required)"
+                        android:hint="e.g. n7000-s2-kickstart.6.1.2.bin"
                         android:gravity="bottom|left"
                         android:background="#ff92c8ee"
                         android:padding="10dp"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="System Image Name:"
+                        android:gravity="bottom|left"
+                        android:textColor="#ffffffff"
+                        android:textStyle="bold"
+                        android:textSize="25dp"
+                        android:paddingLeft="20dp" />
                     <EditText
                         android:id="@+id/sysimg"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
                         android:layout_margin="20dp"
-                        android:hint="System Image Name on FTP Server (required)"
+                        android:hint="e.g. n7000-s2.6.1.2.bin"
                         android:gravity="bottom|left"
                         android:background="#ff92c8ee"
                         android:padding="10dp"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="TFTP Username:"
+                        android:gravity="bottom|left"
+                        android:textColor="#ffffffff"
+                        android:textStyle="bold"
+                        android:textSize="25dp"
+                        android:paddingLeft="20dp" />
                     <EditText
                         android:id="@+id/unamerec"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
                         android:layout_margin="20dp"
-                        android:hint="FTP Username"
+                        android:text="anonymous"
                         android:gravity="bottom|left"
                         android:background="#ff92c8ee"
                         android:padding="10dp"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="TFTP Password:"
+                        android:gravity="bottom|left"
+                        android:textColor="#ffffffff"
+                        android:textStyle="bold"
+                        android:textSize="25dp"
+                        android:paddingLeft="20dp" />
                     <EditText
                         android:id="@+id/pwrec"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
                         android:layout_margin="20dp"
-                        android:hint="FTP Password"
+                        android:text="switchapp@cisco.com"
                         android:gravity="bottom|left"
                         android:background="#ff92c8ee"
                         android:padding="10dp"/>

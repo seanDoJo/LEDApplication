@@ -1,0 +1,31 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/gradient_box"
+    tools:context="com.cisco.prototype.ledsignaldetection.Fragments.ImageSelectionFragment">
+    <ListView android:id="@+id/imageList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="6"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="Get Image From FTP"
+        android:id="@+id/files"
+        android:textColor="#ffaa052a"
+        android:textStyle="bold"
+        android:typeface="sans"
+        android:background="@drawable/button_home"
+        android:padding="10dp"
+        android:minWidth="400dp"
+        android:minHeight="60dp"
+        android:enabled="true"
+        android:onClick="switchPullFtp"
+        android:clickable="true"
+        android:textSize="20dp"
+        android:layout_margin="15dp"/>
+
+</LinearLayout>

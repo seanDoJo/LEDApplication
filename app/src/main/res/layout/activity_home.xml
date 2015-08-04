@@ -46,6 +46,25 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="15dp"
+            android:text="Software Images"
+            android:id="@+id/images"
+            android:textColor="#ffaa052a"
+            android:textStyle="bold"
+            android:typeface="sans"
+            android:background="@drawable/button_home"
+            android:padding="10dp"
+            android:minWidth="400dp"
+            android:minHeight="60dp"
+            android:enabled="true"
+            android:onClick="switchImageSelection"
+            android:clickable="true"
+            android:textSize="20dp"
+            android:layout_centerHorizontal="true" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="App Files"
             android:id="@+id/files"
             android:textColor="#ffaa052a"

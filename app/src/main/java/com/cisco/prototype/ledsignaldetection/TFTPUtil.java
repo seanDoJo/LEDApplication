@@ -9,7 +9,9 @@ import org.apache.commons.net.tftp.TFTP;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.SocketException;
@@ -57,6 +59,35 @@ public class TFTPUtil extends Thread {
         }catch(UnknownHostException e){e.printStackTrace();}catch(IOException e){e.printStackTrace();}
         try{
             if(input != null)input.close();
+        }catch(IOException e){e.printStackTrace();}
+        if(latch != null)latch.countDown();
+    }
+
+    public void receive(String fileName, String remote, String ip, String username, String password, CountDownLatch latch){
+        OutputStream out = null;
+        try {
+            out = new FileOutputStream(fileName);
+        } catch(FileNotFoundException e){e.printStackTrace();}
+        Pattern ipPat = Pattern.compile("^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$");
+        try{
+            if(ipPat.matcher(ip).matches()){
+                tClient.connect(InetAddress.getByName(ip));
+            }
+            else{
+                tClient.connect(ip);
+            }
+            if(!tClient.login(username, password)){
+                Log.i("LEDApp", "login unsuccessful");
+            }
+            if (FTPReply.isPositiveCompletion(tClient.getReplyCode())){
+                tClient.setFileType(FTP.BINARY_FILE_TYPE);
+                tClient.enterLocalPassiveMode();
+                tClient.retrieveFile(remote, out);
+            }
+            tClient.disconnect();
+        }catch(UnknownHostException e){e.printStackTrace();}catch(IOException e){e.printStackTrace();}
+        try{
+            if(out != null)out.close();
         }catch(IOException e){e.printStackTrace();}
         if(latch != null)latch.countDown();
     }

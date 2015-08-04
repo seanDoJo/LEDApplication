@@ -38,9 +38,13 @@ public class HomeActivity extends Activity {
         findViewById(R.id.files).setEnabled(false);
         findViewById(R.id.files).setVisibility(View.GONE);
         boolean hasFiles = false;
-        File appFolder = new File(Environment.getExternalStorageDirectory()+File.separator + "captures");
+        File appFolder = new File(Environment.getExternalStorageDirectory()+File.separator + "SwitchArmyKnife" + File.separator + "captures");
         if(!appFolder.exists()){
             appFolder.mkdirs();
+        }
+        File imageFolder = new File(Environment.getExternalStorageDirectory()+File.separator + "SwitchArmyKnife" + File.separator + "images");
+        if(!imageFolder.exists()){
+            imageFolder.mkdirs();
         }
         File[] folderContents = appFolder.listFiles();
         if(folderContents.length > 0){
@@ -84,6 +88,12 @@ public class HomeActivity extends Activity {
     public void switchFiles(View view){
         Intent nextIntent = new Intent(this, BluetoothActivity.class);
         nextIntent.putExtra(EXTRA_MESSAGE, 1);
+        startActivity(nextIntent);
+    }
+
+    public void switchImageSelection(View view){
+        Intent nextIntent = new Intent(this, BluetoothActivity.class);
+        nextIntent.putExtra(EXTRA_MESSAGE, 3);
         startActivity(nextIntent);
     }
 }

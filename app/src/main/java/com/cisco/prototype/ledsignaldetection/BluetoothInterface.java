@@ -17,6 +17,7 @@ public interface BluetoothInterface {
     public void onPasswordFragment(String message);
     public void writeData(String data);
     public void startFileExplorer();
+    public void startImageViewer();
     public void viewFile(File file);
     public void initFileView();
     public void destroyFile();

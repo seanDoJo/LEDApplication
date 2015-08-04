@@ -22,9 +22,9 @@ public class ImageRestoreFragment extends Fragment {
     private TextView log = null;
     private int state = 1;
     private boolean recoveryStarted = false;
-    private String gw = "172.25.186.1";
-    private String ip = "172.25.186.254";
-    private String ftp = "171.71.15.151";
+    private String gw = "";
+    private String ip = "";
+    private String ftp = "";
     private String ksimg =  "";
     private String sysimg = "";
     private String username = "";
@@ -87,19 +87,28 @@ public class ImageRestoreFragment extends Fragment {
         if(recoveryStarted) {
             switch (state) {
                 case 1:
-                    if (record.toLowerCase().contains("loader>")) {
+                    if (record.toLowerCase().contains("loader>") && !ip.trim().equals("")) {
                         mListener.writeData("set ip " + ip.trim() + " 255.255.255.0");
                         state++;
                         record = "";
                     } else if (record.toLowerCase().contains("boot)#")) {
                         mListener.writeData("");
-                        state = 8;
+                        state = 4;
+                        record = "";
+                    } else if(ip.trim().equals("") && record.toLowerCase().contains("loader>")){
+                        Log.e("LEDApp", record);
+                        mListener.writeData("");
+                        state++;
                         record = "";
                     }
                     break;
                 case 2:
-                    if (record.toLowerCase().contains("loader>")) {
+                    if (record.toLowerCase().contains("loader>") && !gw.trim().equals("")) {
                         mListener.writeData("set gw " + gw.trim());
+                        state++;
+                        record = "";
+                    }else if(gw.trim().equals("") && record.toLowerCase().contains("loader>")){
+                        mListener.writeData("");
                         state++;
                         record = "";
                     }
@@ -119,28 +128,32 @@ public class ImageRestoreFragment extends Fragment {
                     }
                     break;
                 case 5:
-                    if (record.toLowerCase().contains("config)#")) {
+                    if (record.toLowerCase().contains("(config")) {
                         mListener.writeData("int m0");
                         state++;
                         record = "";
                     }
                     break;
                 case 6:
-                    if (record.toLowerCase().contains("config)#")) {
+                    if (record.toLowerCase().contains("(config")) {
                         mListener.writeData("no shut");
                         state++;
                         record = "";
                     }
                     break;
                 case 7:
-                    if (record.toLowerCase().contains("config)#")) {
+                    if (record.toLowerCase().contains("(config")) {
                         mListener.writeData("exit");
                         state++;
                         record = "";
                     }
                     break;
                 case 8:
-                    if (!ksimg.trim().equals("")) {
+                    if (record.toLowerCase().contains("(config")) {
+                        mListener.writeData("exit");
+                        state++;
+                        record = "";
+                    }else if (!ksimg.trim().equals("")) {
                         if (record.toLowerCase().contains("boot)#")) {
                             mListener.writeData("copy ftp: bootflash:");
                             record = "";
@@ -158,7 +171,7 @@ public class ImageRestoreFragment extends Fragment {
                             record = "";
                             state++;
                         }
-                    } else {
+                    } else if(record.toLowerCase().contains("boot)#")) {
                         state++;
                         record = "";
                         mListener.writeData("");

@@ -37,7 +37,6 @@ import com.cisco.prototype.ledsignaldetection.BluetoothInterface;
 import com.cisco.prototype.ledsignaldetection.Fragments.BTMenuFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.CommunicationFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ConnectionSelectFragment;
-import com.cisco.prototype.ledsignaldetection.Fragments.EmailFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.FileExplorerFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ImageFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ImageRestoreFragment;
@@ -49,7 +48,6 @@ import com.cisco.prototype.ledsignaldetection.Fragments.TFTPFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ViewFileFragment;
 import com.cisco.prototype.ledsignaldetection.R;
 import com.cisco.prototype.ledsignaldetection.TFTPUtil;
-import com.cisco.prototype.ledsignaldetection.email;
 import com.cisco.prototype.ledsignaldetection.imagePair;
 
 import org.apache.commons.net.telnet.TelnetClient;
@@ -87,7 +85,6 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     private ImageRestoreFragment imgRestore;
     private FileExplorerFragment fileFrag;
     private ViewFileFragment fileViewer;
-    private EmailFragment eFrag;
     private TFTPFragment tFrag;
     private ConnectionSelectFragment csFrag;
     private LoginFragment loginFrag;
@@ -1068,59 +1065,10 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 startActivityForResult(Intent.createChooser(i, "Send mail..."), 1);
             } catch (android.content.ActivityNotFoundException ex) {
                 Toast.makeText(BluetoothActivity.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
-            }
-
-            /*eFrag = new EmailFragment();
-            FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
-            tran.replace(R.id.fragment_container, eFrag);
-            tran.addToBackStack(null);
-            tran.commit();
-            if(connection != null) {
-                connection.pau();
-                fragIndex = 8;
-                connection.res();
             }*/
         } else {
             Toast.makeText(BluetoothActivity.this, "Sorry, couldn't make a file.", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    public void sendEmail(View view){
-        EditText from = (EditText) findViewById(R.id.email_from);
-        EditText to = (EditText) findViewById(R.id.email_address);
-        EditText subject = (EditText) findViewById(R.id.subject);
-        EditText body = (EditText) findViewById(R.id.body);
-        EditText user = (EditText) findViewById(R.id.user);
-        EditText password = (EditText) findViewById(R.id.password_email);
-        email mail = new email(user.getText().toString(), password.getText().toString());
-        
-        mail.setFrom(from.getText().toString());
-        mail.setTo(to.getText().toString());
-        mail.setBody(body.getText().toString());
-        mail.setSubject(subject.getText().toString());
-        try{
-            mail.send();
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-        /*TextView email = (TextView) view.findViewById(R.id.email_address);
-        TextView subject = (TextView) view.findViewById(R.id.subject);
-        TextView body = (TextView) view.findViewById(R.id.body);
-
-        Intent i = new Intent(Intent.ACTION_SEND);
-        i.setType("message/rfc822");
-
-        Uri uri = Uri.fromFile(viewedFile);
-        i.putExtra(Intent.EXTRA_STREAM, uri);
-
-        /*i.putExtra(Intent.EXTRA_EMAIL  , email.getText());
-        i.putExtra(Intent.EXTRA_SUBJECT, subject.getText());*/
-        /*i.putExtra(Intent.EXTRA_TEXT, viewedFile.getAbsolutePath());
-        try {
-            startActivity(Intent.createChooser(i, "Send mail..."));
-        } catch (android.content.ActivityNotFoundException ex) {
-            Toast.makeText(BluetoothActivity.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();*/
-
     }
 
     public void switchFtp(View view){
@@ -1286,7 +1234,26 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         //fragment will call onFileListObtained to continue once prompt is reached.
     }
 
-    public void enableSubmit(){findViewById(R.id.submit_image).setEnabled(true);}
+    public void enableSubmit(){
+        //disable grey button
+        Button submit = (Button)findViewById(R.id.submit_image);
+        Drawable resid = null;
+
+        resid = getResources().getDrawable(R.drawable.button_home);
+        submit.setBackground(resid);
+        submit.setTextColor(Color.parseColor("#ffaa052a"));
+        submit.setEnabled(true);
+    }
+
+    public void greyButtonImage(){
+        Button submit = (Button) findViewById(R.id.submit_image);
+        Drawable resid = null;
+
+        resid = getResources().getDrawable(R.drawable.button_gray);
+        submit.setBackground(resid);
+        submit.setTextColor(Color.parseColor("#85666666"));
+        submit.setEnabled(false);
+    }
 
     public void onGuessedImage(View view){
         RadioButton guess = (RadioButton)findViewById(R.id.guess_button);
@@ -1297,7 +1264,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         Spinner fs = (Spinner) findViewById(R.id.file_spinner);
 
         fs.setVisibility(View.GONE);
-
+        guess.setChecked(true);
         allFiles.setChecked(false);
         download.setChecked(false);
 
@@ -1320,6 +1287,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         guess.setChecked(false);
         download.setChecked(false);
 
+        allFiles.setChecked(true);
         fs.setVisibility(View.VISIBLE);
         enableSubmit();
     }
@@ -1355,7 +1323,9 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         Spinner sys = (Spinner)findViewById(R.id.sysImages);
         Spinner ks = (Spinner)findViewById(R.id.kickImages);
         Spinner fs = (Spinner) findViewById(R.id.file_spinner);
-        findViewById(R.id.submit_image).setEnabled(false);
+
+        greyButtonImage();
+
         RadioButton guessButt = (RadioButton)findViewById(R.id.guess_button);
         RadioButton fileButt = (RadioButton)findViewById(R.id.file_button);
         RadioButton downButt = (RadioButton)findViewById(R.id.download);
@@ -1411,8 +1381,11 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     iFrag.state = state;
                     String imageType = iFrag.kickstart ? "kickstart": "system";
                     findViewById(R.id.image_options).setVisibility(View.VISIBLE);
+                    String additional = "";
+                    /*additional = iFrag.kickstart ? "": "The kickstart image booted is: "
+                            + iFrag.kickstartImageName;*/git pul
                     message = "Select an image recovery option from the list below and an " +
-                            "approprate " + imageType + " image if necessary.";
+                            "approprate " + imageType + " image if necessary. " + additional;
                     break;
                 case 1://only one set of concurrent images detected
                     Log.i("state", Integer.toString(state));
@@ -1505,10 +1478,6 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 default:break;
             }
         }
-    }
-
-    public void onAuthenticateClick(View view){
-
     }
 
     public void onDownClick(){

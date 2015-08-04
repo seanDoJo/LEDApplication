@@ -37,6 +37,9 @@ public class ImageFragment extends Fragment {
     private ArrayList<String> files;
     public String sysImage = "";
     public String kickImage = "";
+    public String kickstartImageName;
+    private boolean findKs = false;
+    private String logForKs = "";
     private ArrayAdapter<String> kickAdapter;
     private ArrayAdapter<String> sysAdapter;
     private ArrayAdapter<String> fileAdapter;
@@ -128,6 +131,9 @@ public class ImageFragment extends Fragment {
 
     public void read(String data){
         log += data;
+        if(findKs){
+            logForKs += data;
+        }
         terminal.setText(log);
         Log.i("log", log);
         if(readOutput) {
@@ -147,8 +153,10 @@ public class ImageFragment extends Fragment {
                             firstSys = false;
                             log = log.replace("(boot)#", "");
                         } else {
-                            readOutput = false;
-                            onFileListObtained();
+                            firstSys = true;
+                            mListener.writeData("show version");
+                            findKs = true;
+                            state = 37;
                         }
                     } else if(log.toLowerCase().contains("more")){
                         mListener.writeData("");
@@ -192,6 +200,18 @@ public class ImageFragment extends Fragment {
                         mListener.writeData("");
                     }
                     break;
+                case 37:
+                    if (firstSys) {
+                        firstSys = false;
+                        logForKs = logForKs.replace("(boot)#", "");
+                    } else {
+                        readOutput = false;
+                        findKs = false;
+                        logForKs = "";
+                        getKickstartVersion();
+                    }
+                    break;
+                default:break;
             }
         }
 
@@ -256,4 +276,14 @@ public class ImageFragment extends Fragment {
         }
     }
 
+    public void getKickstartVersion(){
+        String[] lines = log.split("\n");
+
+        for(int i = 0; i < lines.length; i++){
+            if (lines[i].contains("kickstart image")) kickstartImageName = lines[i];
+            break;
+        }
+
+        onFileListObtained();
+    }
 }

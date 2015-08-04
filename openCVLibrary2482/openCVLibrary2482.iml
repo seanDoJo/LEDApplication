@@ -85,7 +85,11 @@
       <excludeFolder url="file://$MODULE_DIR$/build/outputs" />
       <excludeFolder url="file://$MODULE_DIR$/build/tmp" />
     </content>
+<<<<<<< HEAD
     <orderEntry type="jdk" jdkName="Android API 22 Platform" jdkType="Android SDK" />
+=======
+    <orderEntry type="jdk" jdkName="Android API 22 Platform (3)" jdkType="Android SDK" />
+>>>>>>> 019d6f58daf2089581515e4168885358cb8e516b
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

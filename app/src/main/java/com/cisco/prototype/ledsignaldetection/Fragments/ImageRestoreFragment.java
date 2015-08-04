@@ -3,6 +3,7 @@ package com.cisco.prototype.ledsignaldetection.Fragments;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.SurfaceView;
 import android.view.View;
@@ -17,11 +18,17 @@ import java.util.HashMap;
 
 public class ImageRestoreFragment extends Fragment {
     private BluetoothInterface mListener;
-    private HashMap<String, String> details;
     private String record = "";
     private TextView log = null;
-    private int state = 0;
+    private int state = 1;
     private boolean recoveryStarted = false;
+    private String gw = "172.25.186.1";
+    private String ip = "172.25.186.254";
+    private String ftp = "171.71.15.151";
+    private String ksimg =  "";
+    private String sysimg = "";
+    private String username = "";
+    private String password = "";
 
     public ImageRestoreFragment() {
     }
@@ -29,9 +36,6 @@ public class ImageRestoreFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        details = new HashMap<String, String>();
-        details.put("ip", "172.25.186.254");
-        details.put("gw", "172.25.186.1");
     }
 
     @Override
@@ -60,17 +64,19 @@ public class ImageRestoreFragment extends Fragment {
         mListener = null;
     }
 
-    public void collectInfo(String information){
-        String[] bits = information.split(",");
+    public void collectInfo(String[] information){
+        String[] bits = information;
         LinearLayout startView = (LinearLayout)getActivity().findViewById(R.id.recoveryStart);
         LinearLayout logView = (LinearLayout)getActivity().findViewById(R.id.recoveryLogShell);
         startView.setVisibility(SurfaceView.GONE);
         logView.setVisibility(SurfaceView.VISIBLE);
-        if(bits[0].trim() != "")details.put("ip", bits[0]);
-        if(bits[1].trim() != "")details.put("gw", bits[1]);
-        details.put("ftpAddr", bits[2]);
-        details.put("ksimg", bits[3]);
-        details.put("sysimg", bits[4]);
+        if(!bits[0].trim().equals(""))ip = bits[0];
+        if(!bits[1].trim().equals(""))gw = bits[1];
+        if(!bits[2].trim().equals(""))ftp = bits[2];
+        ksimg = bits[3];
+        sysimg = bits[4];
+        username = bits[5];
+        password = bits[6];
         recoveryStarted = true;
         mListener.writeData("");
     }
@@ -82,7 +88,7 @@ public class ImageRestoreFragment extends Fragment {
             switch (state) {
                 case 1:
                     if (record.toLowerCase().contains("loader>")) {
-                        mListener.writeData("set ip " + details.get("ip") + " 255.255.255.0");
+                        mListener.writeData("set ip " + ip.trim() + " 255.255.255.0");
                         state++;
                         record = "";
                     } else if (record.toLowerCase().contains("boot)#")) {
@@ -93,14 +99,14 @@ public class ImageRestoreFragment extends Fragment {
                     break;
                 case 2:
                     if (record.toLowerCase().contains("loader>")) {
-                        mListener.writeData("set gw " + details.get("gw"));
+                        mListener.writeData("set gw " + gw.trim());
                         state++;
                         record = "";
                     }
                     break;
                 case 3:
                     if (record.toLowerCase().contains("loader>")) {
-                        mListener.writeData("boot tftp://" + details.get("ftpAddr") + "/" + details.get("ksimg"));
+                        mListener.writeData("boot tftp://" + ftp.trim() + "/" + ksimg.trim());
                         state++;
                         record = "";
                     }
@@ -134,21 +140,21 @@ public class ImageRestoreFragment extends Fragment {
                     }
                     break;
                 case 8:
-                    if (!details.get("ksimg").trim().equals("")) {
+                    if (!ksimg.trim().equals("")) {
                         if (record.toLowerCase().contains("boot)#")) {
                             mListener.writeData("copy ftp: bootflash:");
                             record = "";
                         } else if (record.toLowerCase().contains("filename:")) {
-                            mListener.writeData(details.get("ksimg"));
+                            mListener.writeData(ksimg.trim());
                             record = "";
                         } else if (record.toLowerCase().contains("server:")) {
-                            mListener.writeData(details.get("ftpAddr"));
+                            mListener.writeData(ftp.trim());
                             record = "";
                         } else if (record.toLowerCase().contains("username:")) {
-                            mListener.writeData(details.get("username"));
+                            mListener.writeData(username.trim());
                             record = "";
                         } else if (record.toLowerCase().contains("password")) {
-                            mListener.writeData(details.get("password"));
+                            mListener.writeData(password.trim());
                             record = "";
                             state++;
                         }
@@ -163,35 +169,36 @@ public class ImageRestoreFragment extends Fragment {
                         mListener.writeData("copy ftp: bootflash:");
                         record = "";
                     } else if (record.toLowerCase().contains("filename:")) {
-                        mListener.writeData(details.get("sysimg"));
+                        mListener.writeData(sysimg.trim());
                         record = "";
                     } else if (record.toLowerCase().contains("server:")) {
-                        mListener.writeData(details.get("ftpAddr"));
+                        mListener.writeData(ftp.trim());
                         record = "";
                     } else if (record.toLowerCase().contains("username:")) {
-                        mListener.writeData(details.get("username"));
+                        mListener.writeData(username.trim());
                         record = "";
                     } else if (record.toLowerCase().contains("password")) {
-                        mListener.writeData(details.get("password"));
+                        mListener.writeData(password.trim());
                         record = "";
                         state++;
                     }
                     break;
                 case 10:
                     if (record.toLowerCase().contains("boot)#")) {
-                        mListener.writeData("load bootflash:" + details.get("sysimg"));
+                        mListener.writeData("load bootflash:" + sysimg.trim());
                         state++;
                         record = "";
                     }
                     break;
                 case 11:
                     if (record.toLowerCase().contains("boot)#")) {
-                        mListener.writeData("load bootflash:" + details.get("sysimg"));
                         state++;
                         record = "";
                     }
                     break;
             }
+        } else {
+            Log.e("LEDApp", "pre start reception");
         }
     }
 

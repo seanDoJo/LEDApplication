@@ -25,6 +25,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
@@ -371,7 +372,6 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                         record += (new String(readB));
                         if(record.toLowerCase().contains("failed")){
                             connectionHandler.obtainMessage(22222222, 1, -1, 1).sendToTarget();
-                            ok = false;
                             break;
                         }
                     }
@@ -811,7 +811,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
 
 
     public void switchTelnet(View view){
-        RelativeLayout rel = (RelativeLayout)findViewById(R.id.telMenu);
+        LinearLayout rel = (LinearLayout)findViewById(R.id.telMenu);
         rel.setVisibility(SurfaceView.VISIBLE);
         RelativeLayout lin = (RelativeLayout)findViewById(R.id.connectButtons);
         lin.setVisibility(SurfaceView.GONE);
@@ -959,7 +959,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     }
 
     public void startFileExplorer(){
-        File appFolder = new File(getFilesDir().getAbsolutePath());
+        File appFolder = new File(Environment.getExternalStorageDirectory() + File.separator + "captures");
         File[] folderContents = appFolder.listFiles();
         fileFrag.init(folderContents);
     }
@@ -982,28 +982,8 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         fileViewer.viewCurrentFile(viewedFile);
     }
 
-    public File getAlbumStorageDir(String albumName) {
-        // Get the directory for the user's public pictures directory.
-        new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DOWNLOADS), albumName).delete();
-        File file = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DOWNLOADS), albumName);
-        if (!file.mkdirs()) {
-            Log.e("email", "Directory not created");
-        }
-        return file;
-    }
-
-    public boolean isExternalStorageWritable() {
-        String state = Environment.getExternalStorageState();
-        if (Environment.MEDIA_MOUNTED.equals(state)) {
-            return true;
-        }
-        return false;
-    }
-
     public void switchEmail(View view){
-        if(isExternalStorageWritable()){
+        if(true){
             Intent emailIntent = new Intent(Intent.ACTION_SEND);
             emailIntent.setType("text/plain");
             /*emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] {"email@example.com"});
@@ -1176,7 +1156,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
 
     private void createFile(String filenamel){
         String filename = filenamel.replaceAll("\\s+", "");
-        outputFile = new File(getFilesDir(), filename + ".capture");
+        outputFile = new File(Environment.getExternalStorageDirectory()+File.separator+"captures", filename + ".capture");
         try {
             if(outputFile.exists())outputFile.delete();
             outputFile.createNewFile();
@@ -1710,16 +1690,14 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     }
 
     public void onImgRestoreCollection(View view){
-        String passed = "";
-        passed += ((EditText)findViewById(R.id.ipaddr)).getText();
-        passed += ",";
-        passed += ((EditText)findViewById(R.id.gwaddr)).getText();
-        passed += ",";
-        passed += ((EditText)findViewById(R.id.ftpaddr)).getText();
-        passed += ",";
-        passed += ((EditText)findViewById(R.id.ksimg)).getText();
-        passed += ",";
-        passed += ((EditText) findViewById(R.id.sysimg)).getText();
+        String[] passed = new String[7];
+        passed[0] = ((EditText)findViewById(R.id.ipaddr)).getText().toString();
+        passed[1] = ((EditText)findViewById(R.id.gwaddr)).getText().toString();
+        passed[2] = ((EditText)findViewById(R.id.ftpaddr)).getText().toString();
+        passed[3] = ((EditText)findViewById(R.id.ksimg)).getText().toString();
+        passed[4] = ((EditText) findViewById(R.id.sysimg)).getText().toString();
+        passed[5] = ((EditText) findViewById(R.id.unamerec)).getText().toString();
+        passed[6] = ((EditText) findViewById(R.id.pwrec)).getText().toString();
 
         imgRestore.collectInfo(passed);
     }

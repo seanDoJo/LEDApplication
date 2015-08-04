@@ -3,6 +3,7 @@ package com.cisco.prototype.ledsignaldetection.Fragments;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -37,7 +39,7 @@ public class ImageFragment extends Fragment {
     private ArrayList<String> files;
     public String sysImage = "";
     public String kickImage = "";
-    public String kickstartImageName;
+    public String kickstartImageName = "";
     private boolean findKs = false;
     private String logForKs = "";
     private ArrayAdapter<String> kickAdapter;
@@ -59,6 +61,7 @@ public class ImageFragment extends Fragment {
     private Spinner sysSpin;
     private Spinner fileSpin;
     private RelativeLayout imageOptions;
+    private ScrollView scroll;
 
     public ImageFragment(){}
 
@@ -83,6 +86,10 @@ public class ImageFragment extends Fragment {
         terminal = (TextView) view.findViewById(R.id.image_terminal);
         submit = (Button) view.findViewById(R.id.submit_image);
         imageOptions = (RelativeLayout) view.findViewById(R.id.image_options);
+        scroll = (ScrollView) view.findViewById(R.id.image_output);
+
+        scroll.fullScroll(View.FOCUS_DOWN);
+        terminal.setMovementMethod(new ScrollingMovementMethod());
 
         kickSpin = (Spinner) view.findViewById(R.id.kickImages);
         kickAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, kst);
@@ -120,7 +127,6 @@ public class ImageFragment extends Fragment {
         imageOptions.setVisibility(View.GONE);
         infoText.setText(message);
         submit.setText("OK");
-        submit.setEnabled(true);
     }
 
     public void setText(String message){infoText.setText(message);}
@@ -154,6 +160,7 @@ public class ImageFragment extends Fragment {
                             log = log.replace("(boot)#", "");
                         } else {
                             firstSys = true;
+                            logForKs = "";
                             mListener.writeData("show version");
                             findKs = true;
                             state = 37;
@@ -201,13 +208,17 @@ public class ImageFragment extends Fragment {
                     }
                     break;
                 case 37:
-                    if (firstSys) {
+                    Log.i("logks", logForKs);
+                    if (firstSys && logForKs.contains("show version")) {
                         firstSys = false;
                         logForKs = logForKs.replace("(boot)#", "");
-                    } else {
+                    } else if(logForKs.toLowerCase().contains("more")) {
+                        logForKs = logForKs.replace("more", "");
+                        logForKs = logForKs.replace("More", "");
+                        mListener.writeData("");
+                    } else if (logForKs.contains("(boot)#") && logForKs.contains("show version")) {
                         readOutput = false;
                         findKs = false;
-                        logForKs = "";
                         getKickstartVersion();
                     }
                     break;
@@ -277,13 +288,20 @@ public class ImageFragment extends Fragment {
     }
 
     public void getKickstartVersion(){
-        String[] lines = log.split("\n");
+        Log.i("ksversion", logForKs);
+        String[] lines = logForKs.split("\n");
 
         for(int i = 0; i < lines.length; i++){
-            if (lines[i].contains("kickstart image")) kickstartImageName = lines[i];
-            break;
+            Log.i("lines", lines[i]);
+            if (lines[i].contains("kickstart image")) {
+                kickstartImageName = lines[i];
+                break;
+            }
         }
 
+        if(kickstartImageName!= null ) Log.i("ksImage name", kickstartImageName);
+
+        logForKs = "";
         onFileListObtained();
     }
 }

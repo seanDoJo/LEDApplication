@@ -35,6 +35,8 @@ public class HomeActivity extends Activity {
     @Override
     public void onResume(){
         super.onResume();
+        findViewById(R.id.files).setEnabled(false);
+        findViewById(R.id.files).setVisibility(View.GONE);
         boolean hasFiles = false;
         File appFolder = new File(Environment.getExternalStorageDirectory()+File.separator + "captures");
         if(!appFolder.exists()){

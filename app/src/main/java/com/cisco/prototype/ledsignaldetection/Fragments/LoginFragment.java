@@ -1,7 +1,6 @@
 package com.cisco.prototype.ledsignaldetection.Fragments;
 
 import android.app.Activity;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -21,8 +20,10 @@ public class LoginFragment extends Fragment {
     private int state = 0;
     private String uname = null;
     private String pass = null;
+    private String log = "";
     Pattern booted1 = Pattern.compile("(?s)[^()#]*#[^#]*");
     Pattern booted2 = Pattern.compile("(?s).*[sS]{1}witch>[^>]*");
+    private boolean loggedIn;
 
     public LoginFragment() {
         // Required empty public constructor
@@ -38,6 +39,11 @@ public class LoginFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_login, container, false);
+    }
+
+    public boolean loginSuccessful(){
+        if (record.toLowerCase().contains("incorrect") || record.toLowerCase().contains("failed")) return false;
+        else return true;
     }
 
     @Override

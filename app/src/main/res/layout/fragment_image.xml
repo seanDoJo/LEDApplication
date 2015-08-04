@@ -99,14 +99,17 @@
             android:layout_height="wrap_content"
             android:scrollbars="vertical"
             android:layout_below="@+id/terminal_label"
-            android:layout_centerHorizontal="true">
+            android:layout_centerHorizontal="true"
+            android:fillViewport="true">
             <TextView android:id="@+id/image_terminal"
+                android:scrollbars="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:maxHeight="70dp"
                 android:textColor="#ff000000"
                 android:textStyle="bold"
                 android:textSize="10sp"
+                android:gravity="bottom"
                 android:background="#ffffffff" />
         </ScrollView>
     </RelativeLayout>

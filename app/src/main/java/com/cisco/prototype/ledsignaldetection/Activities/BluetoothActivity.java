@@ -930,18 +930,21 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     }
     public void setLoggedIn(boolean success){
         if(success){
+            Log.i("login", "Login success");
             FragmentManager fm = getSupportFragmentManager();
             mLock.lock();
             fragIndex = 0;
             fm.popBackStack();
             mLock.unlock();
         }
+        //if(!loginFrag.loginSuccessful()) Toast.makeText(BluetoothActivity.this, "Login failed", Toast.LENGTH_SHORT).show();
     }
     public void loginSubmit(View view){
         EditText user = (EditText)findViewById(R.id.loginuname);
         EditText password = (EditText)findViewById(R.id.loginpw);
         String data = user.getText().toString() + "," + password.getText().toString();
         loginFrag.submit(data);
+
     }
 
     public void switchFileExplorer(View view){
@@ -1156,7 +1159,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
 
     private void createFile(String filenamel){
         String filename = filenamel.replaceAll("\\s+", "");
-        outputFile = new File(Environment.getExternalStorageDirectory()+File.separator+"captures", filename + ".capture");
+        outputFile = new File(Environment.getExternalStorageDirectory()+File.separator+"captures", filename + ".txt");
         try {
             if(outputFile.exists())outputFile.delete();
             outputFile.createNewFile();
@@ -1362,8 +1365,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     String imageType = iFrag.kickstart ? "kickstart": "system";
                     findViewById(R.id.image_options).setVisibility(View.VISIBLE);
                     String additional = "";
-                    /*additional = iFrag.kickstart ? "": "The kickstart image booted is: "
-                            + iFrag.kickstartImageName;*/git pul
+                    additional = iFrag.kickstart ? "": iFrag.kickstartImageName;
                     message = "Select an image recovery option from the list below and an " +
                             "approprate " + imageType + " image if necessary. " + additional;
                     break;
@@ -1424,6 +1426,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     break;*/
                 case 6: //System booted!
                     Log.i("state", Integer.toString(state));
+                    enableSubmit();
                     iFrag.success = true;
                     iFrag.success("Yes! The switch booted! The following image names will be " +
                             "displayed if they were changed during the troubleshooting process. " +

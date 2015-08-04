@@ -524,7 +524,13 @@ public class PasswordFragment extends Fragment {
                             if (kst.size() == 1 && syst.size() == 1) {
                                 this.sysImage = syst.get(0).trim();
                                 this.kickImage = kst.get(0).trim();
-                                mListener.writeData("boot " + kst.get(0).trim());
+                                kst.clear();
+                                syst.clear();
+                                kst.add(this.kickImage);
+                                syst.add(this.sysImage);
+                                kickAdapter.notifyDataSetChanged();
+                                sysAdapter.notifyDataSetChanged();
+                                selectBoot(false);
                             } else if (kst.size() > 1 || syst.size() > 1) {
                                 //multiple kickstart and/or system images
                                 for (String kickstart : kst) {
@@ -568,7 +574,13 @@ public class PasswordFragment extends Fragment {
                                 if(imagePairs.size() == 1){
                                     this.sysImage = imagePairs.get(0)[1];
                                     this.kickImage = imagePairs.get(0)[0];
-                                    mListener.writeData("boot " + imagePairs.get(0)[0]);
+                                    kst.clear();
+                                    syst.clear();
+                                    kst.add(imagePairs.get(0)[0]);
+                                    syst.add(imagePairs.get(0)[1]);
+                                    kickAdapter.notifyDataSetChanged();
+                                    sysAdapter.notifyDataSetChanged();
+                                    selectBoot(false);
                                 }else if (imagePairs.size() == 0) {
                                     Log.e("LEDMatch", "image pair size is 0");
                                     kst.clear();

@@ -203,9 +203,15 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 String result = new String(data);
             }
             else if(m.what == 6){ //img recovery
+                mLock.lock();
+                locked = true;
+                mLock.unlock();
                 byte[] data = (byte[]) m.obj;
                 String result = new String(data);
                 imgRestore.step(result);
+                mLock.lock();
+                locked = false;
+                mLock.unlock();
             }
             else if (m.what == 10){
                 mLock.lock();
@@ -337,7 +343,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         private boolean inHelp = false;
         private boolean telnet = false;
         private TelnetClient tc = null;
-        public BTConnection(String ipaddr, int portNum, CountDownLatch synchron){
+        public BTConnection(String ipaddr, int portNum, String username, String password, CountDownLatch synchron){
             telnet = true;
             StrictMode.ThreadPolicy tp = StrictMode.ThreadPolicy.LAX;
             StrictMode.setThreadPolicy(tp);
@@ -360,7 +366,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     }
                 }
                 record = "";
-                byte[] uname = "bland\n".getBytes();
+                byte[] uname = (username != null) ? (username + "\n").getBytes() : "bland\n".getBytes();
                 mmOutStream.write(uname, 0, uname.length);
                 mmOutStream.flush();
                 while(!record.contains("Password:")){
@@ -370,9 +376,14 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                         for(int i = 0; i < bytes; i++)readB[i] = buffer[i];
                         for(int i = 0; i < 1024; i++)buffer[i] = 0;
                         record += (new String(readB));
+                        if(record.toLowerCase().contains("failed")){
+                            connectionHandler.obtainMessage(22222222, 1, -1, 1).sendToTarget();
+                            ok = false;
+                            break;
+                        }
                     }
                 }
-                uname = "yOuShOuLdUsEtHeScRiPt\n\n".getBytes();
+                uname = (password != null) ? (password + "\n\n").getBytes() : "yOuShOuLdUsEtHeScRiPt\n\n".getBytes();
                 mmOutStream.write(uname, 0, uname.length);
                 mmOutStream.flush();
 
@@ -822,11 +833,14 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     public void onTelnetStart(View view){
         EditText address = (EditText)findViewById(R.id.telAddress);
         EditText port = (EditText)findViewById(R.id.telPort);
+        EditText username = (EditText)findViewById(R.id.telPortComU);
+        EditText password = (EditText)findViewById(R.id.telPortComP);
         csFrag.collapse();
         tready = new CountDownLatch(1);
         latch = new CountDownLatch(1);
         if (connection != null) connection.close();
-        connection = new BTConnection(address.getText().toString().trim(),Integer.parseInt(port.getText().toString().trim()),latch);
+        connection = new BTConnection(address.getText().toString().trim(),Integer.parseInt(port.getText().toString().trim()),
+                username.getText().toString(), password.getText().toString(), latch);
         try {
             latch.await();
         }catch(InterruptedException e){e.printStackTrace();}

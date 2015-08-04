@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/connectButtons"
-        android:visibility="visible">
+        android:visibility="gone">
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -52,7 +52,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/telMenu"
-        android:visibility="gone">
+        android:visibility="visible">
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -67,52 +67,107 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_below="@+id/connectiontitle">
-            <TextView
+            <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="Address:"
-                android:id="@+id/telAddressT"
-                android:gravity="bottom|left"
-                android:textColor="#ffffffff"
-                android:textStyle="bold"
-                android:textSize="25dp"
-                android:paddingLeft="10dp" />
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/telAddress"
-                android:layout_marginTop="20dp"
-                android:background="#ff92c8ee"
-                android:padding="10dp"
-                android:gravity="center"
-                android:textColor="#ffaa052a"
-                android:textSize="20dp"/>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="Port:"
-                android:id="@+id/telPortT"
-                android:gravity="bottom|left"
-                android:textColor="#ffffffff"
-                android:textStyle="bold"
-                android:textSize="25dp"
-                android:paddingLeft="10dp" />
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/telPort"
-                android:layout_marginTop="20dp"
-                android:background="#ff92c8ee"
-                android:padding="10dp"
-                android:gravity="center"
-                android:textColor="#ffaa052a"
-                android:textSize="20dp"/>
+                android:layout_height="0dp"
+                android:layout_weight="5">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:text="Address:"
+                        android:id="@+id/telAddressT"
+                        android:gravity="bottom|left"
+                        android:textColor="#ffffffff"
+                        android:textStyle="bold"
+                        android:textSize="25dp"
+                        android:paddingLeft="10dp" />
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/telAddress"
+                        android:layout_marginTop="20dp"
+                        android:background="#ff92c8ee"
+                        android:padding="10dp"
+                        android:gravity="center"
+                        android:textColor="#ffaa052a"
+                        android:textSize="20dp"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:text="Port:"
+                        android:id="@+id/telPortT"
+                        android:gravity="bottom|left"
+                        android:textColor="#ffffffff"
+                        android:textStyle="bold"
+                        android:textSize="25dp"
+                        android:paddingLeft="10dp" />
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/telPort"
+                        android:layout_marginTop="20dp"
+                        android:background="#ff92c8ee"
+                        android:padding="10dp"
+                        android:gravity="center"
+                        android:textColor="#ffaa052a"
+                        android:textSize="20dp"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:text="Comm Server Username"
+                        android:id="@+id/telPortComUT"
+                        android:gravity="bottom|left"
+                        android:textColor="#ffffffff"
+                        android:textStyle="bold"
+                        android:textSize="25dp"
+                        android:paddingLeft="10dp" />
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/telPortComU"
+                        android:layout_marginTop="20dp"
+                        android:background="#ff92c8ee"
+                        android:padding="10dp"
+                        android:gravity="center"
+                        android:textColor="#ffaa052a"
+                        android:textSize="20dp"
+                        android:text="user" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:text="Comm Server Password"
+                        android:id="@+id/telPortComPT"
+                        android:gravity="bottom|left"
+                        android:textColor="#ffffffff"
+                        android:textStyle="bold"
+                        android:textSize="25dp"
+                        android:paddingLeft="10dp" />
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/telPortComP"
+                        android:layout_marginTop="20dp"
+                        android:background="#ff92c8ee"
+                        android:padding="10dp"
+                        android:gravity="center"
+                        android:textColor="#ffaa052a"
+                        android:textSize="20dp"
+                        android:text="yOuShOuLdUsEtHeScRiPt" />
+                </LinearLayout>
+            </ScrollView>
             <Button
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="40dp"
+                android:layout_height="0dp"
+                android:layout_weight="3"
+                android:layout_marginTop="10dp"
                 android:text="Connect"
                 android:id="@+id/telnetStart"
                 android:textColor="#ffaa052a"

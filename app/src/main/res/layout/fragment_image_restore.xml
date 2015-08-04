@@ -4,74 +4,95 @@
     tools:context="com.cisco.prototype.ledsignaldetection.Fragments.ImageRestoreFragment"
     android:orientation="vertical"
     android:background="@drawable/gradient_box">
-    <EditText
-        android:id="@+id/ipaddr"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_margin="20dp"
-        android:hint="Machine IP Address (optional)"
-        android:gravity="bottom|left"
-        android:background="#ff92c8ee"
-        android:padding="10dp"/>
-    <EditText
-        android:id="@+id/gwaddr"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:id="@+id/recoveryStart">
+        <EditText
+            android:id="@+id/ipaddr"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_margin="20dp"
+            android:hint="Machine IP Address (optional)"
+            android:gravity="bottom|left"
+            android:background="#ff92c8ee"
+            android:padding="10dp"/>
+        <EditText
+            android:id="@+id/gwaddr"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_margin="20dp"
+            android:hint="Machine Gateway Address (optional)"
+            android:gravity="bottom|left"
+            android:background="#ff92c8ee"
+            android:padding="10dp"/>
+        <EditText
+            android:id="@+id/ftpaddr"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_margin="20dp"
+            android:hint="FTP Server Address (required)"
+            android:gravity="bottom|left"
+            android:background="#ff92c8ee"
+            android:padding="10dp"/>
+        <EditText
+            android:id="@+id/ksimg"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_margin="20dp"
+            android:hint="Kickstart Image Name on FTP Server (required)"
+            android:gravity="bottom|left"
+            android:background="#ff92c8ee"
+            android:padding="10dp"/>
+        <EditText
+            android:id="@+id/sysimg"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_margin="20dp"
+            android:hint="System Image Name on FTP Server (required)"
+            android:gravity="bottom|left"
+            android:background="#ff92c8ee"
+            android:padding="10dp"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:text="Download Image"
+            android:id="@+id/train"
+            android:textColor="#ffaa052a"
+            android:textStyle="bold"
+            android:typeface="sans"
+            android:background="@drawable/button_home"
+            android:padding="10dp"
+            android:minWidth="300dp"
+            android:minHeight="80dp"
+            android:enabled="true"
+            android:onClick="onImgRestoreCollection"
+            android:clickable="true"
+            android:textSize="25dp"
+            android:layout_below="@+id/recognize"
+            android:layout_centerHorizontal="true" />
+    </LinearLayout>
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_margin="20dp"
-        android:hint="Machine Gateway Address (optional)"
-        android:gravity="bottom|left"
-        android:background="#ff92c8ee"
-        android:padding="10dp"/>
-    <EditText
-        android:id="@+id/ftpaddr"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_margin="20dp"
-        android:hint="FTP Server Address (required)"
-        android:gravity="bottom|left"
-        android:background="#ff92c8ee"
-        android:padding="10dp"/>
-    <EditText
-        android:id="@+id/ksimg"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_margin="20dp"
-        android:hint="Kickstart Image Name on FTP Server (required)"
-        android:gravity="bottom|left"
-        android:background="#ff92c8ee"
-        android:padding="10dp"/>
-    <EditText
-        android:id="@+id/sysimg"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_margin="20dp"
-        android:hint="System Image Name on FTP Server (required)"
-        android:gravity="bottom|left"
-        android:background="#ff92c8ee"
-        android:padding="10dp"/>
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:text="Download Image"
-        android:id="@+id/train"
-        android:textColor="#ffaa052a"
-        android:textStyle="bold"
-        android:typeface="sans"
-        android:background="@drawable/button_home"
-        android:padding="10dp"
-        android:minWidth="300dp"
-        android:minHeight="80dp"
-        android:enabled="true"
-        android:onClick="onImgRestoreCollection"
-        android:clickable="true"
-        android:textSize="25dp"
-        android:layout_below="@+id/recognize"
-        android:layout_centerHorizontal="true" />
+        android:layout_height="match_parent"
+        android:id="@+id/recoveryLogShell"
+        android:visibility="gone">
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/recoveryLog"/>
+        </ScrollView>
+    </LinearLayout>
 
 </LinearLayout>

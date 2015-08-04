@@ -4,8 +4,11 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.cisco.prototype.ledsignaldetection.BluetoothInterface;
 import com.cisco.prototype.ledsignaldetection.R;
@@ -16,7 +19,9 @@ public class ImageRestoreFragment extends Fragment {
     private BluetoothInterface mListener;
     private HashMap<String, String> details;
     private String record = "";
+    private TextView log = null;
     private int state = 0;
+    private boolean recoveryStarted = false;
 
     public ImageRestoreFragment() {
     }
@@ -32,7 +37,9 @@ public class ImageRestoreFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_image_restore, container, false);
+        View view = inflater.inflate(R.layout.fragment_image_restore, container, false);
+        log = (TextView)view.findViewById(R.id.recoveryLog);
+        return view;
     }
 
     @Override
@@ -55,80 +62,137 @@ public class ImageRestoreFragment extends Fragment {
 
     public void collectInfo(String information){
         String[] bits = information.split(",");
+        LinearLayout startView = (LinearLayout)getActivity().findViewById(R.id.recoveryStart);
+        LinearLayout logView = (LinearLayout)getActivity().findViewById(R.id.recoveryLogShell);
+        startView.setVisibility(SurfaceView.GONE);
+        logView.setVisibility(SurfaceView.VISIBLE);
         if(bits[0].trim() != "")details.put("ip", bits[0]);
         if(bits[1].trim() != "")details.put("gw", bits[1]);
         details.put("ftpAddr", bits[2]);
         details.put("ksimg", bits[3]);
         details.put("sysimg", bits[4]);
+        recoveryStarted = true;
+        mListener.writeData("");
     }
 
     public void step(String received){
         record += received;
-        String toWrite = "";
-        if(record.toLowerCase().contains("filename:")){
-            toWrite = state == 9 ? details.get("ksimg") : details.get("sysimg");
-            record = "";
-        }
-        else if(record.toLowerCase().contains("server:")){
-            toWrite = details.get("ftpAddr");
-            record = "";
-        }
-        else if(record.toLowerCase().contains("username:")){
-            toWrite = details.get("username");
-            record = "";
-        }
-        else if(record.toLowerCase().contains("password:")){
-            toWrite = details.get("password");
-            record = "";
-        }
-        else if(record.toLowerCase().contains("loader>") || record.toLowerCase().contains("boot)#")){
+        log.setText(log.getText() + received);
+        if(recoveryStarted) {
             switch (state) {
                 case 1:
-                    toWrite = "set ip " + details.get("ip") + " 255.255.255.0";
-                    state++;
+                    if (record.toLowerCase().contains("loader>")) {
+                        mListener.writeData("set ip " + details.get("ip") + " 255.255.255.0");
+                        state++;
+                        record = "";
+                    } else if (record.toLowerCase().contains("boot)#")) {
+                        mListener.writeData("");
+                        state = 8;
+                        record = "";
+                    }
                     break;
                 case 2:
-                    toWrite = "set gw " + details.get("gw");
-                    state++;
+                    if (record.toLowerCase().contains("loader>")) {
+                        mListener.writeData("set gw " + details.get("gw"));
+                        state++;
+                        record = "";
+                    }
                     break;
                 case 3:
-                    toWrite = "boot tftp://" + details.get("ftpAddr") + "/" + details.get("ksimg");
-                    state++;
+                    if (record.toLowerCase().contains("loader>")) {
+                        mListener.writeData("boot tftp://" + details.get("ftpAddr") + "/" + details.get("ksimg"));
+                        state++;
+                        record = "";
+                    }
                     break;
                 case 4:
-                    toWrite = "conf t";
-                    state++;
+                    if (record.toLowerCase().contains("boot)#")) {
+                        mListener.writeData("conf t");
+                        state++;
+                        record = "";
+                    }
                     break;
                 case 5:
-                    toWrite = "int m0";
-                    state++;
+                    if (record.toLowerCase().contains("config)#")) {
+                        mListener.writeData("int m0");
+                        state++;
+                        record = "";
+                    }
                     break;
                 case 6:
-                    toWrite = "no shut";
-                    state++;
+                    if (record.toLowerCase().contains("config)#")) {
+                        mListener.writeData("no shut");
+                        state++;
+                        record = "";
+                    }
                     break;
                 case 7:
-                    toWrite = "exit";
-                    state++;
+                    if (record.toLowerCase().contains("config)#")) {
+                        mListener.writeData("exit");
+                        state++;
+                        record = "";
+                    }
                     break;
                 case 8:
-                    toWrite = "copy ftp: bootflash:";
-                    state++;
+                    if (!details.get("ksimg").trim().equals("")) {
+                        if (record.toLowerCase().contains("boot)#")) {
+                            mListener.writeData("copy ftp: bootflash:");
+                            record = "";
+                        } else if (record.toLowerCase().contains("filename:")) {
+                            mListener.writeData(details.get("ksimg"));
+                            record = "";
+                        } else if (record.toLowerCase().contains("server:")) {
+                            mListener.writeData(details.get("ftpAddr"));
+                            record = "";
+                        } else if (record.toLowerCase().contains("username:")) {
+                            mListener.writeData(details.get("username"));
+                            record = "";
+                        } else if (record.toLowerCase().contains("password")) {
+                            mListener.writeData(details.get("password"));
+                            record = "";
+                            state++;
+                        }
+                    } else {
+                        state++;
+                        record = "";
+                        mListener.writeData("");
+                    }
                     break;
                 case 9:
-                    toWrite = "copy ftp: bootflash:";
-                    state++;
+                    if (record.toLowerCase().contains("boot)#")) {
+                        mListener.writeData("copy ftp: bootflash:");
+                        record = "";
+                    } else if (record.toLowerCase().contains("filename:")) {
+                        mListener.writeData(details.get("sysimg"));
+                        record = "";
+                    } else if (record.toLowerCase().contains("server:")) {
+                        mListener.writeData(details.get("ftpAddr"));
+                        record = "";
+                    } else if (record.toLowerCase().contains("username:")) {
+                        mListener.writeData(details.get("username"));
+                        record = "";
+                    } else if (record.toLowerCase().contains("password")) {
+                        mListener.writeData(details.get("password"));
+                        record = "";
+                        state++;
+                    }
                     break;
                 case 10:
-                    toWrite = "load bootflash:" + details.get("sysimg");
-                    state++;
+                    if (record.toLowerCase().contains("boot)#")) {
+                        mListener.writeData("load bootflash:" + details.get("sysimg"));
+                        state++;
+                        record = "";
+                    }
                     break;
-                default:
+                case 11:
+                    if (record.toLowerCase().contains("boot)#")) {
+                        mListener.writeData("load bootflash:" + details.get("sysimg"));
+                        state++;
+                        record = "";
+                    }
                     break;
             }
-            record = "";
         }
-        mListener.writeData(toWrite);
     }
 
 }

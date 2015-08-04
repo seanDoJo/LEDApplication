@@ -3,6 +3,8 @@ package com.cisco.prototype.ledsignaldetection.Activities;
 import android.content.Intent;
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
@@ -34,9 +36,17 @@ public class HomeActivity extends Activity {
     public void onResume(){
         super.onResume();
         boolean hasFiles = false;
-        File appFolder = new File(getFilesDir().getAbsolutePath());
+        File appFolder = new File(Environment.getExternalStorageDirectory()+File.separator + "captures");
+        if(!appFolder.exists()){
+            appFolder.mkdirs();
+        }
         File[] folderContents = appFolder.listFiles();
-        if(folderContents.length > 0)hasFiles = true;
+        if(folderContents.length > 0){
+            hasFiles = true;
+            for(File file : folderContents){
+                Log.e("LEDApp", file.getAbsolutePath());
+            }
+        }
         Button currbutton = null;
         if(hasFiles) {
             currbutton = (Button) findViewById(R.id.files);

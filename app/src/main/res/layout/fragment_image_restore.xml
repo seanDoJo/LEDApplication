@@ -9,56 +9,86 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:id="@+id/recoveryStart">
-        <EditText
-            android:id="@+id/ipaddr"
+        <ScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_margin="20dp"
-            android:hint="Machine IP Address (optional)"
-            android:gravity="bottom|left"
-            android:background="#ff92c8ee"
-            android:padding="10dp"/>
-        <EditText
-            android:id="@+id/gwaddr"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_margin="20dp"
-            android:hint="Machine Gateway Address (optional)"
-            android:gravity="bottom|left"
-            android:background="#ff92c8ee"
-            android:padding="10dp"/>
-        <EditText
-            android:id="@+id/ftpaddr"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_margin="20dp"
-            android:hint="FTP Server Address (required)"
-            android:gravity="bottom|left"
-            android:background="#ff92c8ee"
-            android:padding="10dp"/>
-        <EditText
-            android:id="@+id/ksimg"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_margin="20dp"
-            android:hint="Kickstart Image Name on FTP Server (required)"
-            android:gravity="bottom|left"
-            android:background="#ff92c8ee"
-            android:padding="10dp"/>
-        <EditText
-            android:id="@+id/sysimg"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_margin="20dp"
-            android:hint="System Image Name on FTP Server (required)"
-            android:gravity="bottom|left"
-            android:background="#ff92c8ee"
-            android:padding="10dp"/>
+            android:layout_weight="5">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+                    <EditText
+                        android:id="@+id/ipaddr"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:layout_margin="20dp"
+                        android:hint="Machine IP Address (optional)"
+                        android:gravity="bottom|left"
+                        android:background="#ff92c8ee"
+                        android:padding="10dp"/>
+                    <EditText
+                        android:id="@+id/gwaddr"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:layout_margin="20dp"
+                        android:hint="Machine Gateway Address (optional)"
+                        android:gravity="bottom|left"
+                        android:background="#ff92c8ee"
+                        android:padding="10dp"/>
+                    <EditText
+                        android:id="@+id/ftpaddr"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:layout_margin="20dp"
+                        android:hint="FTP Server Address (required)"
+                        android:gravity="bottom|left"
+                        android:background="#ff92c8ee"
+                        android:padding="10dp"/>
+                    <EditText
+                        android:id="@+id/ksimg"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:layout_margin="20dp"
+                        android:hint="Kickstart Image Name on FTP Server (required)"
+                        android:gravity="bottom|left"
+                        android:background="#ff92c8ee"
+                        android:padding="10dp"/>
+                    <EditText
+                        android:id="@+id/sysimg"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:layout_margin="20dp"
+                        android:hint="System Image Name on FTP Server (required)"
+                        android:gravity="bottom|left"
+                        android:background="#ff92c8ee"
+                        android:padding="10dp"/>
+                    <EditText
+                        android:id="@+id/unamerec"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:layout_margin="20dp"
+                        android:hint="FTP Username"
+                        android:gravity="bottom|left"
+                        android:background="#ff92c8ee"
+                        android:padding="10dp"/>
+                    <EditText
+                        android:id="@+id/pwrec"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:layout_margin="20dp"
+                        android:hint="FTP Password"
+                        android:gravity="bottom|left"
+                        android:background="#ff92c8ee"
+                        android:padding="10dp"/>
+                </LinearLayout>
+            </ScrollView>
         <Button
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -76,13 +106,13 @@
             android:onClick="onImgRestoreCollection"
             android:clickable="true"
             android:textSize="25dp"
-            android:layout_below="@+id/recognize"
             android:layout_centerHorizontal="true" />
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/recoveryLogShell"
+        android:background="#FFFEFFEF"
         android:visibility="gone">
         <ScrollView
             android:layout_width="match_parent"
@@ -91,6 +121,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:textColor="#FF000000"
                 android:id="@+id/recoveryLog"/>
         </ScrollView>
     </LinearLayout>

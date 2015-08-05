@@ -65,6 +65,7 @@ public class LoginFragment extends Fragment {
     }
 
     public void submit(String  info){
+        record = "";
         String[] loginInfo = info.split(",");
         uname = loginInfo[0].trim();
         pass = loginInfo[1].trim();
@@ -96,17 +97,17 @@ public class LoginFragment extends Fragment {
                 }
                 break;
             case 2:
-                if(record.toLowerCase().contains("failed") || record.toLowerCase().contains("incorrect")){
+                if(record.toLowerCase().contains("license")) {
+                    state++;
+                    record = "";
+                    mListener.setLoggedIn(true);
+                } else if(record.toLowerCase().contains("failed") || record.toLowerCase().contains("incorrect")){
                     uname = null;
                     pass = null;
                     state = 0;
                     record = "";
                     Log.e("LOGIN", "login failed anus");
                     mListener.setLoggedIn(false);
-                } else {
-                    state++;
-                    record = "";
-                    mListener.setLoggedIn(true);
                 }
         }
     }

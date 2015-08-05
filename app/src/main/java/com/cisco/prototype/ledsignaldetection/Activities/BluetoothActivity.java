@@ -949,8 +949,9 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             fragIndex = 0;
             fm.popBackStack();
             mLock.unlock();
+        } else {
+            Toast.makeText(BluetoothActivity.this, "Login failed", Toast.LENGTH_SHORT).show();
         }
-        //if(!loginFrag.loginSuccessful()) Toast.makeText(BluetoothActivity.this, "Login failed", Toast.LENGTH_SHORT).show();
     }
     public void loginSubmit(View view){
         EditText user = (EditText)findViewById(R.id.loginuname);

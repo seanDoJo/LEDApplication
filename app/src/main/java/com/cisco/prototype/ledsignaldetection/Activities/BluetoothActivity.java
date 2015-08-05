@@ -1127,7 +1127,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         String localFile = remote.getText().toString();
         Matcher myMatch = filename.matcher(localFile);
         if(myMatch.find()){
-            localFile = myMatch.group(1);
+            localFile = myMatch.group(1).trim();
         }
         EditText address = (EditText)findViewById(R.id.tftpullIP);
         EditText username = (EditText)findViewById(R.id.tftpulluname);

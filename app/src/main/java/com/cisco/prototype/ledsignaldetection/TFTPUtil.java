@@ -66,7 +66,7 @@ public class TFTPUtil extends Thread {
     public void receive(String fileName, String remote, String ip, String username, String password, CountDownLatch latch){
         OutputStream out = null;
         try {
-            out = new FileOutputStream(fileName);
+            out = new FileOutputStream(fileName.trim());
         } catch(FileNotFoundException e){e.printStackTrace();}
         Pattern ipPat = Pattern.compile("^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$");
         try{
@@ -82,7 +82,7 @@ public class TFTPUtil extends Thread {
             if (FTPReply.isPositiveCompletion(tClient.getReplyCode())){
                 tClient.setFileType(FTP.BINARY_FILE_TYPE);
                 tClient.enterLocalPassiveMode();
-                tClient.retrieveFile(remote, out);
+                tClient.retrieveFile(remote.trim(), out);
             }
             tClient.disconnect();
         }catch(UnknownHostException e){e.printStackTrace();}catch(IOException e){e.printStackTrace();}

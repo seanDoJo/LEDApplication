@@ -42,12 +42,28 @@
             android:clickable="true"
             android:textSize="20dp"
             android:layout_centerHorizontal="true" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp"
+            android:text="Read System Status"
+            android:id="@+id/future"
+            android:textColor="#85666666"
+            android:textStyle="bold"
+            android:typeface="sans"
+            android:background="@drawable/button_gray"
+            android:padding="10dp"
+            android:minWidth="400dp"
+            android:minHeight="60dp"
+            android:enabled="false"
+            android:clickable="false"
+            android:textSize="20dp" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="15dp"
-            android:text="Software Images"
+            android:text="Manage Software Images"
             android:id="@+id/images"
             android:textColor="#ffaa052a"
             android:textStyle="bold"
@@ -65,7 +81,7 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="App Files"
+            android:text="Manage App Files"
             android:id="@+id/files"
             android:textColor="#ffaa052a"
             android:textStyle="bold"
@@ -80,23 +96,6 @@
             android:textSize="20dp"
             android:layout_margin="15dp"
             android:visibility="gone"/>
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="15dp"
-            android:text="Read System Status"
-            android:id="@+id/future"
-            android:textColor="#85666666"
-            android:textStyle="bold"
-            android:typeface="sans"
-            android:background="@drawable/button_gray"
-            android:padding="10dp"
-            android:minWidth="400dp"
-            android:minHeight="60dp"
-            android:enabled="false"
-            android:clickable="false"
-            android:textSize="20dp" />
     </LinearLayout>
 
 </RelativeLayout>

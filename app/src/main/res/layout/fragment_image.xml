@@ -6,7 +6,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Image Restore"
+        android:text="Boot Recovery"
         android:gravity="center"
         android:textColor="#ffaa052a"
         android:textStyle="bold"
@@ -22,11 +22,21 @@
         android:typeface="sans"
         android:textSize="19sp"
         android:text="Getting files..."/>
+    <TextView
+        android:layout_below="@+id/image_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/additional"
+        android:layout_weight="0"
+        android:textColor="#ffaa052a"
+        android:typeface="sans"
+        android:textSize="19sp"
+        android:text=""/>
     <RelativeLayout android:id="@+id/image_options"
         android:layout_width="match_parent"
         android:visibility="gone"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/image_text"
+        android:layout_below="@+id/additional"
         android:layout_above="@+id/terminal_stuff">
         <ScrollView android:id="@+id/scrollscroll"
             android:layout_width="match_parent"
@@ -82,6 +92,7 @@
             <CheckBox android:id="@+id/terminal_checkbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checked="true"
                 android:onClick="showTerminalOutput"/>
             <TextView
                 android:layout_width="match_parent"
@@ -93,7 +104,7 @@
                 android:onClick="showTerminalOutput"/>
         </LinearLayout>
         <ScrollView
-            android:visibility="gone"
+            android:visibility="visible"
             android:layout_width="match_parent"
             android:id="@+id/image_output"
             android:layout_height="wrap_content"

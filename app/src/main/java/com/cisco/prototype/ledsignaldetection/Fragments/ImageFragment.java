@@ -18,6 +18,8 @@ import android.widget.TextView;
 import com.cisco.prototype.ledsignaldetection.BluetoothInterface;
 import com.cisco.prototype.ledsignaldetection.R;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,6 +44,7 @@ public class ImageFragment extends Fragment {
     public String kickstartImageName = "";
     private boolean findKs = false;
     private String logForKs = "";
+    public boolean first_image_open = true;
     private ArrayAdapter<String> kickAdapter;
     private ArrayAdapter<String> sysAdapter;
     private ArrayAdapter<String> fileAdapter;
@@ -62,6 +65,7 @@ public class ImageFragment extends Fragment {
     private Spinner fileSpin;
     private RelativeLayout imageOptions;
     private ScrollView scroll;
+    private TextView additional;
 
     public ImageFragment(){}
 
@@ -87,6 +91,7 @@ public class ImageFragment extends Fragment {
         submit = (Button) view.findViewById(R.id.submit_image);
         imageOptions = (RelativeLayout) view.findViewById(R.id.image_options);
         scroll = (ScrollView) view.findViewById(R.id.image_output);
+        additional = (TextView)view.findViewById(R.id.additional);
 
         scroll.fullScroll(View.FOCUS_DOWN);
         terminal.setMovementMethod(new ScrollingMovementMethod());
@@ -304,4 +309,6 @@ public class ImageFragment extends Fragment {
         logForKs = "";
         onFileListObtained();
     }
+
+    public void setAdditional(String string){additional.setText(string);}
 }

@@ -115,6 +115,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     private boolean captureEnabled = false;
     private File viewedFile = null;
     private String imageLog = "";
+    private boolean first_image_open;
     //Where the asynchronous bluetooth actions are received
     private final BroadcastReceiver btReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
@@ -728,6 +729,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        first_image_open = true;
         setContentView(R.layout.activity_bluetooth);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         Intent intent = getIntent();
@@ -1264,18 +1266,20 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     }
 
     public void onImageFragment(){
-        iFrag.setReadOutput(false);
-        Log.i("image", "onImage entered");
-        iFrag.kickstart = kick;
-        kickstartImageList = new ArrayList<String>();
-        ArrayList<String> fileNames;
+        //if(first_image_open){
+            iFrag.setReadOutput(false);
+            Log.i("image", "onImage entered");
+            kickstartImageList = new ArrayList<String>();
+            iFrag.kickstart = kick;
 
-        //check for concurrent images
-        writeData("dir");
-        iFrag.log = "";
-        iFrag.setReadOutput(true);
-        Log.i("image1", "end of onImage: " + iFrag.readOutput);
-        //fragment will call onFileListObtained to continue once prompt is reached.
+            first_image_open = false;
+            //check for concurrent images
+            writeData("dir");
+            iFrag.log = "";
+            iFrag.setReadOutput(true);
+            Log.i("image1", "end of onImage: " + iFrag.readOutput);
+            //fragment will call onFileListObtained to continue once prompt is reached.
+        //} else imageStateMachine(0);
     }
 
     public void enableSubmit(){
@@ -1426,9 +1430,10 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     String imageType = iFrag.kickstart ? "kickstart": "system";
                     findViewById(R.id.image_options).setVisibility(View.VISIBLE);
                     String additional = "";
-                    additional = iFrag.kickstart ? "": iFrag.kickstartImageName;
-                    message = "Select an image recovery option from the list below and an " +
-                            "approprate " + imageType + " image if necessary. " + additional;
+                    additional = iFrag.kickstart ? "": "\nMatch this version:" + iFrag.kickstartImageName;
+                    iFrag.setAdditional(additional);
+                    message = "In order to boot, the device first needs a " + imageType +
+                            " image. See options for choosing an image below.";
                     break;
                 case 1://only one set of concurrent images detected
                     Log.i("state", Integer.toString(state));
@@ -1445,6 +1450,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     iFrag.readOutput = true;
                     writeData("boot " + iFrag.kickImage);
                     //return to wait for boot.
+                    iFrag.setAdditional("");
                     iFrag.setText("Booting " + iFrag.kickImage + ". This may take a bit...");
 
                     iFrag.state = state;
@@ -1466,6 +1472,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     iFrag.kickstart = false;
                     iFrag.readOutput = true;
                     writeData("load " + iFrag.sysImage);
+                    iFrag.setAdditional("");
                     iFrag.setText("Booting " + iFrag.sysImage + ". This may take a bit...");
                     iFrag.state = state;
                     return;

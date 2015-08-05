@@ -425,7 +425,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     mmOutStream = sock.getOutputStream();
                     Log.i("LedApp", "Connected outputstream");
                 }
-                tready.countDown();
+                if(ok)tready.countDown();
             } catch (IOException e){
                 e.printStackTrace();
                 connectionHandler.obtainMessage(11111111, 1, -1, 1).sendToTarget();
@@ -450,7 +450,11 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             }
             try{
                 if(tc != null){
-                    tc.disconnect();
+                    try {
+                        tc.disconnect();
+                    }catch(Exception e){
+                        Log.e("LEDApp", "weiner farts");
+                    }
                 }
                 if(!telnet) {
                     if (mmOutStream != null) {
@@ -800,7 +804,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             try {
                 latch.await();
             }catch(InterruptedException e){e.printStackTrace();}
-            if(!connection.isOk())System.exit(1);
+            if(!connection.isOk())connection.close();
             connection.start();
             try {
                 tready.await();
@@ -846,7 +850,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         try {
             latch.await();
         }catch(InterruptedException e){e.printStackTrace();}
-        if(!connection.isOk())System.exit(1);
+        if(!connection.isOk())connection.close();
         connection.start();
         try {
             tready.await();

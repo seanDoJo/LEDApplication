@@ -8,7 +8,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:id="@+id/recoveryStart">
+        android:id="@+id/recoveryStart"
+        android:visibility="gone">
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -20,7 +21,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Switch IP Address:"
+                        android:text="Device IP Address:"
                         android:gravity="bottom|left"
                         android:textColor="#ffffffff"
                         android:textStyle="bold"
@@ -38,7 +39,25 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Switch Gateway:"
+                        android:text="Device Mask:"
+                        android:gravity="bottom|left"
+                        android:textColor="#ffffffff"
+                        android:textStyle="bold"
+                        android:textSize="25dp"
+                        android:paddingLeft="20dp" />
+                    <EditText
+                        android:id="@+id/maskaddr"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:layout_margin="20dp"
+                        android:gravity="bottom|left"
+                        android:background="#ff92c8ee"
+                        android:padding="10dp"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Device Gateway:"
                         android:gravity="bottom|left"
                         android:textColor="#ffffffff"
                         android:textStyle="bold"
@@ -56,7 +75,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="FTP Address:"
+                        android:text="Server Address:"
                         android:gravity="bottom|left"
                         android:textColor="#ffffffff"
                         android:textStyle="bold"
@@ -112,7 +131,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="TFTP Username:"
+                        android:text="Server Username:"
                         android:gravity="bottom|left"
                         android:textColor="#ffffffff"
                         android:textStyle="bold"
@@ -131,7 +150,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="TFTP Password:"
+                        android:text="Server Password:"
                         android:gravity="bottom|left"
                         android:textColor="#ffffffff"
                         android:textStyle="bold"
@@ -147,26 +166,26 @@
                         android:gravity="bottom|left"
                         android:background="#ff92c8ee"
                         android:padding="10dp"/>
+                    <Button
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:text="Obtain Software Image"
+                        android:id="@+id/train"
+                        android:textColor="#ffaa052a"
+                        android:textStyle="bold"
+                        android:typeface="sans"
+                        android:background="@drawable/button_home"
+                        android:padding="10dp"
+                        android:minWidth="300dp"
+                        android:minHeight="80dp"
+                        android:enabled="true"
+                        android:onClick="onImgRestoreCollection"
+                        android:clickable="true"
+                        android:textSize="25dp"
+                        android:layout_centerHorizontal="true" />
                 </LinearLayout>
             </ScrollView>
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:text="Download Image"
-            android:id="@+id/train"
-            android:textColor="#ffaa052a"
-            android:textStyle="bold"
-            android:typeface="sans"
-            android:background="@drawable/button_home"
-            android:padding="10dp"
-            android:minWidth="300dp"
-            android:minHeight="80dp"
-            android:enabled="true"
-            android:onClick="onImgRestoreCollection"
-            android:clickable="true"
-            android:textSize="25dp"
-            android:layout_centerHorizontal="true" />
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"

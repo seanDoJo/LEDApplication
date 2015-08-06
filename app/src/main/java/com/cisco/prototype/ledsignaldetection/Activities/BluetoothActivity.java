@@ -57,6 +57,7 @@ import org.apache.commons.net.telnet.TelnetClient;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,6 +75,7 @@ import java.util.regex.Pattern;
 
 public class BluetoothActivity extends FragmentActivity implements BluetoothInterface {
     private BluetoothAdapter mBluetooth;
+    private File currConfig;
     private ArrayList<BluetoothDevice> devices;
     private ImageSelectionFragment isFrag = null;
     private TFTPPullFragment tpFrag = null;
@@ -356,7 +358,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 String record = "";
                 mmInStream = tc.getInputStream();
                 mmOutStream = tc.getOutputStream();
-                while(!record.contains("Username:")){
+                while(!record.toLowerCase().contains("username:") || record.toLowerCase().contains("user:") || record.toLowerCase().contains("login:")){
                     if(mmInStream.available() > 0){
                         bytes = mmInStream.read(buffer);
                         readB = new byte[bytes];
@@ -843,6 +845,19 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         EditText port = (EditText)findViewById(R.id.telPort);
         EditText username = (EditText)findViewById(R.id.telPortComU);
         EditText password = (EditText)findViewById(R.id.telPortComP);
+        File preFile = new File(Environment.getExternalStorageDirectory()+File.separator + "SwitchArmyKnife" + File.separator + "misc" + File.separator + "connectionLogins.txt");
+        if(preFile.exists()){
+            preFile.delete();
+        }
+        try {
+            preFile.createNewFile();
+        }catch(IOException e){e.printStackTrace();}
+        BufferedWriter writer = null;
+        try{
+            writer = new BufferedWriter(new FileWriter(preFile));
+            writer.write(address.getText().toString() + ","+port.getText().toString() + ","+username.getText().toString() + ","+password.getText().toString());
+            writer.close();
+        }catch(IOException e){e.printStackTrace();}
         csFrag.collapse();
         tready = new CountDownLatch(1);
         latch = new CountDownLatch(1);
@@ -1540,6 +1555,25 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         connection.pau();
         fragIndex = 6;
         connection.res();
+    }
+
+    public void saveConfig(String rawconfig){
+        BufferedWriter writer = null;
+        Pattern booted1 = Pattern.compile("^[^()#]+#[^#]*$");
+        String[] configLines = rawconfig.split("\n");
+        try {
+            writer = new BufferedWriter(new FileWriter(currConfig));
+            for (String line : configLines) {
+                if(!booted1.matcher(line).matches()){
+                    writer.write(line);
+                    writer.newLine();
+                }
+            }
+        } catch(IOException e){e.printStackTrace();}finally{
+            try{
+                if(writer!=null)writer.close();
+            }catch(IOException e){e.printStackTrace();}
+        }
     }
 
     public void onPasswordFragment(String message){

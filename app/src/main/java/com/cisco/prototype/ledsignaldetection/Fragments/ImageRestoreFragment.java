@@ -8,19 +8,27 @@ import android.view.LayoutInflater;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.cisco.prototype.ledsignaldetection.BluetoothInterface;
 import com.cisco.prototype.ledsignaldetection.R;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ImageRestoreFragment extends Fragment {
     private BluetoothInterface mListener;
+    private EditText ipView = null;
+    private EditText maskView = null;
+    private EditText gwView = null;
     private String record = "";
     private TextView log = null;
     private int state = 1;
+    private int beginState = 1;
     private boolean recoveryStarted = false;
     private String gw = "";
     private String ip = "";
@@ -29,6 +37,9 @@ public class ImageRestoreFragment extends Fragment {
     private String sysimg = "";
     private String username = "";
     private String password = "";
+    private String mask = "";
+    private Pattern ipPattern = Pattern.compile("(?s).*show ip(.*)loader>.*");
+    private Pattern gwPattern = Pattern.compile(("(?s).*show gw(.*)loader>.*"));
 
     public ImageRestoreFragment() {
     }
@@ -43,6 +54,9 @@ public class ImageRestoreFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_image_restore, container, false);
         log = (TextView)view.findViewById(R.id.recoveryLog);
+        ipView = (EditText)view.findViewById(R.id.ipaddr);
+        maskView = (EditText)view.findViewById(R.id.maskaddr);
+        gwView = (EditText)view.findViewById(R.id.gwaddr);
         return view;
     }
 
@@ -55,6 +69,11 @@ public class ImageRestoreFragment extends Fragment {
             throw new ClassCastException(activity.toString()
                     + " must implement OnFragmentInteractionListener");
         }
+    }
+    @Override
+    public void onResume(){
+        super.onResume();
+        mListener.writeData("");
     }
 
 
@@ -81,6 +100,31 @@ public class ImageRestoreFragment extends Fragment {
         mListener.writeData("");
     }
 
+    private boolean ping(String addr){
+        Runtime runtime = Runtime.getRuntime();
+        try
+        {
+            Process  mIpAddrProcess = runtime.exec("/system/bin/ping -c " + addr);
+            int mExitValue = mIpAddrProcess.waitFor();
+            if(mExitValue==0){
+                return true;
+            }else{
+                return false;
+            }
+        }
+        catch (InterruptedException ignore)
+        {
+            ignore.printStackTrace();
+            System.out.println(" Exception:"+ignore);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            System.out.println(" Exception:"+e);
+        }
+        return false;
+    }
+
     public void step(String received){
         record += received;
         log.setText(log.getText() + received);
@@ -88,7 +132,7 @@ public class ImageRestoreFragment extends Fragment {
             switch (state) {
                 case 1:
                     if (record.toLowerCase().contains("loader>") && !ip.trim().equals("")) {
-                        mListener.writeData("set ip " + ip.trim() + " 255.255.255.0");
+                        mListener.writeData("set ip " + ip.trim() + " " + mask.trim());
                         state++;
                         record = "";
                     } else if (record.toLowerCase().contains("boot)#")) {
@@ -129,7 +173,7 @@ public class ImageRestoreFragment extends Fragment {
                     break;
                 case 5:
                     if (record.toLowerCase().contains("(config")) {
-                        mListener.writeData("int m0");
+                        mListener.writeData("int mgmt0");
                         state++;
                         record = "";
                     }
@@ -144,6 +188,10 @@ public class ImageRestoreFragment extends Fragment {
                 case 7:
                     if (record.toLowerCase().contains("(config")) {
                         mListener.writeData("exit");
+                        recoveryStarted = false;
+                        record = "";
+                    }else if(record.toLowerCase().contains("boot)#")){
+                        mListener.writeData("");
                         state++;
                         record = "";
                     }
@@ -173,6 +221,7 @@ public class ImageRestoreFragment extends Fragment {
                         }
                     } else if(record.toLowerCase().contains("boot)#")) {
                         state++;
+                        recoveryStarted = false;
                         record = "";
                         mListener.writeData("");
                     }
@@ -211,7 +260,72 @@ public class ImageRestoreFragment extends Fragment {
                     break;
             }
         } else {
-            Log.e("LEDApp", "pre start reception");
+            switch(beginState){
+                case 1:
+                    if(record.toLowerCase().contains("loader>")){
+                        mListener.writeData("show ip");
+                        record = "";
+                        beginState++;
+                    }
+                    break;
+                case 2:
+                    if (ipPattern.matcher(record).matches()){
+                        String line = "";
+                        Matcher extractor = ipPattern.matcher(record);
+                        if(extractor.find()){
+                            line = extractor.group(1);
+                        }
+                        String[] lines = line.split("\n");
+                        for(String lin : lines){
+                            if(lin.toLowerCase().contains("ip addr")){
+                                ip = lin.split(":")[1].trim();
+                                ipView.setText(ip);
+                            } else if(lin.toLowerCase().contains("addr mask")){
+                                mask = lin.split(":")[1].trim();
+                                maskView.setText(mask);
+                            }
+                        }
+                        beginState++;
+                        record="";
+                        mListener.writeData("show gw");
+                    }
+                    break;
+                case 3:
+                    if (gwPattern.matcher(record).matches()){
+                        String line = "";
+                        Matcher extractor = gwPattern.matcher(record);
+                        if(extractor.find()){
+                            line = extractor.group(1);
+                        }
+                        String[] lines = line.split("\n");
+                        for(String lin : lines){
+                            if(lin.toLowerCase().contains("default gateway")){
+                                gw = lin.split(":")[1].trim();
+                                gwView.setText(gw);
+                            }
+                        }
+                        beginState++;
+                        record="";
+                        LinearLayout linearLayout = (LinearLayout)getActivity().findViewById(R.id.recoveryStart);
+                        linearLayout.setVisibility(SurfaceView.VISIBLE);
+                    }
+                    break;
+                case 4:
+                    if(record.toLowerCase().contains("boot)#")){
+                        if(ping(ip)){
+                            beginState++;
+                            recoveryStarted=true;
+                            record="";
+                            mListener.writeData("");
+                        }
+                        else{
+                            log.setText("ATTEMPT TO REACH DEVICE FAILED!!!");
+                        }
+                    }else if (record.toLowerCase().contains("(config")) {
+                        mListener.writeData("exit");
+                        record = "";
+                    }
+            }
         }
     }
 

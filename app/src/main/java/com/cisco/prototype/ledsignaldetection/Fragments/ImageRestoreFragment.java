@@ -15,6 +15,8 @@ import android.widget.TextView;
 import com.cisco.prototype.ledsignaldetection.BluetoothInterface;
 import com.cisco.prototype.ledsignaldetection.R;
 
+import org.w3c.dom.Text;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -173,7 +175,7 @@ public class ImageRestoreFragment extends Fragment {
                     break;
                 case 5:
                     if (record.toLowerCase().contains("(config")) {
-                        mListener.writeData("int mgmt0");
+                        mListener.writeData("int mgmt 0");
                         state++;
                         record = "";
                     }
@@ -188,7 +190,7 @@ public class ImageRestoreFragment extends Fragment {
                 case 7:
                     if (record.toLowerCase().contains("(config")) {
                         mListener.writeData("exit");
-                        recoveryStarted = false;
+                        //recoveryStarted = false;
                         record = "";
                     }else if(record.toLowerCase().contains("boot)#")){
                         mListener.writeData("");
@@ -202,6 +204,10 @@ public class ImageRestoreFragment extends Fragment {
                         state++;
                         record = "";
                     }else if (!ksimg.trim().equals("")) {
+                        if(record.toLowerCase().contains("can't connect") || record.toLowerCase().contains("not connected")){
+                            log.setText("CAN'T CONNECT TO NETWORK");
+                            record = "";
+                        }
                         if (record.toLowerCase().contains("boot)#")) {
                             mListener.writeData("copy ftp: bootflash:");
                             record = "";
@@ -260,71 +266,94 @@ public class ImageRestoreFragment extends Fragment {
                     break;
             }
         } else {
-            switch(beginState){
-                case 1:
-                    if(record.toLowerCase().contains("loader>")){
-                        mListener.writeData("show ip");
-                        record = "";
-                        beginState++;
-                    }
-                    break;
-                case 2:
-                    if (ipPattern.matcher(record).matches()){
-                        String line = "";
-                        Matcher extractor = ipPattern.matcher(record);
-                        if(extractor.find()){
-                            line = extractor.group(1);
-                        }
-                        String[] lines = line.split("\n");
-                        for(String lin : lines){
-                            if(lin.toLowerCase().contains("ip addr")){
-                                ip = lin.split(":")[1].trim();
-                                ipView.setText(ip);
-                            } else if(lin.toLowerCase().contains("addr mask")){
-                                mask = lin.split(":")[1].trim();
-                                maskView.setText(mask);
-                            }
-                        }
-                        beginState++;
-                        record="";
-                        mListener.writeData("show gw");
-                    }
-                    break;
-                case 3:
-                    if (gwPattern.matcher(record).matches()){
-                        String line = "";
-                        Matcher extractor = gwPattern.matcher(record);
-                        if(extractor.find()){
-                            line = extractor.group(1);
-                        }
-                        String[] lines = line.split("\n");
-                        for(String lin : lines){
-                            if(lin.toLowerCase().contains("default gateway")){
-                                gw = lin.split(":")[1].trim();
-                                gwView.setText(gw);
-                            }
-                        }
-                        beginState++;
-                        record="";
-                        LinearLayout linearLayout = (LinearLayout)getActivity().findViewById(R.id.recoveryStart);
-                        linearLayout.setVisibility(SurfaceView.VISIBLE);
-                    }
-                    break;
-                case 4:
-                    if(record.toLowerCase().contains("boot)#")){
-                        if(ping(ip)){
+            if(record.toLowerCase().contains("boot)#")){
+                beginState = 4;
+
+                TextView ipV = (TextView)getActivity().findViewById(R.id.ipaddrT);
+                ipV.setVisibility(SurfaceView.GONE);
+                TextView gwV = (TextView)getActivity().findViewById(R.id.gwaddrT);
+                gwV.setVisibility(SurfaceView.GONE);
+                TextView maskV = (TextView)getActivity().findViewById(R.id.maskaddrT);
+                maskV.setVisibility(SurfaceView.GONE);
+
+                EditText ipt = (EditText)getActivity().findViewById(R.id.ipaddr);
+                ipt.setVisibility(SurfaceView.GONE);
+                EditText maskt = (EditText)getActivity().findViewById(R.id.maskaddr);
+                maskt.setVisibility(SurfaceView.GONE);
+                EditText gwt = (EditText)getActivity().findViewById(R.id.gwaddr);
+                gwt.setVisibility(SurfaceView.GONE);
+
+                LinearLayout linearLayout = (LinearLayout)getActivity().findViewById(R.id.recoveryStart);
+                linearLayout.setVisibility(SurfaceView.VISIBLE);
+            }
+            else {
+                switch (beginState) {
+                    case 1:
+                        if (record.toLowerCase().contains("loader>")) {
+                            Log.e("LEDApp", "show ip sent");
+                            mListener.writeData("show ip");
+                            record = "";
                             beginState++;
-                            recoveryStarted=true;
-                            record="";
-                            mListener.writeData("");
                         }
-                        else{
-                            log.setText("ATTEMPT TO REACH DEVICE FAILED!!!");
+                        break;
+                    case 2:
+                        if (ipPattern.matcher(record).matches()) {
+                            String line = "";
+                            Matcher extractor = ipPattern.matcher(record);
+                            if (extractor.find()) {
+                                line = extractor.group(1);
+                            }
+                            String[] lines = line.split("\n");
+                            for (String lin : lines) {
+                                if (lin.toLowerCase().contains("ip addr")) {
+                                    ip = lin.split(":")[1].trim();
+                                    ipView.setText(ip);
+                                } else if (lin.toLowerCase().contains("addr mask")) {
+                                    mask = lin.split(":")[1].trim();
+                                    maskView.setText(mask);
+                                }
+                            }
+                            beginState++;
+                            record = "";
+                            mListener.writeData("show gw");
                         }
-                    }else if (record.toLowerCase().contains("(config")) {
-                        mListener.writeData("exit");
-                        record = "";
-                    }
+                        break;
+                    case 3:
+                        if (gwPattern.matcher(record).matches()) {
+                            String line = "";
+                            Matcher extractor = gwPattern.matcher(record);
+                            if (extractor.find()) {
+                                line = extractor.group(1);
+                            }
+                            String[] lines = line.split("\n");
+                            for (String lin : lines) {
+                                if (lin.toLowerCase().contains("default gateway")) {
+                                    gw = lin.split(":")[1].trim();
+                                    gwView.setText(gw);
+                                }
+                            }
+                            beginState++;
+                            record = "";
+                            LinearLayout linearLayout = (LinearLayout) getActivity().findViewById(R.id.recoveryStart);
+                            linearLayout.setVisibility(SurfaceView.VISIBLE);
+                        }
+                        break;
+                    case 4:
+                        if (record.toLowerCase().contains("boot)#")) {
+                            if (ping(ip)) {
+                                beginState++;
+                                recoveryStarted = true;
+                                record = "";
+                                mListener.writeData("");
+                            } else {
+                                log.setText("ATTEMPT TO REACH DEVICE FAILED!!!");
+                            }
+                        } else if (record.toLowerCase().contains("(config")) {
+                            mListener.writeData("exit");
+                            record = "";
+                        }
+                        break;
+                }
             }
         }
     }

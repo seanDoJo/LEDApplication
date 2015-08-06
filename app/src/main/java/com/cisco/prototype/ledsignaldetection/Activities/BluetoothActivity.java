@@ -37,6 +37,7 @@ import android.widget.Toast;
 import com.cisco.prototype.ledsignaldetection.BluetoothInterface;
 import com.cisco.prototype.ledsignaldetection.Fragments.BTMenuFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.CommunicationFragment;
+import com.cisco.prototype.ledsignaldetection.Fragments.ConfigBackupFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ConnectionSelectFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.FileExplorerFragment;
 import com.cisco.prototype.ledsignaldetection.Fragments.ImageFragment;
@@ -96,6 +97,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     private TFTPFragment tFrag;
     private ConnectionSelectFragment csFrag;
     private LoginFragment loginFrag;
+    private ConfigBackupFragment cbFrag;
     private int citer = 0;
     private boolean letsGoSoftware;
     private int passResult = 0;
@@ -226,6 +228,17 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 locked = false;
                 mLock.unlock();
             }
+            else if(m.what == 20){
+                mLock.lock();
+                locked = true;
+                mLock.unlock();
+                byte[] data = (byte[]) m.obj;
+                String result = new String(data);
+                cbFrag.read(result);
+                mLock.lock();
+                locked = false;
+                mLock.unlock();
+            }
             else if(m.what == 56){
                 int status = (int)m.obj;
                 Log.i("LEDApp", "called handler with 56");
@@ -283,26 +296,6 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                         terminal.setEnabled(true);
                         break;
                     case 2:
-                        statlabel.setText("Device Status: operational");
-                        resid = getResources().getDrawable(R.drawable.circle_green);
-                        circle.setBackground(resid);
-                        lin = (RelativeLayout)findViewById(R.id.bt_lin);
-                        lin.setVisibility(SurfaceView.VISIBLE);
-
-                        currbutton = (Button) findViewById(R.id.password);
-                        currbutton.setEnabled(true);
-                        resid = getResources().getDrawable(R.drawable.button_home);
-                        currbutton.setBackground(resid);
-                        currbutton.setTextColor(Color.parseColor("#ffaa052a"));
-                        currbutton.setEnabled(true);
-
-                        terminal = (Button) findViewById(R.id.terminalSwitch);
-                        resid = getResources().getDrawable(R.drawable.button_home);
-                        terminal.setBackground(resid);
-                        terminal.setTextColor(Color.parseColor("#ffaa052a"));
-                        terminal.setEnabled(true);
-                        break;
-                    case 3:
                         statlabel.setText("Device Status: operational");
                         resid = getResources().getDrawable(R.drawable.circle_green);
                         circle.setBackground(resid);
@@ -693,7 +686,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                             connectionHandler.obtainMessage(56, 1, -1, 2).sendToTarget();
                             Log.i("LEDApp", "message sent to handler");
                         }else if(booted3.matcher(returned).matches() || booted4.matcher(returned).matches()){
-                            connectionHandler.obtainMessage(56, 1, -1, 3).sendToTarget();
+                            connectionHandler.obtainMessage(56, 1, -1, 2).sendToTarget();
                         }
                         else if(ldr3.matcher(returned).matches()){
                             kick = true;
@@ -948,7 +941,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         //connection.res();
     }
 
-    public void switchLogin(View view){
+    public void switchLogin(){
         loginFrag = new LoginFragment();
         FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
         tran.replace(R.id.fragment_container, loginFrag);
@@ -956,14 +949,57 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         mLock.lock();
         tran.commit();
         fragIndex = 10;
+        Log.e("LEDApp", "changed to index 10");
         mLock.unlock();
     }
+
+    public void checkLogin(){
+        mLock.lock();
+        locked = true;
+        mLock.unlock();
+        String line = connection.sendCont("");
+        mLock.lock();
+        locked = false;
+        mLock.unlock();
+        if(line.toLowerCase().contains("login") || line.toLowerCase().contains("user") || line.toLowerCase().contains("password")){
+            loginFrag = new LoginFragment();
+            FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
+            tran.replace(R.id.fragment_container, loginFrag);
+            tran.addToBackStack(null);
+            mLock.lock();
+            tran.commit();
+            fragIndex = 10;
+            Log.e("LEDApp", "changed to index 10");
+            mLock.unlock();
+        }
+    }
+
+    public void switchBackup(View view){
+        cbFrag = new ConfigBackupFragment();
+        FragmentTransaction tran = getSupportFragmentManager().beginTransaction();
+        tran.replace(R.id.fragment_container, cbFrag);
+        tran.addToBackStack(null);
+        mLock.lock();
+        tran.commit();
+        fragIndex = 20;
+        mLock.unlock();
+    }
+
+    public void backupConfig(View view){
+        EditText filename = (EditText)findViewById(R.id.configfn);
+        currConfig = new File(Environment.getExternalStorageDirectory()+File.separator + "SwitchArmyKnife" + File.separator + "misc" + File.separator + filename.getText().toString());
+        if(currConfig.exists())currConfig.delete();
+        try {
+            currConfig.createNewFile();
+        }catch(IOException e){e.printStackTrace();}
+        cbFrag.setEnabled();
+    }
+
     public void setLoggedIn(boolean success){
         if(success){
             Log.i("login", "Login success");
             FragmentManager fm = getSupportFragmentManager();
             mLock.lock();
-            fragIndex = 0;
             fm.popBackStack();
             mLock.unlock();
         } else {
@@ -1581,6 +1617,11 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 if(writer!=null)writer.close();
             }catch(IOException e){e.printStackTrace();}
         }
+        FragmentManager fm = getSupportFragmentManager();
+        mLock.lock();
+        fragIndex = 0;
+        fm.popBackStack();
+        mLock.unlock();
     }
 
     public void onPasswordFragment(String message){
@@ -1821,9 +1862,9 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     }
 
     public void updateFragIndex(int index){
-        connection.pau();
+        mLock.lock();
         fragIndex = index;
-        connection.res();
+        mLock.unlock();
     }
 
     public void disconnect(){

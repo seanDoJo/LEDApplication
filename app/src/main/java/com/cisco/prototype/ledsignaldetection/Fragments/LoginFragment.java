@@ -23,6 +23,7 @@ public class LoginFragment extends Fragment {
     private String log = "";
     Pattern booted1 = Pattern.compile("(?s)[^()#]*#[^#]*");
     Pattern booted2 = Pattern.compile("(?s).*[sS]{1}witch>[^>]*");
+    private boolean loginBegun = false;
     private boolean loggedIn;
 
     public LoginFragment() {
@@ -69,46 +70,51 @@ public class LoginFragment extends Fragment {
         String[] loginInfo = info.split(",");
         uname = loginInfo[0].trim();
         pass = loginInfo[1].trim();
+        loginBegun = true;
         mListener.writeData("");
     }
 
     public void readLogin(String data){
         record += data;
-        switch(state){
-            case 0:
-                if(record.toLowerCase().contains("password:")){
-                    mListener.writeData("");
-                    record = "";
-                }else if((record.toLowerCase().contains("login:") || record.toLowerCase().contains("user")) && uname != null){
-                    mListener.writeData(uname);
-                    state++;
-                    record = "";
-                    Log.e("LOGIN", "wrote login:");
-                }else if(booted1.matcher(record).matches()){
-                    mListener.setLoggedIn(true);
-                }
-                break;
-            case 1:
-                if(record.toLowerCase().contains("password:")){
-                    mListener.writeData(pass);
-                    state++;
-                    record = "";
-                    Log.e("LOGIN", "wrote password:");
-                }
-                break;
-            case 2:
-                if(record.toLowerCase().contains("license")) {
-                    state++;
-                    record = "";
-                    mListener.setLoggedIn(true);
-                } else if(record.toLowerCase().contains("failed") || record.toLowerCase().contains("incorrect")){
-                    uname = null;
-                    pass = null;
-                    state = 0;
-                    record = "";
-                    Log.e("LOGIN", "login failed anus");
-                    mListener.setLoggedIn(false);
-                }
+        if(loginBegun) {
+            Log.e("LEDLOGIN", record);
+            switch (state) {
+                case 0:
+                    if (record.toLowerCase().contains("password:")) {
+                        mListener.writeData("");
+                        record = "";
+                    } else if ((record.toLowerCase().contains("login:") || record.toLowerCase().contains("user")) && uname != null) {
+                        mListener.writeData(uname);
+                        state++;
+                        record = "";
+                        Log.e("LOGIN", "wrote login:");
+                    } else if (booted1.matcher(record).matches()) {
+                        mListener.setLoggedIn(true);
+                    }
+                    break;
+                case 1:
+                    if (record.toLowerCase().contains("password:")) {
+                        mListener.writeData(pass);
+                        state++;
+                        record = "";
+                        Log.e("LOGIN", "wrote password:");
+                    }
+                    break;
+                case 2:
+                    if (record.toLowerCase().contains("license")) {
+                        state++;
+                        record = "";
+                        mListener.setLoggedIn(true);
+                    } else if (record.toLowerCase().contains("failed") || record.toLowerCase().contains("incorrect")) {
+                        uname = null;
+                        pass = null;
+                        state = 0;
+                        record = "";
+                        Log.e("LOGIN", "login failed anus");
+                        loginBegun = false;
+                        mListener.setLoggedIn(false);
+                    }
+            }
         }
     }
 

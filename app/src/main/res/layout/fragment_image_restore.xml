@@ -21,6 +21,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:id="@+id/ipaddrT"
                         android:text="Device IP Address:"
                         android:gravity="bottom|left"
                         android:textColor="#ffffffff"
@@ -40,6 +41,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Device Mask:"
+                        android:id="@+id/maskaddrT"
                         android:gravity="bottom|left"
                         android:textColor="#ffffffff"
                         android:textStyle="bold"
@@ -58,6 +60,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Device Gateway:"
+                        android:id="@+id/gwaddrT"
                         android:gravity="bottom|left"
                         android:textColor="#ffffffff"
                         android:textStyle="bold"

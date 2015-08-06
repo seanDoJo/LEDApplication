@@ -42,6 +42,10 @@ public class HomeActivity extends Activity {
         if(!appFolder.exists()){
             appFolder.mkdirs();
         }
+        File miscFolder = new File(Environment.getExternalStorageDirectory()+File.separator + "SwitchArmyKnife" + File.separator + "misc");
+        if(!miscFolder.exists()){
+            miscFolder.mkdirs();
+        }
         File imageFolder = new File(Environment.getExternalStorageDirectory()+File.separator + "SwitchArmyKnife" + File.separator + "images");
         if(!imageFolder.exists()){
             imageFolder.mkdirs();

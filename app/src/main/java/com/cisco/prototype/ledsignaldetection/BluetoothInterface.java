@@ -25,4 +25,5 @@ public interface BluetoothInterface {
     public void switchPasswordContext(String context);
     public void setLoggedIn(boolean success);
     public boolean firstImage();
+    public void saveConfig(String rawconfig);
 }

@@ -1422,7 +1422,15 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
 
     }
 
+    public void setDataForImage(){
+        fragIndex = 2;
+        imageStateMachine(0);
+    }
+
     public void imageStateMachine(int...arg) {
+        RadioButton guess = (RadioButton)findViewById(R.id.guess_button);
+        RadioButton allFiles = (RadioButton)findViewById(R.id.file_button);
+        RadioButton download = (RadioButton)findViewById(R.id.download);
         Spinner sys = (Spinner)findViewById(R.id.sysImages);
         Spinner ks = (Spinner)findViewById(R.id.kickImages);
         Spinner fs = (Spinner) findViewById(R.id.file_spinner);
@@ -1432,7 +1440,6 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         while(true){
             switch (state){
                 case 0: //home
-                    Log.i("getonmylevel", "case " + Integer.toString(state) + " getonmylevel: " + Integer.toString(iFrag.getonmylevel));
                     /*Log.i("state", Integer.toString(state));
                     if(imageList.size() == 1) state = 1;
                     else{
@@ -1445,17 +1452,13 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     iFrag.state = state;*/
                     state = 3;
                     iFrag.state = state;
-                    Log.i("getonmylevel", "before imageType");
                     String imageType = iFrag.kickstart ? "kickstart": "system";
-                    Log.i("getonmylevel", "after imageType");
                     findViewById(R.id.image_options).setVisibility(View.VISIBLE);
                     String additional = "";
-                    additional = iFrag.kickstart ? "": "\nMatch this version:" + iFrag.kickstartImageName;
+                    additional = iFrag.kickstart ? "": "\nYou need to match this version: " + iFrag.kickstartImageName;
                     iFrag.setAdditional(additional);
-                    Log.i("getonmylevel", "after set additional");
                     message = "In order to boot, the device first needs a " + imageType +
                             " image. See options for choosing an image below.";
-                    Log.i("getonmylevel", "end of case 0");
                     break;
                 case 1://only one set of concurrent images detected
                     Log.i("state", Integer.toString(state));
@@ -1478,6 +1481,9 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     iFrag.state = state;
                     return;
                 case 3: //Display image options with associated message
+                    guess.setChecked(false);
+                    allFiles.setChecked(false);
+                    download.setChecked(false);
                     findViewById(R.id.image_options).setVisibility(View.VISIBLE);
 
                     Log.i("state", Integer.toString(state));
@@ -1518,9 +1524,10 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     Log.i("state", Integer.toString(state));
                     enableSubmit();
                     iFrag.success = true;
-                    iFrag.success("Yes! The switch booted! The following image names will be " +
-                            "displayed if they were changed during the troubleshooting process. " +
-                            "Kickstart: " + iFrag.kickImage + " System: " + iFrag.sysImage);
+                    String kickKick = iFrag.kickImage.equals("") ? "" : "\n\nKickstart: " + iFrag.kickImage;
+                    String sysSys = iFrag.sysImage.equals("") ? "" : "\n\nSystem: " + iFrag.sysImage;
+                    iFrag.success("Yes! The switch booted! The following images should be updated" +
+                            " in the configuration:" + kickKick + sysSys);
                     iFrag.state = state;
                     return;
                 case 7: //failed to boot ks

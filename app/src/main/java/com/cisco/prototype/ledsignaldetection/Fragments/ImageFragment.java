@@ -43,6 +43,7 @@ public class ImageFragment extends Fragment {
     public String sysImage = "";
     public String kickImage = "";
     public String kickstartImageName = "";
+    private String ksver = "";
     private boolean findKs = false;
     private String logForKs = "";
     private ArrayAdapter<String> kickAdapter;
@@ -56,6 +57,7 @@ public class ImageFragment extends Fragment {
     private Pattern ks = Pattern.compile("^.*-kickstart.*\\.bin$");
     private Pattern system = Pattern.compile("^.*\\.bin$");
     private Pattern empty = Pattern.compile("");
+    private Pattern version = Pattern.compile("^[^\\.]*\\.(\\d+.*)\\.bin$");
 
     private View view;
     private TextView infoText;
@@ -68,13 +70,10 @@ public class ImageFragment extends Fragment {
     private ScrollView scroll;
     private TextView additional;
 
-    public int getonmylevel = 1;
-
     public ImageFragment(){}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.i("0ncreate", Integer.toString(getonmylevel));
         create = true;
         state = 0;
         super.onCreate(savedInstanceState);
@@ -191,6 +190,7 @@ public class ImageFragment extends Fragment {
                         mListener.imageStateMachine(state);
                     } else if (log.contains("(boot)#")) {
                         //success!
+                        setKsVersion();
                         state = 9;
                         sysSpin.setEnabled(true);
                         submit.setEnabled(true);
@@ -268,7 +268,14 @@ public class ImageFragment extends Fragment {
                 kst.add(item.trim());
                 kickAdapter.notifyDataSetChanged();
             } else if (system.matcher(item.trim()).matches()) {
-                syst.add(item.trim());
+                if(ksver != ""){
+                    String blah = "";
+                    Matcher kickMatch = version.matcher(item);
+                    if(kickMatch.find()){
+                        blah = kickMatch.group(1);
+                    }
+                    if(blah.equals(ksver)) syst.add(item.trim());
+                } else syst.add(item.trim());
                 sysAdapter.notifyDataSetChanged();
                 Log.e("LEDApp", "found sys: " + item);
             }
@@ -309,22 +316,82 @@ public class ImageFragment extends Fragment {
             }
         }
 
-        if(kickstartImageName!= null ) Log.i("ksImage name", kickstartImageName);
+        if(kickstartImageName!= null ){
+            String item = "";
+            if(weirdItem.matcher(kickstartImageName.trim()).matches()){
+                item = kickstartImageName;
+            }
+            else{
+                Matcher itemFinder = itemExtract.matcher(kickstartImageName.trim());
+                item = itemFinder.find() ? itemFinder.group(1) : kickstartImageName.trim();
+                Log.i("piece, item", kickstartImageName + ", " + item);
+            }
+
+            Matcher itemFinder = itemExtract.matcher(item.trim());
+            while(itemFinder.find()){
+                itemFinder = itemExtract.matcher(item.trim());
+                item = itemFinder.group(1);
+            }
+            item = item.trim();
+
+            String[] stuff = item.split("/");
+
+            item = stuff[stuff.length - 1];
+
+            kickImage = item;
+
+            Matcher kickMatch = version.matcher(item);
+            if(kickMatch.find()){
+                ksver = kickMatch.group(1);
+            }
+        }
 
         logForKs = "";
         onFileListObtained();
+    }
+
+    public void setKsVersion(){
+        Matcher kickMatch = version.matcher(kickImage);
+        if(kickMatch.find()){
+            ksver = kickMatch.group(1);
+        }
+
+        ArrayList<String> temp = new ArrayList<String>();
+        for(int k = 0; k < syst.size(); k++){
+            temp.add(syst.get(k));
+            Log.i("ksver", "temp: " + temp.get(k));
+        }
+        syst.clear();
+        sysAdapter.notifyDataSetChanged();
+
+        for(int i = 0; i < syst.size(); i++){
+            Log.i("ksver", "syst cleared: " + syst.get(i));
+        }
+
+        for(int i = 0; i < temp.size(); i++){
+            String blah = "";
+            kickMatch = version.matcher(temp.get(i));
+            if(kickMatch.find()){
+                blah = kickMatch.group(1);
+            }
+            if(blah.equals(ksver)){
+                syst.add(temp.get(i));
+                Log.i("ksver", "syst equal: " + syst.get(syst.size() - 1));
+            }
+        }
+        sysAdapter.notifyDataSetChanged();
+
+        for(int i = 0; i < syst.size(); i++){
+            Log.i("ksver", "syst repopulated: " + syst.get(i));
+        }
     }
 
     public void setAdditional(String string){additional.setText(string);}
 
     public void onResume(){
         super.onResume();
-
-        Log.i("0ncreate", "resume " + Integer.toString(getonmylevel));
-        getonmylevel++;
         if(!create){
-            mListener.imageStateMachine(0);
-            create = false;
-        }
+            mListener.setDataForImage();
+        } else create = false;
     }
 }

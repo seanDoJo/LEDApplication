@@ -26,4 +26,5 @@ public interface BluetoothInterface {
     public void setLoggedIn(boolean success);
     public boolean firstImage();
     public void saveConfig(String rawconfig);
+    public void setDataForImage();
 }

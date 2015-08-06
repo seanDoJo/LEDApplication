@@ -65,10 +65,12 @@ public class ConnectionSelectFragment extends Fragment {
         }catch(IOException e){e.printStackTrace();}
         if(line != null && !line.trim().equals("")) {
             String[] data = line.split(",");
-            ip.setText(data[0].trim());
-            port.setText(data[1].trim());
-            uname.setText(data[2].trim());
-            pass.setText(data[3].trim());
+            if(data.length >= 4) {
+                ip.setText(data[0].trim());
+                port.setText(data[1].trim());
+                uname.setText(data[2].trim());
+                pass.setText(data[3].trim());
+            }
         }
         try{
             if(reader != null)reader.close();

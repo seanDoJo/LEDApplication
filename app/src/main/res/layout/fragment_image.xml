@@ -67,7 +67,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:onClick="onFileImage"
-                    android:text="Select from all files on switch"/>
+                    android:text="Select from all files on device"/>
                 <Spinner android:id="@+id/file_spinner"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -77,7 +77,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:onClick="onDownload"
-                    android:text="Download a new image"/>
+                    android:text="Download a new software image"/>
             </LinearLayout>
         </ScrollView>
     </RelativeLayout>

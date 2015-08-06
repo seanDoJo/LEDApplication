@@ -623,7 +623,7 @@ public class PasswordFragment extends Fragment {
                             }
                             state++;
                             record = "";
-                        } else if(boot.matcher(record).matches()){ //STOP HERE
+                        } else if(boot.matcher(record).matches()){
                             setProgress(40);
                             Log.i("LEDApp", "Hit boot matcher");
                             record = record.replaceAll("\\[\\d+m--More-- \\[\\d+m", "");

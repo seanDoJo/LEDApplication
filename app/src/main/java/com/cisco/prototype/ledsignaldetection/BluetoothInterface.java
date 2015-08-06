@@ -24,4 +24,5 @@ public interface BluetoothInterface {
     public void closeBluetooth();
     public void switchPasswordContext(String context);
     public void setLoggedIn(boolean success);
+    public boolean firstImage();
 }

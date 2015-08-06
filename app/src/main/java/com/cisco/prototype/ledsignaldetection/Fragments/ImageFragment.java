@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -36,18 +37,18 @@ public class ImageFragment extends Fragment {
     public boolean readOutput;
     private boolean firstLoader;
     private boolean firstSys;
-    private ArrayList<String> kst;
-    private ArrayList<String> syst;
-    private ArrayList<String> files;
+    public ArrayList<String> kst;
+    public ArrayList<String> syst;
+    public ArrayList<String> files;
     public String sysImage = "";
     public String kickImage = "";
     public String kickstartImageName = "";
     private boolean findKs = false;
     private String logForKs = "";
-    public boolean first_image_open = true;
     private ArrayAdapter<String> kickAdapter;
     private ArrayAdapter<String> sysAdapter;
     private ArrayAdapter<String> fileAdapter;
+    private boolean create;
 
     private Pattern recordP = Pattern.compile("(?s).*bootflash:(.*)[lL]oader>[^>]*");
     private Pattern weirdItem = Pattern.compile("^[^\\s]*$");
@@ -67,20 +68,24 @@ public class ImageFragment extends Fragment {
     private ScrollView scroll;
     private TextView additional;
 
+    public int getonmylevel = 1;
+
     public ImageFragment(){}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.i("0ncreate", Integer.toString(getonmylevel));
+        create = true;
         state = 0;
         super.onCreate(savedInstanceState);
         log = "";
-        mListener.onImageFragment();
         success = false;
         firstLoader = true;
         firstSys = true;
         kst = new ArrayList<String>();
         syst = new ArrayList<String>();
         files = new ArrayList<String>();
+        mListener.onImageFragment();
     }
 
     @Override
@@ -141,9 +146,10 @@ public class ImageFragment extends Fragment {
     }
 
     public void read(String data){
-        log += data;
         if(findKs){
             logForKs += data;
+        }else{
+            log += data;
         }
         terminal.setText(log);
         Log.i("log", log);
@@ -235,7 +241,6 @@ public class ImageFragment extends Fragment {
 
     public void onFileListObtained(){
         Log.i("image", "onFileListObtained entered");
-
         //load kickstart stuff
         Matcher recordM = recordP.matcher(log);
         if(recordM.find()){
@@ -249,7 +254,6 @@ public class ImageFragment extends Fragment {
         String[] directoryContents = log.split("\n");
         Log.e("LEDApp", log);
         for (String piece : directoryContents) {
-            if(!empty.matcher(piece.trim()).matches()) files.add(piece);
             String item = "";
             if(weirdItem.matcher(piece.trim()).matches()){
                 item = piece;
@@ -257,7 +261,7 @@ public class ImageFragment extends Fragment {
             else{
                 Matcher itemFinder = itemExtract.matcher(piece.trim());
                 item = itemFinder.find() ? itemFinder.group(1) : piece.trim();
-                Log.e("LEDApp", piece + ", " + item);
+                Log.i("piece, item", piece + ", " + item);
             }
             if (ks.matcher(item.trim()).matches()) {
                 Log.e("LEDApp", "found kickstart: " + item);
@@ -268,6 +272,7 @@ public class ImageFragment extends Fragment {
                 sysAdapter.notifyDataSetChanged();
                 Log.e("LEDApp", "found sys: " + item);
             }
+            if(!empty.matcher(item.trim()).matches() && !(item.contains("(boot)") || item.contains("dir"))) files.add(item);
         }
         Log.i("array", "ks: " + kst.size());
         Log.i("array", "sys: " + syst.size());
@@ -311,4 +316,15 @@ public class ImageFragment extends Fragment {
     }
 
     public void setAdditional(String string){additional.setText(string);}
+
+    public void onResume(){
+        super.onResume();
+
+        Log.i("0ncreate", "resume " + Integer.toString(getonmylevel));
+        getonmylevel++;
+        if(!create){
+            mListener.imageStateMachine(0);
+            create = false;
+        }
+    }
 }

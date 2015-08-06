@@ -1222,7 +1222,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
 
     private void createFile(String filenamel){
         String filename = filenamel.replaceAll("\\s+", "");
-        outputFile = new File(Environment.getExternalStorageDirectory()+File.separator + "SwitchArmyKnife" + File.separator + "captures", filename + ".txt");
+        outputFile = new File(Environment.getExternalStorageDirectory()+File.separator + "SwitchArmyKnife" + File.separator + "captures" + File.separator + filename + ".txt");
         try {
             if(outputFile.exists())outputFile.delete();
             outputFile.createNewFile();
@@ -1264,6 +1264,8 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
             lineNumber.setVisibility(View.GONE);
         }
     }
+
+    public boolean firstImage(){return first_image_open;}
 
     public void onImageFragment(){
         //if(first_image_open){
@@ -1415,6 +1417,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         while(true){
             switch (state){
                 case 0: //home
+                    Log.i("getonmylevel", "case " + Integer.toString(state) + " getonmylevel: " + Integer.toString(iFrag.getonmylevel));
                     /*Log.i("state", Integer.toString(state));
                     if(imageList.size() == 1) state = 1;
                     else{
@@ -1427,13 +1430,17 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     iFrag.state = state;*/
                     state = 3;
                     iFrag.state = state;
+                    Log.i("getonmylevel", "before imageType");
                     String imageType = iFrag.kickstart ? "kickstart": "system";
+                    Log.i("getonmylevel", "after imageType");
                     findViewById(R.id.image_options).setVisibility(View.VISIBLE);
                     String additional = "";
                     additional = iFrag.kickstart ? "": "\nMatch this version:" + iFrag.kickstartImageName;
                     iFrag.setAdditional(additional);
+                    Log.i("getonmylevel", "after set additional");
                     message = "In order to boot, the device first needs a " + imageType +
                             " image. See options for choosing an image below.";
+                    Log.i("getonmylevel", "end of case 0");
                     break;
                 case 1://only one set of concurrent images detected
                     Log.i("state", Integer.toString(state));
@@ -1451,7 +1458,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     writeData("boot " + iFrag.kickImage);
                     //return to wait for boot.
                     iFrag.setAdditional("");
-                    iFrag.setText("Booting " + iFrag.kickImage + ". This may take a bit...");
+                    iFrag.setText("Booting\n" + iFrag.kickImage + ". This may take a bit...");
 
                     iFrag.state = state;
                     return;
@@ -1473,7 +1480,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     iFrag.readOutput = true;
                     writeData("load " + iFrag.sysImage);
                     iFrag.setAdditional("");
-                    iFrag.setText("Booting " + iFrag.sysImage + ". This may take a bit...");
+                    iFrag.setText("Booting\n " + iFrag.sysImage + ". This may take a bit...");
                     iFrag.state = state;
                     return;
                 /*case 5: //set new kickstart or system variable after getting user input

@@ -66,6 +66,9 @@ public class LoginFragment extends Fragment {
     }
 
     public void submit(String  info){
+        uname = null;
+        pass = null;
+        state = 0;
         record = "";
         String[] loginInfo = info.split(",");
         uname = loginInfo[0].trim();
@@ -105,7 +108,7 @@ public class LoginFragment extends Fragment {
                         state++;
                         record = "";
                         mListener.setLoggedIn(true);
-                    } else if (record.toLowerCase().contains("failed") || record.toLowerCase().contains("incorrect")) {
+                    } else if (record.toLowerCase().contains("failed") || record.toLowerCase().contains("incorrec")) {
                         uname = null;
                         pass = null;
                         state = 0;

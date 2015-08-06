@@ -381,6 +381,10 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 mmOutStream.write(uname, 0, uname.length);
                 mmOutStream.flush();
 
+                uname = "".getBytes();
+                mmOutStream.write(uname, 0, uname.length);
+                mmOutStream.flush();
+
             }catch(UnknownHostException e){
                 e.printStackTrace();
                 ok = false;
@@ -987,11 +991,19 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
 
     public void backupConfig(View view){
         EditText filename = (EditText)findViewById(R.id.configfn);
-        currConfig = new File(Environment.getExternalStorageDirectory()+File.separator + "SwitchArmyKnife" + File.separator + "misc" + File.separator + filename.getText().toString());
+        Button buttn = (Button)findViewById(R.id.configbtn);
+        TextView fnTitle = (TextView)findViewById(R.id.configfnt);
+        RelativeLayout radios = (RelativeLayout)findViewById(R.id.radiobuttons);
+        currConfig = new File(Environment.getExternalStorageDirectory()+File.separator + "SwitchArmyKnife" + File.separator + "misc" + File.separator + "config" + File.separator + filename.getText().toString());
         if(currConfig.exists())currConfig.delete();
         try {
             currConfig.createNewFile();
         }catch(IOException e){e.printStackTrace();}
+        buttn.setEnabled(false);
+        buttn.setVisibility(SurfaceView.GONE);
+        fnTitle.setText("Backing up configuration...");
+        radios.setVisibility(SurfaceView.GONE);
+        filename.setVisibility(SurfaceView.GONE);
         cbFrag.setEnabled();
     }
 
@@ -1617,11 +1629,36 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                 if(writer!=null)writer.close();
             }catch(IOException e){e.printStackTrace();}
         }
+        Toast.makeText(BluetoothActivity.this, "Made File " + currConfig.getName(), Toast.LENGTH_SHORT).show();
         FragmentManager fm = getSupportFragmentManager();
         mLock.lock();
         fragIndex = 0;
         fm.popBackStack();
         mLock.unlock();
+    }
+
+    public void changeConfigBack(View view){
+        RadioButton backupEnabled = (RadioButton)findViewById(R.id.configBackupRadio);
+        RadioButton restoreEnabled = (RadioButton)findViewById(R.id.configRestoreRadio);
+        LinearLayout restoreMenu = (LinearLayout)findViewById(R.id.configRestoreMenu);
+        LinearLayout backupMenu = (LinearLayout)findViewById(R.id.configBackupMenu);
+        TextView title = (TextView)findViewById(R.id.configtitle);
+        restoreMenu.setVisibility(SurfaceView.GONE);
+        backupMenu.setVisibility(SurfaceView.VISIBLE);
+        title.setText("Configuration\nFile Backup");
+        restoreEnabled.setChecked(false);
+    }
+
+    public void changeConfigRest(View view){
+        RadioButton backupEnabled = (RadioButton)findViewById(R.id.configBackupRadio);
+        RadioButton restoreEnabled = (RadioButton)findViewById(R.id.configRestoreRadio);
+        LinearLayout restoreMenu = (LinearLayout)findViewById(R.id.configRestoreMenu);
+        LinearLayout backupMenu = (LinearLayout)findViewById(R.id.configBackupMenu);
+        TextView title = (TextView)findViewById(R.id.configtitle);
+        backupMenu.setVisibility(SurfaceView.GONE);
+        restoreMenu.setVisibility(SurfaceView.VISIBLE);
+        title.setText("Configuration\nFile Restore");
+        backupEnabled.setChecked(false);
     }
 
     public void onPasswordFragment(String message){
@@ -1801,7 +1838,7 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
     public void passwordLoadSys(View view){
         Spinner sys = (Spinner)findViewById(R.id.selectSys);
         String sysImage = sys.getSelectedItem().toString().trim();
-        writeData("boot " + sysImage);
+        writeData("load " + sysImage);
         RelativeLayout imageSelection = (RelativeLayout)findViewById(R.id.passwordImages);
         imageSelection.setVisibility(SurfaceView.GONE);
     }

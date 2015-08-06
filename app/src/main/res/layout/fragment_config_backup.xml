@@ -9,51 +9,95 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="25dp"
+        android:layout_margin="15dp"
         android:id="@+id/configtitle"
-        android:text="Configuration File Backup"
+        android:text="Configuration\nFile Backup"
         android:gravity="center"
         android:textColor="#ffaa052a"
         android:textStyle="bold"
         android:textSize="50dp" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="15dp"
+        android:id="@+id/radiobuttons">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_centerHorizontal="true">
+            <RadioButton android:id="@+id/configRestoreRadio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:onClick="changeConfigRest"
+                android:text="Restore"/>
+            <RadioButton android:id="@+id/configBackupRadio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:onClick="changeConfigBack"
+                android:checked="true"
+                android:text="Backup"/>
+        </LinearLayout>
+    </RelativeLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:id="@+id/configRestoreMenu"
+        android:visibility="gone">
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="6"
+            android:id="@+id/configFiles"/>
+    </LinearLayout>
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Saved Filename:"
-        android:id="@+id/configfnt"
-        android:gravity="bottom|left"
-        android:textColor="#ffffffff"
-        android:textStyle="bold"
-        android:textSize="25dp"
-        android:paddingLeft="20dp" />
-    <EditText
-        android:id="@+id/configfn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="20dp"
-        android:background="#ff92c8ee"
-        android:padding="10dp"
-        android:gravity="center"
-        android:textColor="#ffaa052a"
-        android:text="config.txt"
-        android:textSize="20dp"/>
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="25dp"
-        android:text="Backup"
-        android:id="@+id/configbtn"
-        android:textColor="#ffaa052a"
-        android:textStyle="bold"
-        android:typeface="sans"
-        android:background="@drawable/button_home"
-        android:padding="10dp"
-        android:minWidth="300dp"
-        android:minHeight="80dp"
-        android:enabled="true"
-        android:onClick="backupConfig"
-        android:clickable="true"
-        android:textSize="25dp" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:id="@+id/configBackupMenu"
+        android:visibility="visible">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Saved Filename:"
+            android:id="@+id/configfnt"
+            android:gravity="bottom|left"
+            android:textColor="#ffffffff"
+            android:textStyle="bold"
+            android:textSize="25dp"
+            android:paddingLeft="20dp" />
+        <EditText
+            android:id="@+id/configfn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:background="#ff92c8ee"
+            android:padding="10dp"
+            android:gravity="center"
+            android:textColor="#ffaa052a"
+            android:text="config.cfg"
+            android:textSize="20dp"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="25dp"
+            android:text="Backup"
+            android:id="@+id/configbtn"
+            android:textColor="#ffaa052a"
+            android:textStyle="bold"
+            android:typeface="sans"
+            android:background="@drawable/button_home"
+            android:padding="10dp"
+            android:minWidth="300dp"
+            android:minHeight="80dp"
+            android:enabled="true"
+            android:onClick="backupConfig"
+            android:clickable="true"
+            android:textSize="25dp" />
+    </LinearLayout>
 
 </LinearLayout>

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,8 +21,9 @@ public class ConfigBackupFragment extends Fragment {
     private BluetoothInterface mListener;
     private String record = "";
     private int state = 1;
+    private boolean backupStarted = false;
     Pattern booted1 = Pattern.compile("(?s).*[^()#]+#[^#]*");
-    Pattern runningConfigShape = Pattern.compile("(?s).*(version.*)");
+    Pattern runningConfigShape = Pattern.compile("(?s).*([hH]ostname.*#)");
 
     public ConfigBackupFragment() {
         // Required empty public constructor
@@ -47,7 +49,8 @@ public class ConfigBackupFragment extends Fragment {
     @Override
     public void onResume(){
         super.onResume();
-        mListener.writeData("");
+        mListener.updateFragIndex(20);
+        mListener.checkLogin();
     }
 
     @Override
@@ -56,30 +59,40 @@ public class ConfigBackupFragment extends Fragment {
         mListener = null;
     }
 
+    public void setEnabled(){
+        backupStarted = true;
+        mListener.writeData("");
+    }
+
     public void read(String data){
         record += data;
         if(record.contains("--More")){
-            record = record.replaceAll("\\[\\d+m?--More-- \\[\\d+m?", "");
-            mListener.writeData("");
+            record = record.replaceAll("\\[\\d*m?.*--More--.*\\[\\d*m?", "");
+            mListener.writeData("!!!space");
         }
         else {
-            switch (state) {
-                case 1:
-                    if (booted1.matcher(record).matches()) {
-                        mListener.writeData("show running-config");
-                        state++;
-                        record = "";
-                    }
-                    break;
-                case 2:
-                    if (runningConfigShape.matcher(record).matches()) {
-                        Matcher configMatcher = runningConfigShape.matcher(record);
-                        String config = "";
-                        if (configMatcher.find()) {
-                            config = configMatcher.group(1);
+            if(backupStarted) {
+                switch (state) {
+                    case 1:
+                        if (booted1.matcher(record).matches()) {
+                            mListener.writeData("show running-config");
+                            state++;
+                            record = "";
                         }
-                        config = config.replaceAll("\\[.{1}", "");
-                    }
+                        break;
+                    case 2:
+                        if (booted1.matcher(record).matches()) {
+                            Matcher configMatcher = runningConfigShape.matcher(record);
+                            String config = "";
+                            if (configMatcher.find()) {
+                                config = configMatcher.group(1);
+                            }
+                            config = config.replaceAll("\\[.{1}", "");
+                            mListener.saveConfig(config);
+                            state++;
+                            record = "";
+                        }
+                }
             }
         }
     }

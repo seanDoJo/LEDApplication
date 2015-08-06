@@ -72,6 +72,8 @@
         <activity
             android:name=".Activities.BluetoothActivity"
             android:label="@string/title_activity_bluetooth"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
             android:theme="@android:style/Theme.NoTitleBar"
             android:windowSoftInputMode="adjustPan">
         </activity>

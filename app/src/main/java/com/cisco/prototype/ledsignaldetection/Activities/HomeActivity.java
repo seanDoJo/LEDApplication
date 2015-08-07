@@ -55,11 +55,9 @@ public class HomeActivity extends Activity {
             imageFolder.mkdirs();
         }
         File[] folderContents = appFolder.listFiles();
-        if(folderContents.length > 0){
+        File[] configContents = configFolder.listFiles();
+        if(folderContents.length > 0 || configContents.length > 0){
             hasFiles = true;
-            for(File file : folderContents){
-                Log.e("LEDApp", file.getAbsolutePath());
-            }
         }
         Button currbutton = null;
         if(hasFiles) {

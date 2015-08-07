@@ -23,7 +23,7 @@ public class ConfigBackupFragment extends Fragment {
     private int state = 1;
     private boolean backupStarted = false;
     Pattern booted1 = Pattern.compile("(?s).*[^()#]+#[^#]*");
-    Pattern runningConfigShape = Pattern.compile("(?s).*([hH]ostname.*#)");
+    Pattern runningConfigShape = Pattern.compile("(?s).*([hH]ostname.*#).*");
 
     public ConfigBackupFragment() {
         // Required empty public constructor
@@ -88,6 +88,7 @@ public class ConfigBackupFragment extends Fragment {
                                 config = configMatcher.group(1);
                             }
                             config = config.replaceAll("\\[.{1}", "");
+                            Log.e("LEDBackup", config);
                             mListener.saveConfig(config);
                             state++;
                             record = "";

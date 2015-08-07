@@ -34,6 +34,7 @@ public class PasswordFragment extends Fragment {
     private TextView textView, output;
     private ProgressBar pBar;
     private int state = 0;
+    private int miniState = 0;
     private String record = "";
     private String secretPw = "";
     private String consolePw = "";
@@ -70,6 +71,7 @@ public class PasswordFragment extends Fragment {
     private Pattern recordS = Pattern.compile("(?s).*dir(.*)[uU]sage.*");
     private Pattern weirdItem = Pattern.compile("^[^\\s]*$");
     private Pattern itemExtract = Pattern.compile("^*.\\s{1}([^\\s]*)$");
+    private Pattern shVerExtract = Pattern.compile("(?s).*bootflash:[/]*(.*\\.bin).*");
 
     public PasswordFragment() {
         // Required empty public constructor
@@ -227,6 +229,7 @@ public class PasswordFragment extends Fragment {
         button.setVisibility(SurfaceView.VISIBLE);
         TextView out = (TextView)getActivity().findViewById(R.id.selectSyspwh);
         out.setText("Select a System Image:");
+        if(this.kickImage != "")out.setText(out.getText() + "\nCurrent Kickstart Image: " + this.kickImage);
         out = (TextView)getActivity().findViewById(R.id.selectKickstartpwh);
         out.setVisibility(SurfaceView.GONE);
         Spinner s = (Spinner)getActivity().findViewById(R.id.selectKickstart);
@@ -455,7 +458,7 @@ public class PasswordFragment extends Fragment {
                 record = record.replaceAll("\\[.*\\[\\d*m?", "");
                 record = record.replaceAll("\\[d+m?", "");
                 mListener.writeData("!!!space");
-                if(state != 2 && state != 3 && state != 1)record = "";
+                if(state != 2 && state != 3 && state != 1 && state != 7)record = "";
             }
             else {
                 switch (state) {
@@ -533,7 +536,7 @@ public class PasswordFragment extends Fragment {
                                     item = itemFinder.find() ? itemFinder.group(1) : piece.trim();
                                 }
                                 if(item.trim().replace("\n", "").length() > 0 && !item.trim().contains("loader")){
-                                    dirContents.add(piece.trim());
+                                    dirContents.add(item.trim());
                                 }
                                 Log.e("LEDApp", item);
                                 if (kickstart.matcher(item.trim()).matches()) {
@@ -651,6 +654,13 @@ public class PasswordFragment extends Fragment {
                             Log.i("LEDApp", "Hit boot matcher");
                             record = record.replaceAll("\\[.*\\[\\d*m?", "");
                             record = record.replaceAll("\\[\\d+m?", "");
+                            String ksver = "";
+                            if(this.kickImage != ""){
+                                Matcher kickMatch = version.matcher(this.kickImage);
+                                if(kickMatch.find()){
+                                    ksver = kickMatch.group(1);
+                                }
+                            }
                             Matcher recordM = recordS.matcher(record);
                             if(recordM.find()){
                                 record = recordM.group(1);
@@ -659,6 +669,7 @@ public class PasswordFragment extends Fragment {
                             ArrayList<String[]> imagePairs = new ArrayList<>();
                             record = record.replaceAll("\\[\\d+m?--More-- \\[\\d+m?", "");
                             String[] directoryContents = record.split("\n");
+                            dirContents.clear();
 
                             for (String piece : directoryContents) {
                                 String item = "";
@@ -670,40 +681,55 @@ public class PasswordFragment extends Fragment {
                                     item = itemFinder.find() ? itemFinder.group(1) : piece.trim();
                                 }
                                 if(item.trim().replace("\n", "").length() > 0 && !item.trim().contains("loader")){
-                                    dirContents.add(piece.trim());
+                                    dirContents.add(item.trim());
                                 }
                                 Log.e("LEDApp", item);
-                                if (kickstart.matcher(item.trim()).matches()) {
-                                    Log.e("LEDApp", "found kickstart");
-                                    kst.add(item.trim());
-                                } else if (system.matcher(item.trim()).matches()) {
+                                if (system.matcher(item.trim()).matches() && !item.trim().contains("kickstart")) {
+                                    if(ksver.equals("")) {
+                                        syst.add(item.trim());
+                                    } else {
+                                        String sysver = "";
+                                        Matcher sysMatch = version.matcher(item.trim());
+                                        if(sysMatch.find()){
+                                            sysver = sysMatch.group(1);
+                                        }
+                                        boolean equal = true;
+                                        String[] sysverBreak = sysver.split("\\.");
+                                        String[] ksverBreak = ksver.split("\\.");
+                                        if(sysverBreak.length == ksverBreak.length && sysverBreak.length > 0){
+                                            for(int x = 0; x < sysverBreak.length; x++){
+                                                if(!sysverBreak[x].trim().equals(ksverBreak[x].trim())){
+                                                    equal = false;
+                                                    break;
+                                                }
+                                            }
+                                        } else {
+                                            equal = false;
+                                        }
+                                        if (equal) {
+                                            syst.add(item.trim());
+                                        }
+                                    }
+                                }
+                            }
+                            if(syst.size() == 0) {
+                                syst.clear();
+                                for (String piece : directoryContents) {
+                                    String item = piece;
+                                    if (!weirdItem.matcher(piece.trim()).matches()) {
+                                        Matcher itemFinder = itemExtract.matcher(piece.trim());
+                                        item = itemFinder.find() ? itemFinder.group(1) : piece.trim();
+                                    }
+                                    Log.i("LEDApp", item);
                                     syst.add(item.trim());
                                 }
-                            }
-                            if(syst.size() == 1){
-                                this.sysImage = syst.get(0).trim();
-                                sysAdapter.notifyDataSetChanged();
-                                selectSys();
-                            } else {
-                                if(syst.size() == 0) {
-                                    syst.clear();
-                                    for (String piece : directoryContents) {
-                                        String item = piece;
-                                        if (!weirdItem.matcher(piece.trim()).matches()) {
-                                            Matcher itemFinder = itemExtract.matcher(piece.trim());
-                                            item = itemFinder.find() ? itemFinder.group(1) : piece.trim();
-                                        }
-                                        Log.i("LEDApp", item);
-                                        syst.add(item.trim());
-                                    }
 
-                                    Button butt = (Button) getActivity().findViewById(R.id.changeFullList);
-                                    butt.setEnabled(false);
-                                    butt.setVisibility(SurfaceView.GONE);
-                                }
-                                sysAdapter.notifyDataSetChanged();
-                                selectSys();
+                                Button butt = (Button) getActivity().findViewById(R.id.changeFullList);
+                                butt.setEnabled(false);
+                                butt.setVisibility(SurfaceView.GONE);
                             }
+                            sysAdapter.notifyDataSetChanged();
+                            selectSys();
                             state = 8;
                             record = "";
                         } else if (loader.matcher(record).matches() && record.toLowerCase().contains("error")) {
@@ -757,9 +783,28 @@ public class PasswordFragment extends Fragment {
                                 record = "";
                             }
                             else{
-                                mListener.writeData("");
-                                record = "";
-                                state = 2;
+                                switch(miniState){
+                                    case 0:
+                                        if (boot.matcher(record).matches()) {
+                                            record = "";
+                                            mListener.writeData("show version");
+                                            miniState++;
+                                        }
+                                        break;
+                                    case 1:
+                                        if(shVerExtract.matcher(record).matches()){
+                                            Log.e("LEDApp", "in second ministate");
+                                            Matcher ksVersion = shVerExtract.matcher(record);
+                                            if(ksVersion.find()){
+                                                this.kickImage = ksVersion.group(1).trim();
+                                                Log.e("LEDFound", this.kickImage);
+                                            }
+                                            mListener.writeData("");
+                                            record = "";
+                                            state = 2;
+                                        }
+                                        break;
+                                }
                             }
                         }
                         break;

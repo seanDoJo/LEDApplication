@@ -1073,66 +1073,12 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         if(true){
             Intent emailIntent = new Intent(Intent.ACTION_SEND);
             emailIntent.setType("text/plain");
-            /*emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] {"email@example.com"});
-            emailIntent.putExtra(Intent.EXTRA_SUBJECT, "subject here");
-            emailIntent.putExtra(Intent.EXTRA_TEXT, "body text");
-            File root = Environment.getExternalStorageDirectory();
-            String pathToMyAttachedFile = "temp/attachement.xml";
-            File file = new File(root, pathToMyAttachedFile);
-            if (!file.exists() || !file.canRead()) {
-                return;
-            }*/
+
             Uri uri = Uri.fromFile(viewedFile);
             emailIntent.putExtra(Intent.EXTRA_STREAM, uri);
             startActivity(Intent.createChooser(emailIntent, "Pick an Email provider"));
 
-            /*Intent i = new Intent(Intent.ACTION_SEND);
-            i.setType("message/rfc822");
 
-            File file = getAlbumStorageDir(viewedFile.getName().replace("capture", "txt"));
-
-            BufferedReader emailReader = null;
-            BufferedWriter emailWriter = null;
-            try{
-                emailWriter = new BufferedWriter(new FileWriter(file));
-                emailReader = new BufferedReader(new FileReader(viewedFile));
-
-                while (emailReader.readLine() != null){
-                    emailWriter.write(emailReader.readLine());
-                }
-
-            } catch (IOException e) {
-                Log.i("FAIL", "FILE CREATION FAILED");
-                e.printStackTrace();
-            } finally {
-                try {
-
-                    if (null != emailWriter) {
-                        emailWriter.close();
-                    }
-
-                    if (null != emailReader) {
-                        emailReader.close();
-                    }
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            if (!file.exists() || !file.canRead()) {
-                Toast.makeText(this, "Attachment Error", Toast.LENGTH_SHORT).show();
-                finish();
-                return;
-            }
-            Uri uri = Uri.fromFile(file);
-            i.putExtra(Intent.EXTRA_STREAM, uri);
-
-            try {
-                startActivityForResult(Intent.createChooser(i, "Send mail..."), 1);
-            } catch (android.content.ActivityNotFoundException ex) {
-                Toast.makeText(BluetoothActivity.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
-            }*/
         } else {
             Toast.makeText(BluetoothActivity.this, "Sorry, couldn't make a file.", Toast.LENGTH_SHORT).show();
         }
@@ -1488,16 +1434,6 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         while(true){
             switch (state){
                 case 0: //home
-                    /*Log.i("state", Integer.toString(state));
-                    if(imageList.size() == 1) state = 1;
-                    else{
-                        String imageType = iFrag.kickstart ? "kickstart": "system";
-                        state = 3;
-                        message = "I'm not sure what to try to boot. Please help me out by either" +
-                                " selecting a " + imageType + " image from the list below or " +
-                                "choosing to download a new set of images.";
-                    }
-                    iFrag.state = state;*/
                     state = 3;
                     iFrag.state = state;
                     String imageType = iFrag.kickstart ? "kickstart": "system";
@@ -1552,30 +1488,14 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                     iFrag.setText("Booting\n " + iFrag.sysImage + ". This may take a bit...");
                     iFrag.state = state;
                     return;
-                /*case 5: //set new kickstart or system variable after getting user input
-                    Log.i("state", Integer.toString(state));
-                    downButton.setVisibility(View.GONE);
-                    downButton.setEnabled(false);
-                    if(iFrag.kickstart){
-                        iFrag.kickImage = files.get(position);
-                        state = 2;
-                    }
-                    else{
-                        iFrag.sysImage = files.get(position);
-                        state = 4;
-                    }
-                    Log.i("image2", "ks: " + iFrag.kickImage);
-                    Log.i("image2", "sys: " + iFrag.sysImage);
-                    iFrag.state = state;
-                    break;*/
                 case 6: //System booted!
                     Log.i("state", Integer.toString(state));
                     enableSubmit();
                     iFrag.success = true;
-                    String kickKick = iFrag.kickImage.equals("") ? "" : "\n\nKickstart: " + iFrag.kickImage;
-                    String sysSys = iFrag.sysImage.equals("") ? "" : "\n\nSystem: " + iFrag.sysImage;
-                    iFrag.success("Yes! The switch booted! The following images should be updated" +
-                            " in the configuration:" + kickKick + sysSys);
+                    String kickKick = iFrag.kickImage.equals("") ? "" : "\n\nKickstart:\n" + iFrag.kickImage;
+                    String sysSys = iFrag.sysImage.equals("") ? "" : "\n\nSystem:\n" + iFrag.sysImage;
+                    iFrag.success("Yes! The switch booted! The following have booted successfully:"
+                            + kickKick + sysSys);
                     iFrag.state = state;
                     return;
                 case 7: //failed to boot ks

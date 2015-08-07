@@ -1,60 +1,71 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.cisco.prototype.ledsignaldetection.Fragments.ViewFileFragment">
-    <LinearLayout
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:id="@+id/file_name"
+        android:textSize="20sp"
+        android:textColor="#ffaa052a"
+        android:typeface="sans"
+        android:gravity="center_horizontal"
+        android:background="#ffbdbdbd"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:background="#ffbdbdbd">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:id="@+id/file_name"
-            android:textSize="20sp"
-            android:textColor="#ffaa052a"
-            android:typeface="sans"
-            android:gravity="center_vertical"
-            android:layout_weight="1" />
-        <CheckBox
-            android:id="@+id/view_check"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="onCheckView"/>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical"
-            android:text="Show line numbers"
-            android:textColor="#ffaa052a"
-            android:textSize="15sp"/>
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ftp"
-            android:onClick="switchFtp"/>
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/email"
-            android:onClick="switchEmail"/>
-        <ImageButton
+            android:orientation="horizontal">
+            <CheckBox
+                android:id="@+id/view_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onCheckView"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:text="Show line numbers"
+                android:textColor="#ffaa052a"
+                android:textSize="15sp"/>
+        </LinearLayout>
+        <LinearLayout android:layout_alignParentRight="true"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/trash"
-            android:onClick="deleteFile" />
-    </LinearLayout>
+            android:orientation="horizontal">
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ftp"
+                android:onClick="switchFtp"/>
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/email"
+                android:onClick="switchEmail"/>
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/trash"
+                android:onClick="deleteFile" />
+        </LinearLayout>
+    </RelativeLayout>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="#fffefefe"
         android:fillViewport="true">
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:orientation="horizontal">
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:background="#ffbdbdbd">
@@ -67,14 +78,14 @@
                     android:background="#ffbdbdbd"
                     android:padding="3dp"
                     android:visibility="gone"/>
-                </LinearLayout>
+            </LinearLayout>
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:background="#fffefefe">
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginStart="1dp"
                     android:id="@+id/fileText"

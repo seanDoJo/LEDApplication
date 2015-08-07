@@ -337,7 +337,14 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
         private boolean paused = false;
         private boolean inHelp = false;
         private boolean telnet = false;
+        private String lrecord = "";
+        private boolean destroyerOfLoops = false;
         private TelnetClient tc = null;
+        private Pattern booted = Pattern.compile("(?s).*[^()#]+#[^#]*");
+        private Pattern boot = Pattern.compile("(?s).*[sS]witch\\(boot\\)#[^#]*");
+        private Pattern bootconfig = Pattern.compile("(?s).*[sS]witch\\(boot-config\\)#[^#]*");
+        private Pattern altbootconfig = Pattern.compile("(?s).*[sS]witch\\(boot\\)\\(config\\)#[^#]*");
+        private Pattern loader = Pattern.compile("(?s).*[lL]{1}oader>[^>]*");
         public BTConnection(String ipaddr, int portNum, String username, String password, CountDownLatch synchron){
             telnet = true;
             StrictMode.ThreadPolicy tp = StrictMode.ThreadPolicy.LAX;
@@ -439,6 +446,20 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                             readB = new byte[bytes];
                             //Log.e("LEDapp", new String(readB));
                             for(int i = 0; i < bytes; i++)readB[i] = buffer[i];
+                            if(destroyerOfLoops){
+                                if(loader.matcher(lrecord).matches() || altbootconfig.matcher(lrecord).matches() ||
+                                        bootconfig.matcher(lrecord).matches() || boot.matcher(lrecord).matches() ||
+                                        booted.matcher(lrecord).matches()){
+                                    lrecord = "";
+                                    destroyerOfLoops = false;
+                                }
+                                else {
+                                    String latest = new String(readB);
+                                    lrecord += latest;
+                                    write("!!!break");
+                                    writeData("!!!ctrl]");
+                                }
+                            }
                             connectionHandler.obtainMessage(fragIndex, bytes, -1, readB).sendToTarget();
                             for(int i = 0; i < 1024; i++)buffer[i] = 0;
                         }
@@ -531,8 +552,10 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
                             mmOutStream.write(bytes);
                         }
                     }
-                }
-                else {
+                    else if(specComm.contains("freedomrings")){
+                        destroyerOfLoops = true;
+                    }
+                } else {
                     if (content.trim().length() > 0) {
                         byte[] bytes = content.getBytes();
                         if(telnet){
@@ -1042,8 +1065,18 @@ public class BluetoothActivity extends FragmentActivity implements BluetoothInte
 
     public void startFileExplorer(){
         File appFolder = new File(Environment.getExternalStorageDirectory()+File.separator + "SwitchArmyKnife" + File.separator + "captures");
+        File configFolder = new File(Environment.getExternalStorageDirectory()+File.separator + "SwitchArmyKnife" + File.separator + "misc" + File.separator + "config");
         File[] folderContents = appFolder.listFiles();
-        fileFrag.init(folderContents);
+        File[] configContents = configFolder.listFiles();
+        File[] files = new File[folderContents.length + configContents.length];
+        int v = 0;
+        for(int i = 0; i < folderContents.length; i ++, v++){
+            files[v] = folderContents[i];
+        }
+        for(int i = 0; i < configContents.length; i ++, v++){
+            files[v] = configContents[i];
+        }
+        fileFrag.init(files);
     }
     public void startImageViewer(){
         File appFolder = new File(Environment.getExternalStorageDirectory()+File.separator + "SwitchArmyKnife" + File.separator + "images");
